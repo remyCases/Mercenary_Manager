@@ -12,8 +12,27 @@
 
         <div class="info">
             <p><strong>Instructions:</strong> Drag troop cards into the 2 mission slots. Release near a slot to snap it in place, or it returns to the pool.</p>
-			<button id="newWeekButton">Next Week</button>
-            <button id="resetSlots">Reset</button>
+			<p id="state">Weeks: 1</p>
+			<div>
+				<button id="newWeekButton">Next Week</button>
+            	<button id="resetSlots">Reset</button>
+			</div>
+
+			<div class="hbox">
+				<div class="vbox">
+					<img src="images/fb171.png">
+					<p id="gold"></p>
+				</div>
+				<div class="vbox">
+					<img src="images/fb441.png">
+					<p id="food"></p>
+				</div>
+				<div class="vbox">
+					<img src="images/fb671.png">
+					<p id="supplies"></p>
+				</div>
+			</div>
+
         </div>
 
 		<div class="main-container">
@@ -70,6 +89,13 @@
 			</div>
 			<button id="sendMission" disabled="true">Send mission</button>
 			<button id="cancelMission">Cancel mission</button>
+	</dialog>
+
+	<dialog id="gameOverDialog">
+		<div class="hbox">
+			<p>GAME OVER</p>
+			<button id="restart">Restart</button>
+		</div>
 	</dialog>
 
 

@@ -186,6 +186,16 @@ button[disabled]{
     margin-left: -414px;
 }
 
+#gameOverDialog {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 300px;
+    margin-left: -150px;
+    height: 300px;
+    margin-top: -150px;
+}
+
 .frozen {
     pointer-events: none;
     opacity: 0.6;
@@ -210,4 +220,24 @@ button[disabled]{
 
 .slot.frozen {
   background-color: #cccccc;	
+}
+
+.vbox {
+	display: flex;
+    flex-direction: row; 
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.hbox {
+	display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
 }
