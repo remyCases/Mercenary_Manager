@@ -29,3 +29,8 @@ export function getDistance(x, y, slot) {
 export function isWithinSnapDistance(x, y, slot) {
 	return getDistance(x, y, slot) < SNAP_DISTANCE;
 }
+
+export function getItem(items, val) {
+	return Array.from(items).find((item) => item.getAttribute("data-num") === val)
+}
+

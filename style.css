@@ -196,6 +196,10 @@ button[disabled]{
     margin-top: -150px;
 }
 
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
 .frozen {
     pointer-events: none;
     opacity: 0.6;

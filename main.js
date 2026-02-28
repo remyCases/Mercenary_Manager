@@ -1,4 +1,4 @@
-import { getDistance, findClosestSlot, isWithinSnapDistance, SNAP_DISTANCE } from "./js/utils.js";
+import { findClosestSlot, isWithinSnapDistance, getDistance, getItem, SNAP_DISTANCE } from "./js/utils.js";
 import { resolveAction } from "./js/logic.js"
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -44,23 +44,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	updateUI();
 
 	troopCards.forEach(card => {
-		const id = card.getAttribute("data-id");
-		const troop = troopData.get(id);
-		card.firstElementChild.src = troop.png;
-		card.firstElementChild.style.margin = "0 auto";
-		card.firstElementChild.style.display = "block";
-		const healthIndicator = document.createElement("div");
-		healthIndicator.className = "health-indicator";
-		troop.health = troop.max_health;
-		for (let i = 0; i < troop.health; i++) {
-			const img = document.createElement("img");
-			img.src = "images/fb681.png";
-			img.draggable = false;
-			healthIndicator.appendChild(img);
-		}
-		card.appendChild(healthIndicator);
-		card.appendChild(document.createTextNode(troop.name));
-
 		card.addEventListener("dragstart", (e) => {
 			draggedElement = card;
 			originalParent = card.parentElement;
@@ -99,14 +82,14 @@ document.addEventListener("DOMContentLoaded", () => {
 				closestSlot.classList.add("occupied");
 				const num = closestSlot.getAttribute("data-num");
 				if (num) {
-					getButton(num).disabled = false;
+					getItem(missionButtons, num).disabled = false;
 				}
 
 				if (oldParent && oldParent.querySelectorAll(".troop-card").length === 0) {
 					oldParent.classList.remove("occupied");
 					const num = oldParent.getAttribute("data-num");
 					if (num) {
-						getButton(num).disabled = true;
+						getItem(missionButtons, num).disabled = true;
 					}
 				}
 			} else {
@@ -137,17 +120,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		slot.addEventListener("dragleave", () => {
 			slot.classList.remove("hover");
 		});
-
-		slot.addEventListener("drop", (e) => {
-			e.preventDefault();
-			slot.classList.remove("hover");
-		});
 	});
 
 	newWeekButton.addEventListener("click", () => {
 		resetButton.click();
 		weeks += 1;
-		stateDisplay.textContent = `Weeks: ${weeks}`;
 		const res = resolveAction("", 6, resourceData.get("gold").value, resourceData.get("food").value, 0, resourceData.get("supplies").value);
 		resourceData.get("gold").value = res[1];
 		resourceData.get("food").value = res[2];
@@ -155,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		updateUI();
 
 		if (resourceData.get("food").value <= 0) {
-			gameOverDialog.show();
+			gameOverDialog.showModal();
 		}
 	});
 
@@ -173,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				slot.classList.remove("occupied");
 				const num = slot.getAttribute("data-num");
 				if (num) {
-					getButton(num).disabled = true;
+					getItem(missionButtons, num).disabled = true;
 				}
 
 			}
@@ -194,8 +171,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	sendMission.addEventListener("click", () => {
 		missionDialog.close();
 
-		const slot = getSlot(currentMission);
-		const button = getButton(currentMission);
+		const slot = getItem(slots, currentMission);
+		const button = getItem(missionButtons, currentMission);
 		if (!slot || !button) {
 			alert("Invalid slot");
 			return;
@@ -241,7 +218,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	suppliesAmount.value = 0;
 	suppliesUp.addEventListener("click", (e) => {
 		if (e.ctrlKey) {
 			suppliesAmount.value = Number(suppliesAmount.value) + 100;
@@ -295,20 +271,68 @@ document.addEventListener("DOMContentLoaded", () => {
 		resourceData.set("food", { id: "food", value: 20 });
 		resourceData.set("supplies", { id: "supplies", value: 10 });
 
+		suppliesAmount.value = 0;
+		sendMission.disabled = true;
+
+		troopCards.forEach(card => {
+			// clear every child
+			while (card.firstChild) {
+				card.removeChild(card.lastChild);
+			}
+
+			// clear residual classes
+			card.className = "troop-card";
+
+			const id = card.getAttribute("data-id");
+			const troop = troopData.get(id);
+
+			// create portrait
+			const portrait = document.createElement("img");
+			portrait.src = troop.png;
+			portrait.draggable = false;
+			portrait.style.margin = "0 auto";
+			portrait.style.display = "block";
+
+			// create health indicator
+			const healthIndicator = document.createElement("div");
+			healthIndicator.className = "health-indicator";
+			troop.health = troop.max_health;
+			for (let i = 0; i < troop.health; i++) {
+				const img = document.createElement("img");
+				img.src = "images/fb681.png";
+				img.draggable = false;
+				healthIndicator.appendChild(img);
+			}
+
+			card.appendChild(portrait);
+			card.appendChild(healthIndicator);
+			card.appendChild(document.createTextNode(troop.name));
+
+			troopPool.appendChild(card);
+		});
+
+		slots.forEach(slot => {
+			slot.className = "slot";
+		});
+
+		troopPool.className = "troop-pool";
+
+		regions.forEach(region => {
+			region.setAttribute("class", "region");
+		});
+
+		missionButtons.forEach(b => {
+			b.disabled = true;
+		});
+
 	}
 
 	function updateUI() {
+		stateDisplay.textContent = `Weeks: ${weeks}`;
 		resourceData.forEach((v, _) => {
 			const ui = document.getElementById(v.id);
 			ui.textContent = v.value;
 		});
 	}
 
-	function getSlot(val) {
-		return Array.from(slots).find((slot) => slot.getAttribute("data-num") === val)
-	}
-
-	function getButton(val) {
-		return Array.from(missionButtons).find((b) => b.getAttribute("data-num") === val)
-	}
 });
