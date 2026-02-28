@@ -55,6 +55,77 @@ document.addEventListener("DOMContentLoaded", () => {
 		card.addEventListener("dragend", () => {
 			card.classList.remove("dragging");
 		});
+
+		card.addEventListener('touchstart', () => {
+			draggedElement = card;
+			originalParent = card.parentElement;
+
+			card.classList.add("dragging");
+			card.classList.add('dragging');
+		}, { passive: false });
+
+		card.addEventListener('touchend', (e) => {
+			if (!draggedElement) return;
+
+			const touchEndX = e.changedTouches[0].clientX;
+			const touchEndY = e.changedTouches[0].clientY;
+
+			draggedElement.classList.remove('dragging');
+
+			const closestSlot = findClosestSlot(touchEndX, touchEndY, slots);
+			if (closestSlot && isWithinSnapDistance(touchEndX, touchEndY, closestSlot)) {
+
+				const existingCards = closestSlot.querySelectorAll('.troop-card');
+
+				if (Array.from(existingCards).find(node => node.isEqualNode(draggedElement))) {
+					return;
+				}
+				if (existingCards.length >= 4) {
+					troopPool.appendChild(existingCards[0]);
+				}
+
+				const oldParent = draggedElement.parentElement;
+				closestSlot.appendChild(draggedElement);
+				closestSlot.classList.add("occupied");
+				const num = closestSlot.getAttribute("data-num");
+				if (num) {
+					getItem(missionButtons, num).disabled = false;
+				}
+
+				if (oldParent && oldParent.querySelectorAll(".troop-card").length === 0) {
+					oldParent.classList.remove("occupied");
+					const num = oldParent.getAttribute("data-num");
+					if (num) {
+						getItem(missionButtons, num).disabled = true;
+					}
+				}
+			} else {
+				if (originalParent && originalParent !== draggedElement.parentElement) {
+					originalParent.appendChild(draggedElement);
+				}
+			}
+
+			slots.forEach(s => s.classList.remove('hover'));
+			draggedElement = null;
+			updateFilledSlots();
+		}, { passive: false });
+
+		card.addEventListener('touchmove', (e) => {
+			if (!draggedElement) return;
+			e.preventDefault();
+
+			const touchX = e.touches[0].clientX;
+			const touchY = e.touches[0].clientY;
+
+			slots.forEach(slot => {
+				const distance = getDistance(touchX, touchY, slot);
+				if (distance < SNAP_DISTANCE) {
+					slot.classList.add('hover');
+				} else {
+					slot.classList.remove('hover');
+				}
+			});
+		}, { passive: false });
 	});
 
 	slots.forEach(slot => {
@@ -64,11 +135,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			draggedElement.classList.remove("dragging");
 
-			// Find closest slot
 			const closestSlot = findClosestSlot(e.clientX, e.clientY, slots);
 			if (closestSlot && isWithinSnapDistance(e.clientX, e.clientY, closestSlot)) {
 
-				// Snap to slot
 				const existingCards = closestSlot.querySelectorAll(".troop-card");
 
 				if (Array.from(existingCards).find(node => node.isEqualNode(draggedElement))) {
@@ -334,5 +403,4 @@ document.addEventListener("DOMContentLoaded", () => {
 			ui.textContent = v.value;
 		});
 	}
-
 });
