@@ -18,18 +18,30 @@
             	<button id="resetSlots">Reset</button>
 			</div>
 
-			<div class="hbox">
-				<div class="vbox">
-					<img src="images/fb171.png">
-					<p id="gold"></p>
+			<div class="vbox">
+				<div class="hbox">
+					<div class="vbox">
+						<img src="images/fb97.png">
+						<p id="ap"></p>
+					</div>
+
+					<div class="vbox">
+						<img src="images/fb171.png">
+						<p id="gold"></p>
+					</div>
+					<div class="vbox">
+						<img src="images/fb441.png">
+						<p id="food"></p>
+					</div>
+					<div class="vbox">
+						<img src="images/fb671.png">
+						<p id="supplies"></p>
+					</div>
 				</div>
-				<div class="vbox">
-					<img src="images/fb441.png">
-					<p id="food"></p>
-				</div>
-				<div class="vbox">
-					<img src="images/fb671.png">
-					<p id="supplies"></p>
+				<div class="hbox">
+					<p>Merchant<br>Cost 1 AP and some golds</p>
+					<button id="buyFood">Buy Food</button>
+					<button id="buySupplies">Buy Supplies</button>
 				</div>
 			</div>
 
@@ -67,9 +79,9 @@
 	<dialog id="missionDialog">
 			<div style="position: relative; display: inline-block;">
 				<svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-					<circle cx="200" cy="189" r="15" class="region" data-location="A" />
-					<circle cx="530" cy="85" r="15" class="region" data-location="B" />
-					<circle cx="625" cy="300" r="15" class="region" data-location="C" />
+					<circle cx="200" cy="189" r="15" class="region" data-num="A"/>
+					<circle cx="530" cy="85" r="15" class="region" data-num="B"/>
+					<circle cx="625" cy="300" r="15" class="region" data-num="C"/>
 				</svg>
 
 				<img src="images/map.png" draggable="false" style="width: 818px;"/>

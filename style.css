@@ -124,14 +124,15 @@ button:hover {
 
 button:disabled,
 button[disabled]{
-  background-color: #cccccc;
-  color: #666666;
+	background-color: #cccccc;
+	color: #666666;
 	cursor: not-allowed;
 }
 
 .troop-card {
 	display: grid;
 	position: relative;
+	text-align: center;
 }
 
 .troop-card.absolute-drag {
@@ -142,8 +143,9 @@ button[disabled]{
 
 .region {
     fill: transparent;
-    stroke: transparent;
-    cursor: pointer;
+    fill: rgba(52, 152, 219, 0.3);
+    stroke: #ffffff;
+    stroke-width: 2;
     transition: all 0.2s ease;
 }
 
@@ -156,6 +158,12 @@ button[disabled]{
 .region.selected {
     fill: rgba(46, 204, 113, 0.4);
     stroke: #2ecc71;
+    stroke-width: 2;
+}
+
+.region.frozen {
+    fill: rgba(102, 102, 102, 0.3);
+    stroke: #666666;
     stroke-width: 2;
 }
 
@@ -207,6 +215,7 @@ dialog::backdrop {
 
 .slot.frozen::before {
     content: attr(data-frozen-text);
+	white-space: pre-line;
     position: absolute;
     top: 50%;
     left: 50%;
