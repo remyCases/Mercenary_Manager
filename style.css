@@ -55,17 +55,6 @@ h1 {
 	transform: scale(1.1);
 }
 
-.main-container {
-	display: grid;
-	grid-template-columns: 1fr 1fr
-}
-
-.slots-container {
-	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	gap: 15px;
-	margin-bottom: 40px;
-}
 
 .slot {
 	width: 220px;

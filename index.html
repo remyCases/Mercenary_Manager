@@ -47,8 +47,8 @@
 
         </div>
 
-		<div class="main-container">
-			<div>
+		<div class="vbox">
+			<div class="hbox">
         		<h2 style="margin-bottom: 15px;">Troops</h2>
 				<div class="troop-pool" id="troopPool">
 					<div class="troop-card" draggable="true" data-id="A"></div>
@@ -59,20 +59,33 @@
 					<div class="troop-card" draggable="true" data-id="F"></div>
 				</div>
 			</div>
-
-			<div>
-				<h2 style="margin-bottom: 15px;">Missions Slot</h2>
-				<div class="slots-container" id="slotsContainer">
-					<div>
-						<button class="mission-button" data-num="0">Prepare Mission</button>
-						<div class="slot" data-num="0" data-frozen-text="ONGOING MISSION"></div>
+			
+			<div class="hbox">
+				<div class="hbox">
+					<h2 style="margin-bottom: 15px;">Missions Slot</h2>
+					<div class="vbox">
+						<div class="hbox">
+							<button class="mission-button" data-num="0">Prepare Mission</button>
+							<div class="mission-slot slot" data-num="0" data-frozen-text="ONGOING MISSION"></div>
+						</div>
+						<div class="hbox">
+							<button class="mission-button" data-num="1">Prepare Mission</button>
+							<div class="mission-slot slot" data-num="1" data-frozen-text="ONGOING MISSION"></div>
+						</div>
 					</div>
-					<div>
-						<button class="mission-button" data-num="1">Prepare Mission</button>
-						<div class="slot" data-num="1" data-frozen-text="ONGOING MISSION"></div>
+				</div>
+
+				<div class="hbox">
+					<h2 style="margin-bottom: 15px;">Rest Slot</h2>
+					<div class="vbox">
+						<div class="hbox">
+							<button class="rest-button" data-num="0">Rest</button>
+							<div class="rest-slot slot" data-num="0" data-frozen-text="ONGOING MISSION"></div>
+						</div>
 					</div>
 				</div>
 			</div>
+
 		</div>
     </div>
 

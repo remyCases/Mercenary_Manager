@@ -17,12 +17,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// elements on main screen
 	const troopCards = document.querySelectorAll(".troop-card");
-	const slots = document.querySelectorAll(".slot");
+	const missionSlots = document.querySelectorAll(".mission-slot");
+	const restSlots = document.querySelectorAll(".rest-slot");
 	const troopPool = document.getElementById("troopPool");
 	const dropableSlots = document.querySelectorAll(".slot, .troop-pool");
+
+	// buttons
 	const resetButton = document.getElementById("resetSlots");
 	const newWeekButton = document.getElementById("newWeekButton");
 	const missionButtons = document.querySelectorAll(".mission-button");
+	const restButtons = document.querySelectorAll(".rest-button");
 	const stateDisplay = document.getElementById("state");
 
 	// main buttons of missions
@@ -39,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const suppliesAmount = document.getElementById("suppliesAmount");
 	const suppliesUp = document.getElementById("suppliesUp");
 	const suppliesDown = document.getElementById("suppliesDown");
+
 
 	// gameover modal
 	const gameOverDialog = document.getElementById("gameOverDialog");
@@ -105,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			}
 
-			slots.forEach(s => s.classList.remove("hover"));
+			dropableSlots.forEach(s => s.classList.remove("hover"));
 			draggedElement = null;
 			updateUI();
 		}, { passive: false });
@@ -117,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			const touchX = e.touches[0].clientX;
 			const touchY = e.touches[0].clientY;
 
-			slots.forEach(slot => {
+			dropableSlots.forEach(slot => {
 				const distance = getDistance(touchX, touchY, slot);
 				if (distance < SNAP_DISTANCE) {
 					slot.classList.add("hover");
@@ -159,8 +164,9 @@ document.addEventListener("DOMContentLoaded", () => {
 					originalParent.appendChild(draggedElement);
 				}
 			}
-			// Clear hover state on all slots
-			slots.forEach(s => s.classList.remove("hover"));
+
+			// Clear hover state on all dropableSlots
+			dropableSlots.forEach(s => s.classList.remove("hover"));
 			draggedElement = null;
 			updateUI();
 		});
@@ -195,7 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (gameStateData.get("mission")["0"].duration) {
 			gameStateData.get("mission")["0"].duration -= 1;
 		} else if (gameStateData.get("mission")["0"].duration == 0) {
-			const slotToUnfreeze = getItem(slots, "0");
+			const slotToUnfreeze = getItem(dropableSlots, "0");
 			const regionToUnfreeze = getItem(regions, gameStateData.get("mission")["0"].location);
 
 			while (slotToUnfreeze.firstChild) {
@@ -213,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (gameStateData.get("mission")["1"].duration) {
 			gameStateData.get("mission")["1"].duration -= 1;
 		} else if (gameStateData.get("mission")["1"].duration == 0) {
-			const slotToUnfreeze = getItem(slots, "1");
+			const slotToUnfreeze = getItem(dropableSlots, "1");
 			const regionToUnfreeze = getItem(regions, gameStateData.get("mission")["1"].location);
 
 			while (slotToUnfreeze.firstChild) {
@@ -228,6 +234,19 @@ document.addEventListener("DOMContentLoaded", () => {
 			gameStateData.get("mission")["1"].duration = null;
 			gameStateData.get("mission")["1"].location = null;
 		}
+
+		// handles rest
+		restSlots.forEach((slot) => {
+			if (slot.classList.contains("frozen")) {
+				while (slot.firstChild) {
+					slot.lastChild.classList.remove("frozen");
+					troopPool.appendChild(slot.lastChild);
+				}
+
+				slot.classList.remove("frozen");
+				slot.classList.remove("occupied");
+			}
+		});
 
 		// handles resources
 		resourceData.get("ap").value = 5;
@@ -246,7 +265,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	resetButton.addEventListener("click", () => {
 		// Move all cards back to pool
-		slots.forEach(slot => {
+		dropableSlots.forEach(slot => {
+			if (slot == troopPool) {
+				return;
+			}
+
 			if (!slot.classList.contains("frozen")) {
 				while (slot.firstChild) {
 					slot.lastChild.classList.remove("frozen");
@@ -283,6 +306,19 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
+	restButtons.forEach(b => {
+		b.addEventListener("click", () => {
+			resourceData.get("ap").value -= 1;
+			const restId = b.getAttribute("data-num");
+			const slot = getItem(restSlots, restId);
+			slot.classList.toggle("frozen");
+			for (const child of slot.children) {
+				child.classList.toggle("frozen");
+			}
+			updateUI();
+		});
+	});
+
 	sendMission.addEventListener("click", () => {
 		missionDialog.close();
 
@@ -293,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		region.classList.toggle("frozen");
 		gameStateData.get("mission")[currentMission].location = selectedLocation;
 
-		const slot = getItem(slots, currentMission);
+		const slot = getItem(missionSlots, currentMission);
 		slot.classList.toggle("frozen");
 		for (const child of slot.children) {
 			child.classList.toggle("frozen");
@@ -438,7 +474,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			troopPool.appendChild(card);
 		});
 
-		slots.forEach(slot => {
+		dropableSlots.forEach(slot => {
 			slot.className = "slot";
 		});
 
@@ -453,7 +489,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	function updateUI() {
 		stateDisplay.textContent = `Weeks: ${gameStateData.get("week")}`;
 
-		slots.forEach((slot) => {
+		missionSlots.forEach((slot) => {
 			const missionId = slot.getAttribute("data-num");
 			if (slot.classList.contains("frozen")) {
 				const duration = gameStateData.get("mission")[missionId].duration;
@@ -466,7 +502,20 @@ document.addEventListener("DOMContentLoaded", () => {
 					getItem(missionButtons, missionId).disabled = false;
 				}
 			}
+		});
 
+		restSlots.forEach((slot) => {
+			const restId = slot.getAttribute("data-num");
+			if (slot.classList.contains("frozen")) {
+				slot.setAttribute("data-frozen-text", "Rest until next week");
+				getItem(restButtons, restId).disabled = true;
+			} else {
+				if (resourceData.get("ap").value <= 0 || !slot.classList.contains("occupied")) {
+					getItem(restButtons, restId).disabled = true;
+				} else {
+					getItem(restButtons, restId).disabled = false;
+				}
+			}
 		});
 
 		resourceData.forEach((v, _) => {
