@@ -198,49 +198,42 @@ document.addEventListener("DOMContentLoaded", () => {
 		gameStateData.set("week", gameStateData.get("week") + 1);
 
 		// handles missions
-		if (gameStateData.get("mission")["0"].duration) {
-			gameStateData.get("mission")["0"].duration -= 1;
-		} else if (gameStateData.get("mission")["0"].duration == 0) {
-			const slotToUnfreeze = getItem(dropableSlots, "0");
-			const regionToUnfreeze = getItem(regions, gameStateData.get("mission")["0"].location);
+		missionSlots.forEach((slot) => {
+			const missionId = slot.getAttribute("data-num");
+			if (gameStateData.get("mission")[missionId].duration) {
+				gameStateData.get("mission")[missionId].duration -= 1;
+			} else if (gameStateData.get("mission")[missionId].duration == 0) {
+				const slotToUnfreeze = getItem(dropableSlots, missionId);
+				const regionToUnfreeze = getItem(regions, gameStateData.get("mission")[missionId].location);
 
-			while (slotToUnfreeze.firstChild) {
-				slotToUnfreeze.lastChild.classList.remove("frozen");
-				troopPool.appendChild(slotToUnfreeze.lastChild);
+				while (slotToUnfreeze.firstChild) {
+					const child = slotToUnfreeze.lastChild;
+					const childId = child.getAttribute("data-num");
+					troopData.get(childId).health -= 1;
+					child.classList.remove("frozen");
+					troopPool.appendChild(child);
+				}
+
+				slotToUnfreeze.classList.remove("frozen");
+				slotToUnfreeze.classList.remove("occupied");
+				regionToUnfreeze.classList.remove("frozen");
+
+				gameStateData.get("mission")[missionId].duration = null;
+				gameStateData.get("mission")[missionId].location = null;
 			}
-
-			slotToUnfreeze.classList.remove("frozen");
-			slotToUnfreeze.classList.remove("occupied");
-			regionToUnfreeze.classList.remove("frozen");
-
-			gameStateData.get("mission")["0"].duration = null;
-			gameStateData.get("mission")["0"].location = null;
-		}
-		if (gameStateData.get("mission")["1"].duration) {
-			gameStateData.get("mission")["1"].duration -= 1;
-		} else if (gameStateData.get("mission")["1"].duration == 0) {
-			const slotToUnfreeze = getItem(dropableSlots, "1");
-			const regionToUnfreeze = getItem(regions, gameStateData.get("mission")["1"].location);
-
-			while (slotToUnfreeze.firstChild) {
-				slotToUnfreeze.lastChild.classList.remove("frozen");
-				troopPool.appendChild(slotToUnfreeze.lastChild);
-			}
-
-			slotToUnfreeze.classList.remove("frozen");
-			slotToUnfreeze.classList.remove("occupied");
-			regionToUnfreeze.classList.remove("frozen");
-
-			gameStateData.get("mission")["1"].duration = null;
-			gameStateData.get("mission")["1"].location = null;
-		}
+		});
 
 		// handles rest
 		restSlots.forEach((slot) => {
 			if (slot.classList.contains("frozen")) {
 				while (slot.firstChild) {
-					slot.lastChild.classList.remove("frozen");
-					troopPool.appendChild(slot.lastChild);
+					const child = slot.lastChild;
+					const childId = child.getAttribute("data-num");
+					if (troopData.get(childId).health < troopData.get(childId).max_health) {
+						troopData.get(childId).health += 1;
+					}
+					child.classList.remove("frozen");
+					troopPool.appendChild(child);
 				}
 
 				slot.classList.remove("frozen");
@@ -446,7 +439,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			// clear residual classes
 			card.className = "troop-card";
 
-			const id = card.getAttribute("data-id");
+			const id = card.getAttribute("data-num");
 			const troop = troopData.get(id);
 
 			// create portrait
@@ -459,13 +452,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			// create health indicator
 			const healthIndicator = document.createElement("div");
 			healthIndicator.className = "health-indicator";
-			troop.health = troop.max_health;
-			for (let i = 0; i < troop.health; i++) {
-				const img = document.createElement("img");
-				img.src = "images/fb681.png";
-				img.draggable = false;
-				healthIndicator.appendChild(img);
-			}
+			troop.health = troop.max_health - 1;
 
 			card.appendChild(portrait);
 			card.appendChild(healthIndicator);
@@ -530,5 +517,26 @@ document.addEventListener("DOMContentLoaded", () => {
 			buyFoodButton.disabled = false;
 			buySuppliesButton.disabled = false;
 		}
+
+		troopCards.forEach((card) => {
+			const id = card.getAttribute("data-num");
+			const troop = troopData.get(id);
+			const healthIndicator = card.querySelector(".health-indicator")
+			while (healthIndicator.firstChild) {
+				healthIndicator.removeChild(healthIndicator.lastChild);
+			}
+			for (let i = 0; i < troop.health; i++) {
+				const img = document.createElement("img");
+				img.src = "images/fb681.png";
+				img.draggable = false;
+				healthIndicator.appendChild(img);
+			}
+			for (let i = troop.health; i < troop.max_health; i++) {
+				const img = document.createElement("img");
+				img.src = "images/fb681_altered.png";
+				img.draggable = false;
+				healthIndicator.appendChild(img);
+			}
+		});
 	}
 });
