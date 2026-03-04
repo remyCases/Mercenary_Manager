@@ -39,11 +39,13 @@ document.addEventListener("DOMContentLoaded", () => {
 	const tooltip = document.getElementById("tooltip");
 	const tooltiptext = document.getElementById("tooltiptext");
 
+	// description of missions
+	const missionDescription = document.getElementById("missionDescription");
+
 	// supplies for missions
 	const suppliesAmount = document.getElementById("suppliesAmount");
 	const suppliesUp = document.getElementById("suppliesUp");
 	const suppliesDown = document.getElementById("suppliesDown");
-
 
 	// gameover modal
 	const gameOverDialog = document.getElementById("gameOverDialog");
@@ -328,7 +330,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			child.classList.toggle("frozen");
 		}
 
-
 		resourceData.get("ap").value -= 1;
 
 		updateUI();
@@ -340,6 +341,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		sendMission.disabled = true;
 		currentMission = null;
 		missionDialog.close();
+
+		updateUI();
 	});
 
 	regions.forEach(region => {
@@ -347,13 +350,16 @@ document.addEventListener("DOMContentLoaded", () => {
 			regions.forEach(r => r.classList.remove("selected"));
 			region.classList.add("selected");
 			selectedLocation = region.getAttribute("data-num");
+			const location = regionData.get(selectedLocation);
+
+			missionDescription.innerHTML = `Going to <span class="city-name">${location.name}</span>, they are expected to reach destination in <span class="weeks-info">${location.duration} weeks</span>.<br>`;
 			sendMission.disabled = false;
 		});
 
 		region.addEventListener("mouseenter", () => {
 			const id = region.getAttribute("data-num");
 			const location = regionData.get(id);
-			tooltiptext.textContent = `${location.name}\r\ntravel time: ${location.duration} weeks`;
+			tooltiptext.textContent = `${location.name}`;
 
 			// Position tooltip at circle center
 			tooltip.style.display = "block";
@@ -538,5 +544,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				healthIndicator.appendChild(img);
 			}
 		});
+
+		missionDescription.textContent = "";
 	}
 });

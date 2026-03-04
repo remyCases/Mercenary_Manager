@@ -163,6 +163,7 @@ button[disabled]{
 }
 
 .tooltiptext {
+	white-space: pre-line;
     background: #333;
     color: white;
     padding: 5px 10px;
@@ -242,4 +243,12 @@ dialog::backdrop {
     align-items: center;
     width: 100%;
     height: 100%;
+}
+
+.city-name {
+	font-weight:bold;
+}
+
+.weeks-info {
+	font-weight:bold;
 }
