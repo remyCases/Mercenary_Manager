@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	let draggedElement = null;
 	let originalParent = null;
 	let currentMission = null;
+	let currentParty = new Array();
 	let selectedLocation = null;
 
 	// elements on main screen
@@ -202,9 +203,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		// handles missions
 		missionSlots.forEach((slot) => {
 			const missionId = slot.getAttribute("data-num");
-			if (gameStateData.get("mission")[missionId].duration) {
-				gameStateData.get("mission")[missionId].duration -= 1;
-			} else if (gameStateData.get("mission")[missionId].duration == 0) {
+			if (gameStateData.get("mission")[missionId].travelDuration) {
+				gameStateData.get("mission")[missionId].travelDuration -= 1;
+			} else if (gameStateData.get("mission")[missionId].travelDuration == 0) {
 				const slotToUnfreeze = getItem(dropableSlots, missionId);
 				const regionToUnfreeze = getItem(regions, gameStateData.get("mission")[missionId].location);
 
@@ -220,8 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				slotToUnfreeze.classList.remove("occupied");
 				regionToUnfreeze.classList.remove("frozen");
 
-				gameStateData.get("mission")[missionId].duration = null;
-				gameStateData.get("mission")[missionId].location = null;
+				gameStateData.get("mission")[missionId] = { travelDuration: null, location: null, doneEfficiency: 0, };
 			}
 		});
 
@@ -298,6 +298,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		b.addEventListener("click", () => {
 			missionDialog.showModal();
 			currentMission = b.getAttribute("data-num");
+			const missionSlot = getItem(missionSlots, currentMission);
+			currentParty = Array.from(missionSlot.querySelectorAll(".troop-card")).map((card) => card.getAttribute("data-num"));
 		});
 	});
 
@@ -306,9 +308,9 @@ document.addEventListener("DOMContentLoaded", () => {
 			resourceData.get("ap").value -= 1;
 			const restId = b.getAttribute("data-num");
 			const slot = getItem(restSlots, restId);
-			slot.classList.toggle("frozen");
+			slot.classList.add("frozen");
 			for (const child of slot.children) {
-				child.classList.toggle("frozen");
+				child.classList.add("frozen");
 			}
 			updateUI();
 		});
@@ -317,17 +319,17 @@ document.addEventListener("DOMContentLoaded", () => {
 	sendMission.addEventListener("click", () => {
 		missionDialog.close();
 
-		const duration = regionData.get(selectedLocation).duration;
-		gameStateData.get("mission")[currentMission].duration = duration;
+		const travelDuration = regionData.get(selectedLocation).travelDuration;
+		gameStateData.get("mission")[currentMission].travelDuration = travelDuration;
 
 		const region = getItem(regions, selectedLocation);
-		region.classList.toggle("frozen");
+		region.classList.add("frozen");
 		gameStateData.get("mission")[currentMission].location = selectedLocation;
 
 		const slot = getItem(missionSlots, currentMission);
-		slot.classList.toggle("frozen");
+		slot.classList.add("frozen");
 		for (const child of slot.children) {
-			child.classList.toggle("frozen");
+			child.classList.add("frozen");
 		}
 
 		resourceData.get("ap").value -= 1;
@@ -352,7 +354,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			selectedLocation = region.getAttribute("data-num");
 			const location = regionData.get(selectedLocation);
 
-			missionDescription.innerHTML = `Going to <span class="city-name">${location.name}</span>, they are expected to reach destination in <span class="weeks-info">${location.duration} weeks</span>.<br>`;
+			const partyNames = currentParty.map((id) => troopData.get(id).name);
+			const partyEfficiency = currentParty.reduce((acc, id) => acc + troopData.get(id).efficiency, 0);
+			const estimatedWeeksWork = Math.ceil(location.efficiency_needed / partyEfficiency);
+			missionDescription.innerHTML = `${partyNames} are going to <span class="city-name">${location.name}</span>, they are expected to reach destination in <span class="weeks-info">${location.travelDuration} weeks</span>.<br>They will need <span class="weeks-info">${estimatedWeeksWork} weeks</span> to finish this contract`;
+
 			sendMission.disabled = false;
 		});
 
@@ -413,20 +419,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		gameStateData.set("week", 1);
 		gameStateData.set("mission", {
-			0: { duration: null, location: null },
-			1: { duration: null, location: null }
+			0: { travelDuration: null, location: null, doneEfficiency: 0, },
+			1: { travelDuration: null, location: null, doneEfficiency: 0, }
 		});
 
-		regionData.set("A", { name: "City A", distance: "250km", duration: 1 });
-		regionData.set("B", { name: "City B", distance: "300km", duration: 2 });
-		regionData.set("C", { name: "City C", distance: "350km", duration: 2 });
+		regionData.set("A", { name: "City A", distance: "250km", travelDuration: 1, efficiency_needed: 10 });
+		regionData.set("B", { name: "City B", distance: "300km", travelDuration: 2, efficiency_needed: 20 });
+		regionData.set("C", { name: "City C", distance: "350km", travelDuration: 2, efficiency_needed: 30 });
 
-		troopData.set("A", { name: "Anae", png: "images/MageLady.png", health: 0, max_health: 2, morale: 5 });
-		troopData.set("B", { name: "Ekor", png: "images/MageMan.png", health: 0, max_health: 2, morale: 5 });
-		troopData.set("C", { name: "Krisa", png: "images/PalLady.png", health: 0, max_health: 3, morale: 5 });
-		troopData.set("D", { name: "Istriac", png: "images/PalMan.png", health: 0, max_health: 3, morale: 5 });
-		troopData.set("E", { name: "Hjop", png: "images/RangerLady.png", health: 0, max_health: 3, morale: 5 });
-		troopData.set("F", { name: "Frivkyl", png: "images/RangerMan.png", health: 0, max_health: 2, morale: 5 });
+		troopData.set("A", { name: "Anae", png: "images/MageLady.png", health: 0, max_health: 2, efficiency: 3 });
+		troopData.set("B", { name: "Ekor", png: "images/MageMan.png", health: 0, max_health: 2, efficiency: 3 });
+		troopData.set("C", { name: "Krisa", png: "images/PalLady.png", health: 0, max_health: 3, efficiency: 2 });
+		troopData.set("D", { name: "Istriac", png: "images/PalMan.png", health: 0, max_health: 3, efficiency: 2 });
+		troopData.set("E", { name: "Hjop", png: "images/RangerLady.png", health: 0, max_health: 3, efficiency: 2 });
+		troopData.set("F", { name: "Frivkyl", png: "images/RangerMan.png", health: 0, max_health: 2, efficiency: 3 });
 
 		resourceData.set("ap", { id: "ap", value: 5 });
 		resourceData.set("gold", { id: "gold", value: 100 });
@@ -485,8 +491,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		missionSlots.forEach((slot) => {
 			const missionId = slot.getAttribute("data-num");
 			if (slot.classList.contains("frozen")) {
-				const duration = gameStateData.get("mission")[missionId].duration;
-				slot.setAttribute("data-frozen-text", `ONGOING MISSION\r\n${duration} weeks remaining`);
+				const travelDuration = gameStateData.get("mission")[missionId].travelDuration;
+				slot.setAttribute("data-frozen-text", `TRAVEL TO MISSION\r\n${travelDuration} weeks remaining`);
 				getItem(missionButtons, missionId).disabled = true;
 			} else {
 				if (resourceData.get("ap").value <= 0 || !slot.classList.contains("occupied")) {

@@ -90,35 +90,35 @@
     </div>
 
 	<dialog id="missionDialog">
-			<div class="hbox">
-				<div style="position: relative; display: inline-block;">
-					<svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-						<circle cx="200" cy="189" r="15" class="region" data-num="A"/>
-						<circle cx="530" cy="85" r="15" class="region" data-num="B"/>
-						<circle cx="625" cy="300" r="15" class="region" data-num="C"/>
-					</svg>
+		<div class="hbox">
+			<div style="position: relative; display: inline-block;">
+				<svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+					<circle cx="200" cy="189" r="15" class="region" data-num="A"/>
+					<circle cx="530" cy="85" r="15" class="region" data-num="B"/>
+					<circle cx="625" cy="300" r="15" class="region" data-num="C"/>
+				</svg>
 
-					<img src="images/map.png" draggable="false" style="width: 818px;"/>
-					<div style="position: absolute; top: 0; left: 0; height: 32px; display: flex; align-items: center; gap: 5px;">
-						<img src="images/fb671.png" draggable="false"/>
-						<input type="text" id="suppliesAmount" required minlength="1" maxlength="4" size="5" draggable="false"/>
-						/ 
-						<div style="display: flex; flex-direction: column; gap: 0;">
-							<button id="suppliesUp" style="height: 16px; padding: 0; margin: 0; border: none; background: none;"><img src="images/fa647.png" draggable="false"/></button>	
-							<button id="suppliesDown" style="height: 16px; padding: 0; margin: 0; border: none; background: none;"><img src="images/fa648.png" draggable="false"/></button>	
-						</div>
-					</div>
-					
-					<div class="tooltip" id="tooltip">
-						<span class="tooltiptext" id="tooltiptext">Some tooltip text</span>
+				<img src="images/map.png" draggable="false" style="width: 818px;"/>
+				<div style="position: absolute; top: 0; left: 0; height: 32px; display: flex; align-items: center; gap: 5px;">
+					<img src="images/fb671.png" draggable="false"/>
+					<input type="text" id="suppliesAmount" required minlength="1" maxlength="4" size="5" draggable="false"/>
+					/ 
+					<div style="display: flex; flex-direction: column; gap: 0;">
+						<button id="suppliesUp" style="height: 16px; padding: 0; margin: 0; border: none; background: none;"><img src="images/fa647.png" draggable="false"/></button>	
+						<button id="suppliesDown" style="height: 16px; padding: 0; margin: 0; border: none; background: none;"><img src="images/fa648.png" draggable="false"/></button>	
 					</div>
 				</div>
-				<p id=missionDescription>This is a description</p>
-				<div class="vbox">
-					<button id="sendMission" disabled="true">Send mission</button>
-					<button id="cancelMission">Cancel mission</button>
+				
+				<div class="tooltip" id="tooltip">
+					<span class="tooltiptext" id="tooltiptext">Some tooltip text</span>
 				</div>
 			</div>
+			<p id=missionDescription>This is a description</p>
+			<div class="vbox">
+				<button id="sendMission" disabled="true">Send mission</button>
+				<button id="cancelMission">Cancel mission</button>
+			</div>
+		</div>
 	</dialog>
 
 	<dialog id="gameOverDialog">
