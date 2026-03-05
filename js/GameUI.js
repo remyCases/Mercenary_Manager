@@ -73,7 +73,6 @@ const GameUI = {
 
 	// gameover modal
 	endMissionDialog: document.getElementById("endMissionDialog"),
-	messageEndMission: document.getElementById("messageEndMission"),
 	continueButton: document.getElementById("continue"),
 
 	// buyer buttons

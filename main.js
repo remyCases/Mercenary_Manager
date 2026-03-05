@@ -82,8 +82,17 @@ document.addEventListener("DOMContentLoaded", () => {
 						GameUI.resourceData.get("gold").value += mission.reward;
 					}
 
-					GameUI.messageEndMission.textContent = `Mission to ${location.name} ${win ? `was successful.\nYou win ${mission.reward} golds` : "failed."}`;
-					GameUI.endMissionDialog.showModal();
+					const clone = GameUI.endMissionDialog.cloneNode(true);
+					clone.id = `eventModal-${missionId}`;
+					clone.className = "mission-resolve-dialog";
+					clone.querySelector(".end-mission-message").textContent = `Mission to ${location.name} ${win ? `was successful.\nYou win ${mission.reward} golds` : "failed."}`;
+
+					clone.querySelector(".end-mission-button").addEventListener("click", () => {
+						clone.remove();
+					});
+
+					document.body.appendChild(clone);
+					clone.showModal();
 					GameUI.gameStateData.get("mission")[missionId] = resetMission();
 				} else {
 					mission.reward = Math.floor(mission.reward * 0.90);

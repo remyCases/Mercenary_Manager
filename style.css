@@ -204,7 +204,7 @@ button[disabled]{
     margin-top: -150px;
 }
 
-#missionResolveDialog {
+.mission-resolve-dialog {
 	position: absolute;
 	left: 50%;
 	top: 50%;
