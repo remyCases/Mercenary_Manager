@@ -1,6 +1,6 @@
 import { getDistance, SNAP_DISTANCE, dropLogic } from "./utils.js";
 
-export function createTroopCard(GameUI, troopId, draggable) {
+export function createTroopCard(GameUI, troopId, draggable, resetHealth = true) {
 
 	const troopInfo = GameUI.troopData.get(troopId);
 
@@ -19,7 +19,10 @@ export function createTroopCard(GameUI, troopId, draggable) {
 	// create health indicator
 	const healthIndicator = document.createElement("div");
 	healthIndicator.className = "health-indicator";
-	troopInfo.health = troopInfo.max_health - 1;
+
+	if (resetHealth) {
+		troopInfo.health = troopInfo.max_health - 1;
+	}
 
 	card.appendChild(portrait);
 	card.appendChild(healthIndicator);

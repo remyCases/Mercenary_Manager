@@ -22,20 +22,19 @@
 				<div class="hbox">
 					<div class="vbox">
 						<img src="images/fb97.png">
-						<p id="ap"></p>
+						<p class="res-ap"></p>
 					</div>
-
 					<div class="vbox">
 						<img src="images/fb171.png">
-						<p id="gold"></p>
+						<p class="res-gold"></p>
 					</div>
 					<div class="vbox">
 						<img src="images/fb441.png">
-						<p id="food"></p>
+						<p class="res-food"></p>
 					</div>
 					<div class="vbox">
 						<img src="images/fb671.png">
-						<p id="supplies"></p>
+						<p class="res-supplies"></p>
 					</div>
 				</div>
 				<div class="hbox">
@@ -59,11 +58,17 @@
 					<div class="vbox">
 						<div class="hbox">
 							<button class="mission-button" data-num="0">Prepare Mission</button>
-							<div class="mission-slot slot" data-num="0"></div>
+							<div class="mission-slot slot" data-num="0">
+								<div class="frozen-overlay-text" data-num="0"></div>
+								<button class="overlay-button" data-num="0">Give orders</button>
+							</div>
 						</div>
 						<div class="hbox">
 							<button class="mission-button" data-num="1">Prepare Mission</button>
-							<div class="mission-slot slot" data-num="1"></div>
+							<div class="mission-slot slot" data-num="1">
+								<div class="frozen-overlay-text" data-num="1"></div>
+								<button class="overlay-button" data-num="1">Give orders</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -92,16 +97,7 @@
 				</svg>
 
 				<img src="images/map.png" draggable="false" style="width: 818px;"/>
-				<div style="position: absolute; top: 0; left: 0; height: 32px; display: flex; align-items: center; gap: 5px;">
-					<img src="images/fb671.png" draggable="false"/>
-					<input type="text" id="suppliesAmount" required minlength="1" maxlength="4" size="5" draggable="false"/>
-					/ 
-					<div style="display: flex; flex-direction: column; gap: 0;">
-						<button id="suppliesUp" style="height: 16px; padding: 0; margin: 0; border: none; background: none;"><img src="images/fa647.png" draggable="false"/></button>	
-						<button id="suppliesDown" style="height: 16px; padding: 0; margin: 0; border: none; background: none;"><img src="images/fa648.png" draggable="false"/></button>	
-					</div>
-				</div>
-				
+								
 				<div class="tooltip" id="regionTooltip">
 					<span class="tooltiptext" id="regionTooltiptext">Some tooltip text</span>
 				</div>
@@ -124,6 +120,17 @@
 	<dialog id="missionResolveDialog">
 		<div class="hbox">
 			<p>Mission overview</p>
+			<div class="hbox">
+				<div class="vbox">
+					<img src="images/fb97.png">
+					<p class="res-ap"></p>
+				</div>
+				<div class="vbox">
+					<img src="images/fb671.png">
+					<p class="res-supplies"></p>
+				</div>
+			</div>
+
 			<div class="hbox" id="missionTroopBox"></div>
 			<div id="strategyMenu" class="strategy-menu">
         		<div class="strategy-option" data-num="A"></div>
@@ -135,8 +142,10 @@
 				<p>Completion: </p>
 				<div class="progress-container">
     				<div class="progress-bar" id="progressBar"></div>
+    				<div class="progress-bar-prev" id="progressBarPrev"></div>
 				</div>
 			</div>
+			<p id="rewardInfo">Reward: </p>
 			<div class="vbox">
 				<button id="confirmMissionResolve">Confirm</button>
 				<button id="cancelMissionResolve">Cancel</button>
