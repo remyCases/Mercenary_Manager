@@ -75,11 +75,13 @@ document.addEventListener("DOMContentLoaded", () => {
 					slotToUnfreeze.classList.remove("occupied");
 					regionToUnfreeze.classList.remove("frozen");
 
-					GameUI.gameStateData.get("mission")[missionId] = resetMission();
-
 					if (sumHealth > 0) {
 						GameUI.resourceData.get("gold").value += mission.reward;
 					}
+
+					GameUI.messageEndMission.textContent = `Mission to ${location.name} ${sumHealth > 0 ? `was successful.\nYou win ${mission.reward} golds` : "failed."}`;
+					GameUI.endMissionDialog.showModal();
+					GameUI.gameStateData.get("mission")[missionId] = resetMission();
 				} else {
 					mission.reward = Math.floor(mission.reward * 0.90);
 				}
@@ -255,6 +257,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		updateUI(GameUI);
 	});
 
+	GameUI.continueButton.addEventListener("click", () => {
+		endMissionDialog.close();
+		updateUI(GameUI);
+	});
+
 	GameUI.giveOrderButtons.forEach((b) => {
 		b.addEventListener("click", () => {
 			GameUI.currentMission = b.getAttribute("data-num");
@@ -292,6 +299,28 @@ document.addEventListener("DOMContentLoaded", () => {
 				lostHP.appendChild(textLostHP);
 				lostHP.appendChild(imgLostHP);
 
+				const consumedAP = document.createElement("div");
+				consumedAP.className = "consumed-ap";
+
+				const textConsumedAP = document.createElement("p");
+				textConsumedAP.textContent = "-1";
+				const imgConsumedAP = document.createElement("img");
+				imgConsumedAP.src = "images/fb97.png";
+
+				consumedAP.appendChild(textConsumedAP);
+				consumedAP.appendChild(imgConsumedAP);
+
+				const consumedSupplies = document.createElement("div");
+				consumedSupplies.className = "consumed-supplies";
+
+				const textConsumedSupplies = document.createElement("p");
+				textConsumedSupplies.textContent = "-1";
+				const imgConsumedSupplies = document.createElement("img");
+				imgConsumedSupplies.src = "images/fb671.png";
+
+				consumedSupplies.appendChild(textConsumedSupplies);
+				consumedSupplies.appendChild(imgConsumedSupplies);
+
 				const container = document.createElement("div");
 				container.classList.add("stat-info");
 				container.classList.add("vbox");
@@ -299,6 +328,8 @@ document.addEventListener("DOMContentLoaded", () => {
 				container.appendChild(strategyBox);
 				container.appendChild(stat);
 				container.appendChild(lostHP);
+				container.appendChild(consumedAP);
+				container.appendChild(consumedSupplies);
 				GameUI.missionTroopBox.appendChild(container);
 
 				updateUI(GameUI);

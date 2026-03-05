@@ -194,6 +194,16 @@ button[disabled]{
     margin-top: -150px;
 }
 
+#endMissionDialog {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 300px;
+    margin-left: -150px;
+    height: 300px;
+    margin-top: -150px;
+}
+
 #missionResolveDialog {
 	position: absolute;
 	left: 50%;

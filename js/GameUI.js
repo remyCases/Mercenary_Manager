@@ -71,6 +71,11 @@ const GameUI = {
 	gameOverDialog: document.getElementById("gameOverDialog"),
 	restartButton: document.getElementById("restart"),
 
+	// gameover modal
+	endMissionDialog: document.getElementById("endMissionDialog"),
+	messageEndMission: document.getElementById("messageEndMission"),
+	continueButton: document.getElementById("continue"),
+
 	// buyer buttons
 	buyFoodButton: document.getElementById("buyFood"),
 	buySuppliesButton: document.getElementById("buySupplies"),
@@ -330,13 +335,17 @@ export function updateUI(GameUI, newTurn = false) {
 		const location = GameUI.regionData.get(mission.location);
 
 		if (location) {
-			GameUI.missionTroopBox.querySelectorAll(".stat-info-text").forEach((stat) => {
+			GameUI.missionTroopBox.querySelectorAll(".stat-info").forEach((box) => {
 
-				const troopId = stat.getAttribute("data-num");
+				const text = box.querySelector(".stat-info-text");
+				const ap = box.querySelector(".consumed-ap");
+				const supplies = box.querySelector(".consumed-supplies");
+
+				const troopId = text.getAttribute("data-num");
 				const troop = GameUI.troopData.get(troopId);
 
 				if (troop.health == 0) {
-					stat.textContent = "Cant fight";
+					text.textContent = "Cant fight";
 					return;
 				}
 
@@ -349,7 +358,21 @@ export function updateUI(GameUI, newTurn = false) {
 				const modCautiousness = strategy.modifiers.find((e) => e.type === "cautiousness");
 				const totalCautiousness = troop.cautiousness + (modCautiousness ? modCautiousness.value : 0);
 
-				stat.textContent = `Efficiency: ${totalEfficiency}\nCautiousness: ${totalCautiousness}`;
+				text.textContent = `Efficiency: ${totalEfficiency}\nCautiousness: ${totalCautiousness}`;
+
+				const costAp = strategy.cost.find((e) => e.type === "ap");
+				if (costAp && costAp.value > 0) {
+					ap.style.display = "block";
+				} else {
+					ap.style.display = "none";
+				}
+
+				const costSupplies = strategy.cost.find((e) => e.type === "supplies");
+				if (costSupplies && costSupplies.value > 0) {
+					supplies.style.display = "block";
+				} else {
+					supplies.style.display = "none";
+				}
 			});
 
 			GameUI.missionTroopBox.querySelectorAll(".lost-hp-display").forEach((lost) => {
