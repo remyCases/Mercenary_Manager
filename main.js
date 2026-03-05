@@ -351,6 +351,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	GameUI.confirmMissionResolve.addEventListener("click", () => {
 		getItem(GameUI.giveOrderButtons, GameUI.currentMission).disabled = true;
+
+		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission]
+		GameUI.resourceData.get("ap").value -= mission.costAp;
+		GameUI.resourceData.get("supplies").value -= mission.costSupplies;
 		GameUI.currentMission = null;
 		GameUI.missionResolveDialog.close();
 
@@ -403,6 +407,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
 		let partyEfficiency = mission.prevEfficiency;
 		let partyCautiousness = 0;
+		let partyCostAp = 0;
+		let partyCostSupplies = 0;
 
 		mission.party.forEach((stratId, troopId) => {
 			const troop = GameUI.troopData.get(troopId);
@@ -416,11 +422,21 @@ document.addEventListener("DOMContentLoaded", () => {
 			const modCautiousness = strategy.modifiers.find((e) => e.type === "cautiousness");
 			const totalCautiousness = troop.cautiousness + (modCautiousness ? modCautiousness.value : 0);
 
+			const costAp = strategy.cost.find((e) => e.type === "ap");
+			const modAp = costAp ? costAp.value : 0;
+
+			const costSupplies = strategy.cost.find((e) => e.type === "supplies");
+			const modSupplies = costSupplies ? costSupplies.value : 0;
+
 			partyEfficiency += totalEfficiency;
 			partyCautiousness += totalCautiousness;
+			partyCostAp += modAp;
+			partyCostSupplies += modSupplies;
 		});
 		mission.efficiency = partyEfficiency;
 		mission.cautiousness = partyCautiousness;
+		mission.costAp = partyCostAp;
+		mission.costSupplies = partyCostSupplies;
 	}
 
 	function getPartyFromSlot(slotId) {
