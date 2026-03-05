@@ -1,6 +1,6 @@
 export const SNAP_DISTANCE = 200; // pixels
 
-export function findClosestSlot(x, y, slots) {
+function findClosestSlot(x, y, slots) {
 	let closest = null;
 	let minDistance = Infinity;
 
@@ -26,7 +26,7 @@ export function getDistance(x, y, slot) {
 	return Math.sqrt(dx * dx + dy * dy);
 }
 
-export function isWithinSnapDistance(x, y, slot) {
+function isWithinSnapDistance(x, y, slot) {
 	return getDistance(x, y, slot) < SNAP_DISTANCE;
 }
 
@@ -34,3 +34,36 @@ export function getItem(items, val) {
 	return Array.from(items).find((item) => item.getAttribute("data-num") === val)
 }
 
+export function dropLogic(GameUI, X, Y) {
+	if (!GameUI.draggedElement) return;
+
+	GameUI.draggedElement.classList.remove("dragging");
+
+	const closestSlot = findClosestSlot(X, Y, GameUI.dropableSlots);
+	if (closestSlot && isWithinSnapDistance(X, Y, closestSlot)) {
+
+		const existingCards = closestSlot.querySelectorAll(".troop-card");
+
+		if (Array.from(existingCards).find(node => node.isEqualNode(GameUI.draggedElement))) {
+			return;
+		}
+		if (existingCards.length >= 4) {
+			GameUI.troopPool.appendChild(existingCards[0]);
+		}
+
+		const oldParent = GameUI.draggedElement.parentElement;
+		closestSlot.appendChild(GameUI.draggedElement);
+		closestSlot.classList.add("occupied");
+
+		if (oldParent && oldParent.querySelectorAll(".troop-card").length === 0) {
+			oldParent.classList.remove("occupied");
+		}
+	} else {
+		if (GameUI.originalParent && GameUI.originalParent !== GameUI.draggedElement.parentElement) {
+			GameUI.originalParent.appendChild(GameUI.draggedElement);
+		}
+	}
+
+	GameUI.dropableSlots.forEach(s => s.classList.remove("hover"));
+	GameUI.draggedElement = null;
+}

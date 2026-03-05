@@ -50,14 +50,7 @@
 		<div class="vbox">
 			<div class="hbox">
         		<h2 style="margin-bottom: 15px;">Troops</h2>
-				<div class="troop-pool" id="troopPool">
-					<div class="troop-card" draggable="true" data-num="A"></div>
-					<div class="troop-card" draggable="true" data-num="B"></div>
-					<div class="troop-card" draggable="true" data-num="C"></div>
-					<div class="troop-card" draggable="true" data-num="D"></div>
-					<div class="troop-card" draggable="true" data-num="E"></div>
-					<div class="troop-card" draggable="true" data-num="F"></div>
-				</div>
+				<div class="troop-pool" id="troopPool"></div>
 			</div>
 			
 			<div class="hbox">
@@ -66,11 +59,11 @@
 					<div class="vbox">
 						<div class="hbox">
 							<button class="mission-button" data-num="0">Prepare Mission</button>
-							<div class="mission-slot slot" data-num="0" data-frozen-text="ONGOING MISSION"></div>
+							<div class="mission-slot slot" data-num="0"></div>
 						</div>
 						<div class="hbox">
 							<button class="mission-button" data-num="1">Prepare Mission</button>
-							<div class="mission-slot slot" data-num="1" data-frozen-text="ONGOING MISSION"></div>
+							<div class="mission-slot slot" data-num="1"></div>
 						</div>
 					</div>
 				</div>
@@ -80,7 +73,7 @@
 					<div class="vbox">
 						<div class="hbox">
 							<button class="rest-button" data-num="0">Rest</button>
-							<div class="rest-slot slot" data-num="0" data-frozen-text="ONGOING MISSION"></div>
+							<div class="rest-slot slot" data-num="0"></div>
 						</div>
 					</div>
 				</div>
@@ -127,7 +120,26 @@
 			<button id="restart">Restart</button>
 		</div>
 	</dialog>
-
+	
+	<dialog id="missionResolveDialog">
+		<div class="hbox">
+			<p>Mission overview</p>
+			<div class="hbox" id="missionTroopBox"></div>
+			<div id="strategyMenu" class="strategy-menu">
+        		<div class="strategy-option" data-num="A"></div>
+        		<div class="strategy-option" data-num="B"></div>
+        		<div class="strategy-option" data-num="C"></div>
+        		<div class="strategy-option" data-num="D"></div>
+   			</div>
+			<div class="progress-container">
+    			<div class="progress-bar" id="progressBar"></div>
+			</div>
+			<div class="vbox">
+				<button id="confirmMissionResolve">Confirm</button>
+				<button id="cancelMissionResolve">Cancel</button>
+			</div>
+		</div>
+	</dialog>
 
     <script type="module" src="main.js"></script>
 </body>
