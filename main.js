@@ -109,16 +109,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		// handles resources
 		GameUI.resourceData.get("ap").value = 5;
 		const res = resolveAction(
-			"",
 			6,
 			GameUI.resourceData.get("gold").value,
 			GameUI.resourceData.get("food").value,
 			0,
-			GameUI.resourceData.get("supplies").value
 		);
-		GameUI.resourceData.get("gold").value = res[1];
-		GameUI.resourceData.get("food").value = res[2];
-		GameUI.resourceData.get("supplies").value = res[4];
+		GameUI.resourceData.get("gold").value = res[0];
+		GameUI.resourceData.get("food").value = res[1];
 
 		updateUI(GameUI, true);
 
@@ -332,7 +329,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				container.appendChild(consumedSupplies);
 				GameUI.missionTroopBox.appendChild(container);
 
-				updateUI(GameUI);
 			});
 
 			missionResolveDialog.showModal();
