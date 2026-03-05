@@ -235,21 +235,21 @@ document.addEventListener("DOMContentLoaded", () => {
 		region.addEventListener("mouseenter", () => {
 			const id = region.getAttribute("data-num");
 			const location = GameUI.regionData.get(id);
-			tooltiptext.textContent = `${location.name}`;
+			GameUI.regionTooltiptext.textContent = `${location.name}`;
 
 			// Position tooltip at circle center
-			tooltip.style.display = "block";
-			tooltip.style.left = region.getAttribute("cx") + "px";
-			tooltip.style.top = region.getAttribute("cy") + "px";
+			GameUI.regionTooltip.style.display = "block";
+			GameUI.regionTooltip.style.left = region.getAttribute("cx") + "px";
+			GameUI.regionTooltip.style.top = region.getAttribute("cy") + "px";
 		});
 
 		region.addEventListener("mouseleave", () => {
-			tooltip.style.display = "none";
+			GameUI.regionTooltip.style.display = "none";
 		});
 	});
 
 	GameUI.cancelMissionResolve.addEventListener("click", () => {
-		missionResolveDialog.close();
+		GameUI.missionResolveDialog.close();
 	});
 
 	GameUI.suppliesUp.addEventListener("click", (e) => {
@@ -285,10 +285,33 @@ document.addEventListener("DOMContentLoaded", () => {
 			const optionId = option.getAttribute("data-num");
 			GameUI.selectedStrategy.textContent = GameUI.strategyData.get(optionId).name;
 			GameUI.selectedStrategy.setAttribute("data-num", optionId);
-			strategyMenu.style.display = "none";
+			GameUI.strategyMenu.style.display = "none";
 
 			updateUI(GameUI);
 		});
+
+		option.addEventListener("mouseenter", (e) => {
+			const optionId = option.getAttribute("data-num");
+			const strategy = GameUI.strategyData.get(optionId);
+
+			let stringBuilder = "";
+			strategy.cost.forEach((c) => {
+				stringBuilder += `${c.type}: ${c.value}\n`;
+			});
+			GameUI.strategyTooltiptext.textContent = stringBuilder;
+
+			// Position tooltip on the element
+			const modalRect = GameUI.missionResolveDialog.getBoundingClientRect();
+			const rect = e.target.getBoundingClientRect();
+			GameUI.strategyTooltip.style.display = "block";
+			GameUI.strategyTooltip.style.left = rect.left - modalRect.left - 10 + "px";
+			GameUI.strategyTooltip.style.top = rect.top - modalRect.top - 10 + "px";
+		});
+
+		option.addEventListener("mouseleave", () => {
+			GameUI.strategyTooltip.style.display = "none";
+		});
+
 	});
 
 	document.addEventListener("click", () => {

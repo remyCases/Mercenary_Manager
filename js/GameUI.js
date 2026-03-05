@@ -8,7 +8,6 @@ const GameUI = {
 	troopData: new Map(),
 	resourceData: new Map(),
 	strategyData: new Map(),
-	localizationData: new Map(),
 
 	// globals
 	draggedElement: null,
@@ -38,8 +37,8 @@ const GameUI = {
 	regions: document.querySelectorAll(".region"),
 
 	// tooltip of missions
-	tooltip: document.getElementById("tooltip"),
-	tooltiptext: document.getElementById("tooltiptext"),
+	regionTooltip: document.getElementById("regionTooltip"),
+	regionTooltiptext: document.getElementById("regionTooltiptext"),
 
 	// description of missions
 	missionDescription: document.getElementById("missionDescription"),
@@ -52,6 +51,10 @@ const GameUI = {
 	progressBar: document.getElementById("progressBar"),
 	confirmMissionResolve: document.getElementById("confirmMissionResolve"),
 	cancelMissionResolve: document.getElementById("cancelMissionResolve"),
+
+	// tooltip of strategies
+	strategyTooltip: document.getElementById("strategyTooltip"),
+	strategyTooltiptext: document.getElementById("strategyTooltiptext"),
 
 	// supplies for missions
 	suppliesAmount: document.getElementById("suppliesAmount"),
@@ -143,31 +146,40 @@ export function start(GameUI) {
 	GameUI.resourceData.set("supplies", { id: "supplies", value: 10 });
 
 	GameUI.strategyData.set("A", {
-		name: "Default", modifiers: [
-			{ type: "efficiency", value: 0 },
-			{ type: "cautiousness", value: 0 }]
+		name: "Default", cost: [], modifiers: []
 	});
 	GameUI.strategyData.set("B", {
-		name: "Passive", modifiers: [
+		name: "Passive",
+		cost: [
+			{ type: "ap", value: 1 },
+		],
+		modifiers: [
 			{ type: "efficiency", value: -1 },
 			{ type: "cautiousness", value: +2 }
 		]
 	});
 	GameUI.strategyData.set("C", {
-		name: "Aggressive", modifiers: [
+		name: "Aggressive",
+		cost: [
+			{ type: "ap", value: 1 },
+			{ type: "supplies", value: 1 },
+		],
+		modifiers: [
 			{ type: "efficiency", value: +2 },
 			{ type: "cautiousness", value: -1 }
 		]
 	});
 	GameUI.strategyData.set("D", {
-		name: "Defensive", modifiers: [
+		name: "Defensive",
+		cost: [
+			{ type: "ap", value: 1 },
+			{ type: "supplies", value: 1 },
+		],
+		modifiers: [
 			{ type: "efficiency", value: +1 },
 			{ type: "cautiousness", value: +1 }
 		]
 	});
-
-	GameUI.localizationData.set("efficiency", "Efficiency");
-	GameUI.localizationData.set("cautiousness", "Cautiousness");
 
 	suppliesAmount.value = 0;
 	sendMission.disabled = true;
@@ -191,7 +203,6 @@ export function start(GameUI) {
 		region.setAttribute("class", "region");
 	});
 }
-
 
 export function updateUI(GameUI) {
 	GameUI.stateDisplay.textContent = `Weeks: ${GameUI.gameStateData.get("week")}`;
@@ -271,6 +282,7 @@ export function updateUI(GameUI) {
 	});
 
 	let partyEfficiency = 0;
+	let partyCautiousness = 0;
 	GameUI.missionTroopBox.querySelectorAll(".stat-info").forEach((stat) => {
 		const card = stat.querySelector(".troop-card");
 		const strategyBox = stat.querySelector(".strategy-box");
@@ -282,14 +294,16 @@ export function updateUI(GameUI) {
 		const strategyId = strategyBox.getAttribute("data-num");
 		const strategy = GameUI.strategyData.get(strategyId);
 
-		partyEfficiency += troop.efficiency + strategy.modifiers.find((e) => e.type === "efficiency").value;
+		const modEfficiency = strategy.modifiers.find((e) => e.type === "efficiency");
+		const totalEfficiency = troop.efficiency + (modEfficiency ? modEfficiency.value : 0);
 
-		let contentBuilder = "";
-		GameUI.localizationData.forEach((name, type) => {
-			const modifier = strategy.modifiers.find((e) => e.type === type);
-			contentBuilder += `${name}: ${troop[type] + (modifier ? modifier.value : 0)}\n`;
-		});
-		text.textContent = contentBuilder;
+		const modCautiousness = strategy.modifiers.find((e) => e.type === "cautiousness");
+		const totalCautiousness = troop.cautiousness + (modCautiousness ? modCautiousness.value : 0);
+
+		partyEfficiency += totalEfficiency;
+		partyCautiousness += totalCautiousness;
+
+		text.textContent = `Efficiency: ${totalEfficiency}\nCautiousness: ${totalCautiousness}`;
 	});
 
 	if (GameUI.selectedLocation) {

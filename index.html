@@ -102,8 +102,8 @@
 					</div>
 				</div>
 				
-				<div class="tooltip" id="tooltip">
-					<span class="tooltiptext" id="tooltiptext">Some tooltip text</span>
+				<div class="tooltip" id="regionTooltip">
+					<span class="tooltiptext" id="regionTooltiptext">Some tooltip text</span>
 				</div>
 			</div>
 			<p id=missionDescription>This is a description</p>
@@ -131,14 +131,21 @@
         		<div class="strategy-option" data-num="C"></div>
         		<div class="strategy-option" data-num="D"></div>
    			</div>
-			<div class="progress-container">
-    			<div class="progress-bar" id="progressBar"></div>
+			<div class="vbox">
+				<p>Completion: </p>
+				<div class="progress-container">
+    				<div class="progress-bar" id="progressBar"></div>
+				</div>
 			</div>
 			<div class="vbox">
 				<button id="confirmMissionResolve">Confirm</button>
 				<button id="cancelMissionResolve">Cancel</button>
 			</div>
 		</div>
+		<div class="tooltip" id="strategyTooltip">
+			<span class="tooltiptext" id="strategyTooltiptext">Some tooltip text</span>
+		</div>
+
 	</dialog>
 
     <script type="module" src="main.js"></script>
