@@ -156,36 +156,19 @@ button[disabled]{
     stroke-width: 2;
 }
 
-.tooltip {
-    position: absolute;
-    display: none;
-    pointer-events: none;
-}
-
-.tooltiptext {
-	white-space: pre-line;
-    background: #333;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    transform: translate(-50%, -120%);
-}
-
 .health-indicator {
 	display: inline-block;
 }
 
 #missionDialog {
-    position: fixed;
+    position: absolute;
     left: 50%;
     width: 828px;
     margin-left: -414px;
 }
 
 #gameOverDialog {
-    position: fixed;
+    position: absolute;
     left: 50%;
     top: 50%;
     width: 300px;
@@ -195,7 +178,7 @@ button[disabled]{
 }
 
 #endMissionDialog {
-    position: fixed;
+    position: absolute;
     left: 50%;
     top: 50%;
     width: 300px;
@@ -210,6 +193,10 @@ button[disabled]{
 	top: 50%;
 	min-width: 40%;
 	transform: translate(-50%, -50%);
+}
+
+dialog {
+    z-index: 1000;
 }
 
 dialog::backdrop {
@@ -272,11 +259,7 @@ dialog::backdrop {
     height: 100%;
 }
 
-.city-name {
-	font-weight:bold;
-}
-
-.weeks-info {
+.bold {
 	font-weight:bold;
 }
 
@@ -343,3 +326,33 @@ dialog::backdrop {
     width: 0%;
     z-index: 1;
 }
+
+.tooltip {
+    position: fixed;
+    background: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    display: none;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-width: 250px;
+	z-index: 1001;
+}
+
+.additional-tooltip {
+    position: absolute;
+    background: #333;
+	color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    display: none;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-width: 250px;
+}
+

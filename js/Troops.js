@@ -88,6 +88,7 @@ export function createMissionTroopDisplay(GameUI, card, troopId, stratId) {
 	strategyBox.className = "strategy-box";
 	strategyBox.textContent = GameUI.strategyData.get(stratId).name;
 	strategyBox.setAttribute("data-num", troopId);
+	strategyBox.setAttribute("data-description", "");
 	strategyBox.addEventListener("click", (e) => {
 		e.stopPropagation();
 		GameUI.strategyMenu.style.display = "block";
@@ -98,9 +99,9 @@ export function createMissionTroopDisplay(GameUI, card, troopId, stratId) {
 	stat.className = "stat-info-text";
 	stat.setAttribute("data-num", troopId);
 
-	const lostHP = createStatDisplay("lost-hp-display", "-1", "./images/fb681.png");
-	const consumedAp = createStatDisplay("consumed-ap", "-1", "images/fb97.png")
-	const consumedSupplies = createStatDisplay("consumed-supplies", "-1", "images/fb671.png");
+	const lostHP = createStatDisplay("lost-hp-display", "-1", "./images/fb681.png", "Will lost 1 health next week");
+	const consumedAp = createStatDisplay("consumed-ap", "-1", "images/fb97.png", "Cost 1 AP");
+	const consumedSupplies = createStatDisplay("consumed-supplies", "-1", "images/fb671.png", "Cost 1 supply");
 
 	const container = document.createElement("div");
 	container.classList.add("stat-info");
@@ -115,7 +116,7 @@ export function createMissionTroopDisplay(GameUI, card, troopId, stratId) {
 	return container
 }
 
-function createStatDisplay(className, text, imgSrc) {
+function createStatDisplay(className, text, imgSrc, desc) {
 	const div = document.createElement("div");
 	div.className = className;
 
@@ -124,6 +125,8 @@ function createStatDisplay(className, text, imgSrc) {
 
 	const img = document.createElement("img");
 	img.src = imgSrc;
+	img.setAttribute("data-description", desc)
+
 
 	div.appendChild(p);
 	div.appendChild(img);

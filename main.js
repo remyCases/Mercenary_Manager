@@ -247,9 +247,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		region.addEventListener("mouseenter", () => {
 			const id = region.getAttribute("data-num");
 			const location = GameUI.regionData.get(id);
-			GameUI.regionTooltiptext.textContent = `${location.name}`;
 
-			// Position tooltip at circle center
+			GameUI.regionTooltip.textContent = `${location.name}`;
 			GameUI.regionTooltip.style.display = "block";
 			GameUI.regionTooltip.style.left = region.getAttribute("cx") + "px";
 			GameUI.regionTooltip.style.top = region.getAttribute("cy") + "px";
@@ -336,11 +335,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			strategy.cost.forEach((c) => {
 				stringBuilder += `${c.type}: ${c.value}\n`;
 			});
-			GameUI.strategyTooltiptext.textContent = stringBuilder;
 
 			// Position tooltip on the element
 			const modalRect = GameUI.missionResolveDialog.getBoundingClientRect();
 			const rect = e.target.getBoundingClientRect();
+			GameUI.strategyTooltip.textContent = stringBuilder;
 			GameUI.strategyTooltip.style.display = "block";
 			GameUI.strategyTooltip.style.left = rect.left - modalRect.left - 10 + "px";
 			GameUI.strategyTooltip.style.top = rect.top - modalRect.top - 10 + "px";
@@ -355,6 +354,29 @@ document.addEventListener("DOMContentLoaded", () => {
 	document.addEventListener("click", () => {
 		GameUI.strategyMenu.style.display = "none";
 	});
+
+	document.addEventListener("mouseenter", (e) => {
+		const element = e.target;
+		const description = element.getAttribute("data-description");
+
+		if (!description) return;
+
+		GameUI.tooltip.textContent = description;
+		GameUI.tooltip.style.display = "block";
+
+		const rect = element.getBoundingClientRect();
+		GameUI.tooltip.style.left = (rect.left + rect.width / 2 - GameUI.tooltip.offsetWidth / 2) + "px";
+		GameUI.tooltip.style.top = (rect.top - GameUI.tooltip.offsetHeight - 5) + "px";
+	}, true);
+
+	document.addEventListener("mouseleave", (e) => {
+		const element = e.target;
+		const description = element.getAttribute("data-description");
+
+		if (description) {
+			GameUI.tooltip.style.display = "none";
+		}
+	}, true);
 
 	function getPartyFromSlot(slotId) {
 		const slot = getItem(GameUI.missionSlots, slotId);

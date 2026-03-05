@@ -11,36 +11,36 @@
         <h1>Mercenary Manager Prototype</h1>
 
         <div class="info">
-            <p><strong>Instructions:</strong> Drag troop cards into the 2 mission slots. Release near a slot to snap it in place, or it returns to the pool.</p>
-			<p id="state">Weeks: 1</p>
+            <p><strong>Instructions: </strong>Survive as a mercenary company for 100. Missions give you moey, use money to buy food and feed your troops. Beware, running out of food will end your game.</p>
+			<p id="state" data-description="Reach week 100 to win">Weeks: 1</p>
 			<div>
-				<button id="newWeekButton">Next Week</button>
-            	<button id="resetSlots">Reset</button>
+				<button id="newWeekButton" data-description="End the current week">Next Week</button>
+            	<button id="resetSlots" data-description="Return unused troops to the Barracks">Reset</button>
 			</div>
 
 			<div class="vbox">
 				<div class="hbox">
 					<div class="vbox">
-						<img src="images/fb97.png">
+						<img src="images/fb97.png" data-description="Action Point, used for improving your troops and various actions">
 						<p class="res-ap"></p>
 					</div>
 					<div class="vbox">
-						<img src="images/fb171.png">
+						<img src="images/fb171.png" data-description="Gold, used for buying food and supplies and for paying your troops">
 						<p class="res-gold"></p>
 					</div>
 					<div class="vbox">
-						<img src="images/fb441.png">
+						<img src="images/fb441.png" data-description="Food, used for feeding your troops, if you run out of food, you will loose">
 						<p class="res-food"></p>
 					</div>
 					<div class="vbox">
-						<img src="images/fb671.png">
+						<img src="images/fb671.png" data-description="Supplies, used to improve your troops during missions">
 						<p class="res-supplies"></p>
 					</div>
 				</div>
 				<div class="hbox">
-					<p>Merchant<br>Cost 1 AP and some golds</p>
-					<button id="buyFood">Buy Food</button>
-					<button id="buySupplies">Buy Supplies</button>
+					<p>Merchant</p>
+					<button id="buyFood" data-description="Cost 1 AP and 1 gold">Buy Food</button>
+					<button id="buySupplies" data-description="Cost 1 AP and 10 golds">Buy Supplies</button>
 				</div>
 			</div>
 
@@ -48,23 +48,23 @@
 
 		<div class="vbox">
 			<div class="hbox">
-        		<h2 style="margin-bottom: 15px;">Troops</h2>
+        		<h2 style="margin-bottom: 15px;" data-description="Available troops live here">Barracks</h2>
 				<div class="troop-pool" id="troopPool"></div>
 			</div>
 			
 			<div class="hbox">
 				<div class="hbox">
-					<h2 style="margin-bottom: 15px;">Missions Slot</h2>
+					<h2 style="margin-bottom: 15px;" data-description="Assign up to 4 troops to a mission to gain gold">Missions</h2>
 					<div class="vbox">
 						<div class="hbox">
-							<button class="mission-button" data-num="0">Prepare Mission</button>
+							<button class="mission-button" data-num="0" data-description="Troops in a mission are unavailable until the mission ends">Prepare Mission</button>
 							<div class="mission-slot slot" data-num="0">
 								<div class="frozen-overlay-text" data-num="0"></div>
 								<button class="overlay-button" data-num="0">Give orders</button>
 							</div>
 						</div>
 						<div class="hbox">
-							<button class="mission-button" data-num="1">Prepare Mission</button>
+							<button class="mission-button" data-num="1" data-description="Troops in a mission are unavailable until the mission ends">Prepare Mission</button>
 							<div class="mission-slot slot" data-num="1">
 								<div class="frozen-overlay-text" data-num="1"></div>
 								<button class="overlay-button" data-num="1">Give orders</button>
@@ -74,10 +74,10 @@
 				</div>
 
 				<div class="hbox">
-					<h2 style="margin-bottom: 15px;">Rest Slot</h2>
+					<h2 style="margin-bottom: 15px;" data-description="Assign up to 4 troops to rest to regain 1 health">Rest</h2>
 					<div class="vbox">
 						<div class="hbox">
-							<button class="rest-button" data-num="0">Rest</button>
+							<button class="rest-button" data-num="0" data-description="Resting troops will be unavailable until next week">Rest</button>
 							<div class="rest-slot slot" data-num="0"></div>
 						</div>
 					</div>
@@ -98,9 +98,7 @@
 
 				<img src="images/map.png" draggable="false" style="width: 818px;"/>
 								
-				<div class="tooltip" id="regionTooltip">
-					<span class="tooltiptext" id="regionTooltiptext">Some tooltip text</span>
-				</div>
+				<div class="additional-tooltip" id="regionTooltip"></div>
 			</div>
 			<p id=missionDescription>This is a description</p>
 			<div class="vbox">
@@ -158,9 +156,7 @@
 				<button id="cancelMissionResolve">Cancel</button>
 			</div>
 		</div>
-		<div class="tooltip" id="strategyTooltip">
-			<span class="tooltiptext" id="strategyTooltiptext">Some tooltip text</span>
-		</div>
+		<div class="additional-tooltip" id="strategyTooltip"></div>
 	</dialog>
 
     <script type="module" src="main.js"></script>

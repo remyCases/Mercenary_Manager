@@ -22,6 +22,9 @@ const GameUI = {
 	// strategy selection
 	selectedStrategy: null,
 
+	// general tooltip
+	tooltip: null,
+
 	// elements on main screen
 	missionSlots: document.querySelectorAll(".mission-slot"),
 	restSlots: document.querySelectorAll(".rest-slot"),
@@ -43,7 +46,6 @@ const GameUI = {
 
 	// tooltip of missions
 	regionTooltip: document.getElementById("regionTooltip"),
-	regionTooltiptext: document.getElementById("regionTooltiptext"),
 
 	// description of missions
 	missionDescription: document.getElementById("missionDescription"),
@@ -65,7 +67,6 @@ const GameUI = {
 
 	// tooltip of strategies
 	strategyTooltip: document.getElementById("strategyTooltip"),
-	strategyTooltiptext: document.getElementById("strategyTooltiptext"),
 
 	// gameover modal
 	gameOverDialog: document.getElementById("gameOverDialog"),
@@ -100,6 +101,10 @@ export function start(GameUI) {
 	GameUI.currentMission = null;
 	GameUI.selectedLocation = null;
 	GameUI.selectedStrategy = null;
+
+	GameUI.tooltip = document.createElement("div");
+	GameUI.tooltip.className = "tooltip";
+	document.body.appendChild(GameUI.tooltip);
 
 	GameUI.gameStateData = new Map();
 	GameUI.regionData = new Map();
@@ -330,7 +335,7 @@ export function updateUI(GameUI, newTurn = false) {
 		const partyNames = Array.from(mission.party).map(([id, _]) => GameUI.troopData.get(id).name);
 		const estimatedWeeksWork = Math.ceil(location.efficiency / mission.efficiency);
 
-		GameUI.missionDescription.innerHTML = `${partyNames} are going to <span class="city-name">${location.name}</span>, they are expected to reach destination in <span class="weeks-info">${location.travelDuration} weeks</span>.<br>They are expected to spend <span class="weeks-info">${estimatedWeeksWork} weeks</span> to finish this contract that is prized at <span class="weeks-info">${location.reward} golds</span>`;
+		GameUI.missionDescription.innerHTML = `${partyNames} are going to <span class="bold">${location.name}</span>, they are expected to reach destination in <span class="bold">${location.travelDuration} weeks</span>.<br>They are expected to spend <span class="bold">${estimatedWeeksWork} weeks</span> to finish this contract that is prized at <span class="bold">${location.reward} golds</span>`;
 
 		GameUI.sendMission.disabled = false;
 	} else {
