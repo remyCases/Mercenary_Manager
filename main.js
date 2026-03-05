@@ -1,7 +1,7 @@
 import { getDistance, getItem, SNAP_DISTANCE, dropLogic } from "./js/utils.js";
-import { resolveAction } from "./js/logic.js"
+import { resolveAction, computePartyStat } from "./js/logic.js"
 import { GameUI, start, updateUI, resetMission } from "./js/GameUI.js"
-import { createTroopCard } from "./js/Troops.js"
+import { createTroopCard, createMissionTroopDisplay } from "./js/Troops.js"
 
 document.addEventListener("DOMContentLoaded", () => {
 	start(GameUI);
@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	GameUI.dropableSlots.forEach(slot => {
 		slot.addEventListener("drop", (e) => {
-			e.preventDefault()
+			e.preventDefault();
 			dropLogic(GameUI, e.clientX, e.clientY);
 			updateUI(GameUI);
 		});
@@ -268,65 +268,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			const party = GameUI.gameStateData.get("mission")[GameUI.currentMission].party
 
-			party.forEach((startId, troopId) => {
+			party.forEach((stratId, troopId) => {
 				const card = createTroopCard(GameUI, troopId, false, false);
+				const container = createMissionTroopDisplay(GameUI, card, troopId, stratId);
 
-				const strategyBox = document.createElement("div");
-				strategyBox.className = "strategy-box";
-				strategyBox.textContent = GameUI.strategyData.get(startId).name;
-				strategyBox.setAttribute("data-num", troopId);
-				strategyBox.addEventListener("click", (e) => {
-					e.stopPropagation();
-					GameUI.strategyMenu.style.display = "block";
-					GameUI.selectedStrategy = strategyBox;
-				});
-
-				const stat = document.createElement("p");
-				stat.className = "stat-info-text";
-				stat.setAttribute("data-num", troopId);
-
-				const lostHP = document.createElement("div");
-				lostHP.className = "lost-hp-display";
-
-				const textLostHP = document.createElement("p");
-				textLostHP.textContent = "-1";
-				const imgLostHP = document.createElement("img");
-				imgLostHP.src = "./images/fb681.png";
-
-				lostHP.appendChild(textLostHP);
-				lostHP.appendChild(imgLostHP);
-
-				const consumedAP = document.createElement("div");
-				consumedAP.className = "consumed-ap";
-
-				const textConsumedAP = document.createElement("p");
-				textConsumedAP.textContent = "-1";
-				const imgConsumedAP = document.createElement("img");
-				imgConsumedAP.src = "images/fb97.png";
-
-				consumedAP.appendChild(textConsumedAP);
-				consumedAP.appendChild(imgConsumedAP);
-
-				const consumedSupplies = document.createElement("div");
-				consumedSupplies.className = "consumed-supplies";
-
-				const textConsumedSupplies = document.createElement("p");
-				textConsumedSupplies.textContent = "-1";
-				const imgConsumedSupplies = document.createElement("img");
-				imgConsumedSupplies.src = "images/fb671.png";
-
-				consumedSupplies.appendChild(textConsumedSupplies);
-				consumedSupplies.appendChild(imgConsumedSupplies);
-
-				const container = document.createElement("div");
-				container.classList.add("stat-info");
-				container.classList.add("vbox");
-				container.appendChild(card);
-				container.appendChild(strategyBox);
-				container.appendChild(stat);
-				container.appendChild(lostHP);
-				container.appendChild(consumedAP);
-				container.appendChild(consumedSupplies);
 				GameUI.missionTroopBox.appendChild(container);
 
 			});
@@ -398,42 +343,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	document.addEventListener("click", () => {
 		GameUI.strategyMenu.style.display = "none";
 	});
-
-	function computePartyStat(GameUI) {
-		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
-		let partyEfficiency = mission.prevEfficiency;
-		let partyCautiousness = 0;
-		let partyCostAp = 0;
-		let partyCostSupplies = 0;
-
-		mission.party.forEach((stratId, troopId) => {
-			const troop = GameUI.troopData.get(troopId);
-
-			if (troop.health == 0) return;
-			const strategy = GameUI.strategyData.get(stratId);
-
-			const modEfficiency = strategy.modifiers.find((e) => e.type === "efficiency");
-			const totalEfficiency = troop.efficiency + (modEfficiency ? modEfficiency.value : 0);
-
-			const modCautiousness = strategy.modifiers.find((e) => e.type === "cautiousness");
-			const totalCautiousness = troop.cautiousness + (modCautiousness ? modCautiousness.value : 0);
-
-			const costAp = strategy.cost.find((e) => e.type === "ap");
-			const modAp = costAp ? costAp.value : 0;
-
-			const costSupplies = strategy.cost.find((e) => e.type === "supplies");
-			const modSupplies = costSupplies ? costSupplies.value : 0;
-
-			partyEfficiency += totalEfficiency;
-			partyCautiousness += totalCautiousness;
-			partyCostAp += modAp;
-			partyCostSupplies += modSupplies;
-		});
-		mission.efficiency = partyEfficiency;
-		mission.cautiousness = partyCautiousness;
-		mission.costAp = partyCostAp;
-		mission.costSupplies = partyCostSupplies;
-	}
 
 	function getPartyFromSlot(slotId) {
 		const slot = getItem(GameUI.missionSlots, slotId);
