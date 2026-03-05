@@ -52,17 +52,17 @@ document.addEventListener("DOMContentLoaded", () => {
 				mission.prevEfficiency = mission.efficiency;
 				mission.efficiency = 0;
 
+				let sumHealth = 0;
 				mission.party.forEach((_, troopId) => {
 					mission.party.set(troopId, "A");
+					const troop = GameUI.troopData.get(troopId);
+					if (mission.cautiousness < location.danger && troop.health > 0) {
+						troop.health -= 1;
+					}
+					sumHealth += troop.health;
 				});
 
-				if (mission.cautiousness < location.danger) {
-					mission.party.forEach((_, troopId) => {
-						GameUI.troopData.get(troopId).health -= 1;
-					});
-				}
-
-				if (mission.prevEfficiency >= location.efficiency) {
+				if (mission.prevEfficiency >= location.efficiency || sumHealth == 0) {
 					const slotToUnfreeze = getItem(GameUI.missionSlots, missionId);
 					const regionToUnfreeze = getItem(GameUI.regions, mission.location);
 
@@ -76,6 +76,12 @@ document.addEventListener("DOMContentLoaded", () => {
 					regionToUnfreeze.classList.remove("frozen");
 
 					GameUI.gameStateData.get("mission")[missionId] = resetMission();
+
+					if (sumHealth > 0) {
+						GameUI.resourceData.get("gold").value += GameUI.regionData.get(mission.location).reward;
+					}
+				} else {
+					GameUI.regionData.get(mission.location).reward *= 0.90;
 				}
 			}
 		});
@@ -112,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		GameUI.resourceData.get("food").value = res[2];
 		GameUI.resourceData.get("supplies").value = res[4];
 
-		updateUI(GameUI);
+		updateUI(GameUI, true);
 
 		// handles game over
 		if (GameUI.resourceData.get("food").value <= 0) {
@@ -194,9 +200,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		const slot = getItem(GameUI.missionSlots, GameUI.currentMission);
 		slot.classList.add("frozen");
-		for (const child of slot.children) {
-			child.classList.add("frozen");
-		}
+		slot.querySelectorAll(".troop-card").forEach((card) => {
+			card.classList.add("frozen");
+		});
 
 		GameUI.resourceData.get("ap").value -= 1;
 
@@ -306,12 +312,16 @@ document.addEventListener("DOMContentLoaded", () => {
 	GameUI.cancelMissionResolve.addEventListener("click", () => {
 		GameUI.currentMission = null;
 		GameUI.missionResolveDialog.close();
+
+		updateUI(GameUI);
 	});
 
 	GameUI.confirmMissionResolve.addEventListener("click", () => {
 		getItem(GameUI.giveOrderButtons, GameUI.currentMission).disabled = true;
 		GameUI.currentMission = null;
 		GameUI.missionResolveDialog.close();
+
+		updateUI(GameUI);
 	});
 
 	GameUI.strategyOptions.forEach((option) => {
@@ -363,6 +373,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		mission.party.forEach((stratId, troopId) => {
 			const troop = GameUI.troopData.get(troopId);
+
+			if (troop.health == 0) return;
 			const strategy = GameUI.strategyData.get(stratId);
 
 			const modEfficiency = strategy.modifiers.find((e) => e.type === "efficiency");

@@ -55,6 +55,7 @@ const GameUI = {
 	missionTroopBox: document.getElementById("missionTroopBox"),
 	progressBar: document.getElementById("progressBar"),
 	progressBarPrev: document.getElementById("progressBarPrev"),
+	rewardInfo: document.getElementById("rewardInfo"),
 	confirmMissionResolve: document.getElementById("confirmMissionResolve"),
 	cancelMissionResolve: document.getElementById("cancelMissionResolve"),
 
@@ -193,9 +194,7 @@ export function start(GameUI) {
 
 	GameUI.sendMission.disabled = true;
 
-	while (GameUI.troopPool.firstChild) {
-		GameUI.troopPool.removeChild(GameUI.troopPool.lastChild);
-	}
+	document.querySelectorAll(".troop-card").forEach((card) => card.remove());
 
 	GameUI.troopData.forEach((_, troopId) => {
 		const card = createTroopCard(GameUI, troopId, true);
@@ -213,7 +212,8 @@ export function start(GameUI) {
 	});
 }
 
-export function updateUI(GameUI) {
+export function updateUI(GameUI, newTurn = false) {
+	GameUI.newWeekButton.disabled = false;
 	GameUI.stateDisplay.textContent = `Weeks: ${GameUI.gameStateData.get("week")}`;
 
 	GameUI.missionSlots.forEach((slot) => {
@@ -227,11 +227,18 @@ export function updateUI(GameUI) {
 				textOverlay.style.display = "block";
 				textOverlay.textContent = `TRAVEL TO MISSION\r\n${travelDuration} weeks remaining`;
 				giveOrder.style.display = "none";
+				giveOrder.disabled = true;
 			} else {
 				textOverlay.style.display = "none";
 				textOverlay.textContent = "";
 				giveOrder.style.display = "block";
-				giveOrder.disabled = false;
+				if (newTurn) {
+					giveOrder.disabled = false;
+				}
+
+				if (!giveOrder.disabled) {
+					GameUI.newWeekButton.disabled = true;
+				}
 			}
 			getItem(GameUI.missionButtons, missionId).disabled = true;
 		} else {
@@ -328,6 +335,11 @@ export function updateUI(GameUI) {
 				const troopId = stat.getAttribute("data-num");
 				const troop = GameUI.troopData.get(troopId);
 
+				if (troop.health == 0) {
+					stat.textContent = "Cant fight";
+					return;
+				}
+
 				const strategyId = mission.party.get(troopId);
 				const strategy = GameUI.strategyData.get(strategyId);
 
@@ -350,6 +362,7 @@ export function updateUI(GameUI) {
 
 			GameUI.progressBar.style.width = Math.ceil(100 * mission.efficiency / location.efficiency) + "%";
 			GameUI.progressBarPrev.style.width = Math.ceil(100 * mission.prevEfficiency / location.efficiency) + "%";
+			GameUI.rewardInfo.textContent = `Reward: ${location.reward}`;
 		}
 	}
 }
