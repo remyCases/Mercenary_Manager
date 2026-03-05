@@ -78,10 +78,10 @@ document.addEventListener("DOMContentLoaded", () => {
 					GameUI.gameStateData.get("mission")[missionId] = resetMission();
 
 					if (sumHealth > 0) {
-						GameUI.resourceData.get("gold").value += GameUI.regionData.get(mission.location).reward;
+						GameUI.resourceData.get("gold").value += mission.reward;
 					}
 				} else {
-					GameUI.regionData.get(mission.location).reward *= 0.90;
+					mission.reward = Math.floor(mission.reward * 0.90);
 				}
 			}
 		});
@@ -190,13 +190,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	GameUI.sendMission.addEventListener("click", () => {
 		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
+		const location = GameUI.regionData.get(GameUI.selectedLocation);
 
-		const travelDuration = GameUI.regionData.get(GameUI.selectedLocation).travelDuration;
+		const travelDuration = location.travelDuration;
 		mission.travelDuration = travelDuration;
 
 		const region = getItem(GameUI.regions, GameUI.selectedLocation);
 		region.classList.add("frozen");
 		mission.location = GameUI.selectedLocation;
+		mission.reward = location.reward;
 
 		const slot = getItem(GameUI.missionSlots, GameUI.currentMission);
 		slot.classList.add("frozen");

@@ -77,7 +77,7 @@ const GameUI = {
 };
 
 export function resetMission() {
-	return { travelDuration: null, location: null, efficiency: 0, cautiousness: 0, prevEfficiency: 0, party: [] };
+	return { travelDuration: null, location: null, efficiency: 0, cautiousness: 0, prevEfficiency: 0, party: [], reward: 0 };
 }
 
 export function start(GameUI) {
@@ -362,7 +362,7 @@ export function updateUI(GameUI, newTurn = false) {
 
 			GameUI.progressBar.style.width = Math.ceil(100 * mission.efficiency / location.efficiency) + "%";
 			GameUI.progressBarPrev.style.width = Math.ceil(100 * mission.prevEfficiency / location.efficiency) + "%";
-			GameUI.rewardInfo.textContent = `Reward: ${location.reward}`;
+			GameUI.rewardInfo.textContent = `Reward: ${mission.reward}`;
 		}
 	}
 }
