@@ -222,6 +222,10 @@ export function start(GameUI) {
 
 	GameUI.troopPool.className = "troop-pool";
 
+	GameUI.missionSlots.forEach(slot => {
+		slot.classList.add("mission-slot");
+	});
+
 	GameUI.regions.forEach(region => {
 		region.setAttribute("class", "region");
 	});

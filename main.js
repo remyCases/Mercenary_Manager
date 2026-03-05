@@ -1,4 +1,4 @@
-import { getDistance, getItem, SNAP_DISTANCE, dropLogic } from "./js/utils.js";
+import { getDistance, getItem, SNAP_DISTANCE, dropLogic, allowMissionDrop } from "./js/utils.js";
 import { resolveAction, computePartyStat } from "./js/logic.js"
 import { GameUI, start, updateUI, resetMission } from "./js/GameUI.js"
 import { createTroopCard, createMissionTroopDisplay } from "./js/Troops.js"
@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 
 		slot.addEventListener("dragover", (e) => {
+			if (!allowMissionDrop(GameUI, slot)) return;
 			e.preventDefault();
 			e.dataTransfer.dropEffect = "move";
 
@@ -62,7 +63,9 @@ document.addEventListener("DOMContentLoaded", () => {
 					sumHealth += troop.health;
 				});
 
-				if (mission.prevEfficiency >= location.efficiency || sumHealth == 0) {
+				const win = mission.prevEfficiency >= location.efficiency;
+
+				if (win || sumHealth == 0) {
 					const slotToUnfreeze = getItem(GameUI.missionSlots, missionId);
 					const regionToUnfreeze = getItem(GameUI.regions, mission.location);
 
@@ -75,11 +78,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					slotToUnfreeze.classList.remove("occupied");
 					regionToUnfreeze.classList.remove("frozen");
 
-					if (sumHealth > 0) {
+					if (win) {
 						GameUI.resourceData.get("gold").value += mission.reward;
 					}
 
-					GameUI.messageEndMission.textContent = `Mission to ${location.name} ${sumHealth > 0 ? `was successful.\nYou win ${mission.reward} golds` : "failed."}`;
+					GameUI.messageEndMission.textContent = `Mission to ${location.name} ${win ? `was successful.\nYou win ${mission.reward} golds` : "failed."}`;
 					GameUI.endMissionDialog.showModal();
 					GameUI.gameStateData.get("mission")[missionId] = resetMission();
 				} else {

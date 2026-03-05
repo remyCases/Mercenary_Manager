@@ -72,6 +72,7 @@ function addEvents(GameUI, card) {
 		const touchY = e.touches[0].clientY;
 
 		GameUI.dropableSlots.forEach(slot => {
+			if (!allowMissionDrop(GameUI, slot)) return;
 			const distance = getDistance(touchX, touchY, slot);
 			if (distance < SNAP_DISTANCE) {
 				slot.classList.add("hover");

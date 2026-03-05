@@ -67,3 +67,14 @@ export function dropLogic(GameUI, X, Y) {
 	GameUI.dropableSlots.forEach(s => s.classList.remove("hover"));
 	GameUI.draggedElement = null;
 }
+
+export function allowMissionDrop(GameUI, slot) {
+	const troopId = GameUI.draggedElement.getAttribute("data-num");
+	const health = GameUI.troopData.get(troopId).health;
+
+	if (health == 0 && slot.classList.contains("mission-slot")) {
+		return false;
+	}
+
+	return true;
+}
