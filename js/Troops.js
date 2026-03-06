@@ -59,14 +59,12 @@ function addEvents(GameUI, card) {
 	}, { passive: false });
 
 	card.addEventListener("touchend", (e) => {
-		e.preventDefault();
 		dropLogic(GameUI, e.changedTouches[0].clientX, e.changedTouches[0].clientY);
 		updateUI(GameUI);
 	}, { passive: false });
 
 	card.addEventListener("touchmove", () => {
 		if (!GameUI.draggedElement) return;
-		e.preventDefault();
 
 		const touchX = e.touches[0].clientX;
 		const touchY = e.touches[0].clientY;
