@@ -84,7 +84,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 					const clone = GameUI.endMissionDialog.cloneNode(true);
 					clone.id = `eventModal-${missionId}`;
-					clone.className = "mission-resolve-dialog";
+					clone.classList.add("mission-resolve-dialog");
+					clone.classList.add("small-dialog");
 					clone.querySelector(".end-mission-message").textContent = `Mission to ${location.name} ${win ? `was successful.\nYou win ${mission.reward} golds` : "failed."}`;
 
 					clone.querySelector(".end-mission-button").addEventListener("click", () => {

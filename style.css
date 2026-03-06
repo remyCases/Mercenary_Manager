@@ -55,7 +55,6 @@ h1 {
 	transform: scale(1.1);
 }
 
-
 .slot {
 	width: 220px;
 	height: 220px;
@@ -160,23 +159,20 @@ button[disabled]{
 	display: inline-block;
 }
 
-.mission-resolve-dialog {
-	position: absolute;
-	left: 50%;
-	top: 50%;
-	min-width: 40%;
-	min-height: 40%;
-	transform: translate(-50%, -50%);
+.small-dialog {
+	width: 30vw;
+    height: 30vh;
 }
 
 dialog {
-	position: absolute;
     left: 50%;
     top: 50%;
-	min-width: 40%;
-	min-height: 40%;
 	transform: translate(-50%, -50%);
-    z-index: 1000;
+
+    min-width: 30vw;
+    min-height: 30vh;
+	max-width: 90vw;
+    max-height: 90vh;
 }
 
 dialog::backdrop {
