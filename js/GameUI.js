@@ -358,14 +358,11 @@ export function updateUI(GameUI, newTurn = false) {
 				const text = box.querySelector(".stat-info-text");
 				const ap = box.querySelector(".consumed-ap");
 				const supplies = box.querySelector(".consumed-supplies");
+				const lostHp = box.querySelector(".lost-hp-display");
+				const strategyBox = box.querySelector(".strategy-box");
 
 				const troopId = text.getAttribute("data-num");
 				const troop = GameUI.troopData.get(troopId);
-
-				if (troop.health == 0) {
-					text.textContent = "Cant fight";
-					return;
-				}
 
 				const strategyId = mission.party.get(troopId);
 				const strategy = GameUI.strategyData.get(strategyId);
@@ -376,7 +373,16 @@ export function updateUI(GameUI, newTurn = false) {
 				const modCautiousness = strategy.modifiers.find((e) => e.type === "cautiousness");
 				const totalCautiousness = troop.cautiousness + (modCautiousness ? modCautiousness.value : 0);
 
-				text.textContent = `Efficiency: ${totalEfficiency}\nCautiousness: ${totalCautiousness}`;
+				if (troop.health == 0) {
+					text.textContent = "Cant fight";
+					ap.style.display = "none";
+					supplies.style.display = "none";
+					lostHp.style.display = "none";
+					strategyBox.style.display = "none";
+					return;
+				} else {
+					text.textContent = `Efficiency: ${totalEfficiency}\nCautiousness: ${totalCautiousness}`;
+				}
 
 				const costAp = strategy.cost.find((e) => e.type === "ap");
 				if (costAp && costAp.value > 0) {
@@ -391,13 +397,11 @@ export function updateUI(GameUI, newTurn = false) {
 				} else {
 					supplies.style.display = "none";
 				}
-			});
 
-			GameUI.missionTroopBox.querySelectorAll(".lost-hp-display").forEach((lost) => {
 				if (location.danger > mission.cautiousness) {
-					lost.style.display = "block"
+					lostHp.style.display = "block";
 				} else {
-					lost.style.display = "none"
+					lostHp.style.display = "none";
 				}
 			});
 
