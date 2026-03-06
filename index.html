@@ -131,6 +131,17 @@
 			<button id="lowOnFoodButton" class="low-on-food-button">Ok</button>
 		</div>
 	</dialog>
+
+	<dialog id="confirmDialog">
+        <div class="hbox">
+            <h2>Confirm Action</h2>
+            <p id="confirmMessage">Are you sure you want to proceed?</p>
+			<div class="vbox">
+				<button class="cancelButton">Cancel</button>
+				<button class="confirmButton">OK</button>
+			</div>
+        </div>
+	</dialog>
 	
 	<dialog id="missionResolveDialog" class="mission-resolve-dialog">
 		<div class="hbox">
@@ -165,6 +176,7 @@
 				<button id="confirmMissionResolve">Confirm</button>
 				<button id="resetMissionResolve">Reset</button>
 				<button id="cancelMissionResolve">Cancel</button>
+				<button id="giveUpMissionResolve" class="danger">Give Up</button>
 			</div>
 		</div>
 		<div class="additional-tooltip" id="strategyTooltip"></div>

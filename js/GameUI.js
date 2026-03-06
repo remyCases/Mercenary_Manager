@@ -61,6 +61,7 @@ const GameUI = {
 	confirmMissionResolve: document.getElementById("confirmMissionResolve"),
 	resetMissionResolve: document.getElementById("resetMissionResolve"),
 	cancelMissionResolve: document.getElementById("cancelMissionResolve"),
+	giveUpMissionResolve: document.getElementById("giveUpMissionResolve"),
 
 	// strategies
 	strategyMenu: document.getElementById("strategyMenu"),
@@ -71,19 +72,25 @@ const GameUI = {
 
 	// gameover modal
 	gameOverDialog: document.getElementById("gameOverDialog"),
-	restartButton: document.getElementById("restart"),
+	restartButton: gameOverDialog.querySelector("#restart"),
 
 	// end of mission modal
 	endMissionDialog: document.getElementById("endMissionDialog"),
-	endMissionButton: document.getElementById("endMissionButton"),
+	endMissionButton: endMissionDialog.querySelector("#endMissionButton"),
 
 	// alert low on food
 	lowOnFoodDialog: document.getElementById("lowOnFoodDialog"),
-	lowOnFoodButton: document.getElementById("lowOnFoodButton"),
+	lowOnFoodButton: lowOnFoodDialog.querySelector("#lowOnFoodButton"),
 
 	// buyer buttons
 	buyFoodButton: document.getElementById("buyFood"),
 	buySuppliesButton: document.getElementById("buySupplies"),
+
+	// danger zone
+	confirmDialog: document.getElementById("confirmDialog"),
+	confirmButton: confirmDialog.querySelector(".confirmButton"),
+	cancelButton: confirmDialog.querySelector(".cancelButton"),
+	confirmMessage: confirmDialog.querySelector("#confirmMessage"),
 };
 
 export function resetMission() {
@@ -237,7 +244,7 @@ export function start(GameUI) {
 	});
 
 	GameUI.regions.forEach(region => {
-		region.setAttribute("class", "region");
+		region.classList.add("region");
 	});
 }
 
@@ -246,7 +253,7 @@ export function updateUI(GameUI, newTurn = false) {
 	GameUI.stateDisplay.textContent = `Weeks: ${GameUI.gameStateData.get("week")}`;
 
 	GameUI.missionSlots.forEach((slot) => {
-		const missionId = slot.getAttribute("data-num");
+		const missionId = slot.dataset.num;
 		const textOverlay = getItem(GameUI.frozenTexts, missionId);
 		const giveOrder = getItem(GameUI.giveOrderButtons, missionId);
 
@@ -285,7 +292,7 @@ export function updateUI(GameUI, newTurn = false) {
 	});
 
 	GameUI.restSlots.forEach((slot) => {
-		const restId = slot.getAttribute("data-num");
+		const restId = slot.dataset.num;
 		if (slot.classList.contains("frozen")) {
 			slot.setAttribute("data-frozen-text", "Rest until next week");
 			getItem(GameUI.restButtons, restId).disabled = true;
@@ -314,7 +321,7 @@ export function updateUI(GameUI, newTurn = false) {
 	}
 
 	document.querySelectorAll(".troop-card").forEach((card) => {
-		const id = card.getAttribute("data-num");
+		const id = card.dataset.num;
 		const troop = GameUI.troopData.get(id);
 		const healthIndicator = card.querySelector(".health-indicator")
 		while (healthIndicator.firstChild) {
@@ -351,7 +358,7 @@ export function updateUI(GameUI, newTurn = false) {
 	}
 
 	GameUI.strategyOptions.forEach((option) => {
-		const optionId = option.getAttribute("data-num");
+		const optionId = option.dataset.num;
 		option.textContent = GameUI.strategyData.get(optionId).name;
 	});
 
@@ -368,7 +375,7 @@ export function updateUI(GameUI, newTurn = false) {
 				const lostHp = box.querySelector(".lost-hp-display");
 				const strategyBox = box.querySelector(".strategy-box");
 
-				const troopId = text.getAttribute("data-num");
+				const troopId = text.dataset.num;
 				const troop = GameUI.troopData.get(troopId);
 
 				const strategyId = mission.party.get(troopId);
@@ -477,4 +484,19 @@ export function goldToStr(gold) {
 	return `${gold} ${gold <= 1 ? "gold" : "golds"}`;
 }
 
+export function cleanMissionSlot(GameUI, missionId) {
+
+	const mission = GameUI.gameStateData.get("mission")[missionId];
+	const slotToUnfreeze = getItem(GameUI.missionSlots, missionId);
+	const regionToUnfreeze = getItem(GameUI.regions, mission.location);
+
+	slotToUnfreeze.querySelectorAll(".troop-card").forEach((card) => {
+		card.classList.remove("frozen");
+		GameUI.troopPool.appendChild(card);
+	});
+
+	slotToUnfreeze.classList.remove("frozen");
+	slotToUnfreeze.classList.remove("occupied");
+	regionToUnfreeze.classList.remove("frozen");
+}
 export { GameUI };

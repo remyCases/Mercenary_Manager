@@ -31,7 +31,7 @@ function isWithinSnapDistance(x, y, slot) {
 }
 
 export function getItem(items, val) {
-	return Array.from(items).find((item) => item.getAttribute("data-num") === val)
+	return Array.from(items).find((item) => item.dataset.num === val)
 }
 
 export function dropLogic(GameUI, X, Y) {
@@ -69,7 +69,7 @@ export function dropLogic(GameUI, X, Y) {
 }
 
 export function allowMissionDrop(GameUI, slot) {
-	const troopId = GameUI.draggedElement.getAttribute("data-num");
+	const troopId = GameUI.draggedElement.dataset.num;
 	const health = GameUI.troopData.get(troopId).health;
 
 	if (health == 0 && slot.classList.contains("mission-slot")) {

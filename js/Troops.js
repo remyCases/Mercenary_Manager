@@ -7,7 +7,7 @@ export function createTroopCard(GameUI, troopId, draggable, resetHealth = true) 
 	const card = document.createElement("div");
 	card.className = "troop-card";
 	card.draggable = draggable;
-	card.setAttribute("data-num", troopId);
+	card.dataset.num = troopId;
 
 	// create portrait
 	const portrait = document.createElement("img");
@@ -85,8 +85,8 @@ export function createMissionTroopDisplay(GameUI, card, troopId, stratId) {
 	const strategyBox = document.createElement("div");
 	strategyBox.className = "strategy-box";
 	strategyBox.textContent = GameUI.strategyData.get(stratId).name;
-	strategyBox.setAttribute("data-num", troopId);
-	strategyBox.setAttribute("data-description", "");
+	strategyBox.dataset.num = troopId;
+	strategyBox.dataset.description = "";
 	strategyBox.addEventListener("click", (e) => {
 		e.stopPropagation();
 		GameUI.strategyMenu.style.display = "block";
@@ -95,7 +95,7 @@ export function createMissionTroopDisplay(GameUI, card, troopId, stratId) {
 
 	const stat = document.createElement("p");
 	stat.className = "stat-info-text";
-	stat.setAttribute("data-num", troopId);
+	stat.dataset.num = troopId;
 
 	const lostHP = createStatDisplay("lost-hp-display", "-1", "./images/fb681.png", "Will lost 1 health next week");
 	const consumedAp = createStatDisplay("consumed-ap", "-1", "images/fb97.png", "Cost 1 AP");
@@ -123,7 +123,7 @@ function createStatDisplay(className, text, imgSrc, desc) {
 
 	const img = document.createElement("img");
 	img.src = imgSrc;
-	img.setAttribute("data-description", desc)
+	img.dataset.description = desc;
 
 
 	div.appendChild(p);
