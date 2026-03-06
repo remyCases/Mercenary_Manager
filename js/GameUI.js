@@ -57,7 +57,7 @@ const GameUI = {
 	missionTroopBox: document.getElementById("missionTroopBox"),
 	progressBar: document.getElementById("progressBar"),
 	progressBarPrev: document.getElementById("progressBarPrev"),
-	rewardInfo: document.getElementById("rewardInfo"),
+	durationInfo: document.getElementById("durationInfo"),
 	confirmMissionResolve: document.getElementById("confirmMissionResolve"),
 	resetMissionResolve: document.getElementById("resetMissionResolve"),
 	cancelMissionResolve: document.getElementById("cancelMissionResolve"),
@@ -96,7 +96,8 @@ export function resetMission() {
 		costSupplies: 0,
 		prevEfficiency: 0,
 		party: [],
-		reward: 0
+		reward: 0,
+		missionDuration: 0,
 	};
 }
 
@@ -337,11 +338,11 @@ export function updateUI(GameUI, newTurn = false) {
 		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
 		const location = GameUI.regionData.get(GameUI.selectedLocation);
 
-		const partyNames = Array.from(mission.party).map(([id, _]) => GameUI.troopData.get(id).name);
 		const estimatedWeeksWork = Math.ceil(location.efficiency / mission.efficiency);
+		const enoughCautiousness = mission.cautiousness >= location.danger;
 
 		GameUI.missionDescription.style.visibility = "visible"
-		GameUI.missionDescription.innerHTML = `${partyNames} are going to <span class="bold">${location.name}</span>, they are expected to reach destination in <span class="bold">${location.travelDuration} weeks</span>.<br>They are expected to spend <span class="bold">${estimatedWeeksWork} weeks</span> to finish this contract that is prized at <span class="bold">${location.reward} golds</span>`;
+		GameUI.missionDescription.innerHTML = `${partyToStr(mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span> and should earn <span class="bold">${location.reward} golds</span> if done during the first week.`;
 
 		GameUI.sendMission.disabled = false;
 	} else {
@@ -415,7 +416,8 @@ export function updateUI(GameUI, newTurn = false) {
 
 			GameUI.progressBar.style.width = Math.ceil(100 * mission.efficiency / location.efficiency) + "%";
 			GameUI.progressBarPrev.style.width = Math.ceil(100 * mission.prevEfficiency / location.efficiency) + "%";
-			GameUI.rewardInfo.textContent = `Reward: ${mission.reward}`;
+			const latePenaltyFees = location.reward - mission.reward;
+			GameUI.durationInfo.innerHTML = `${partyToStr(mission.party)} working on this mission for <span class="bold">${mission.missionDuration} ${mission.missionDuration <= 1 ? "week" : "weeks"}</span> ${latePenaltyFees > 0 ? `<br>resulting in a loss of <span class="bold">${goldToStr(latePenaltyFees)}</span> as a late penalty fee.` : "."}`;
 
 			if (GameUI.resourceData.get("ap").value < mission.costAp ||
 				GameUI.resourceData.get("supplies").value < mission.costSupplies) {
@@ -425,6 +427,54 @@ export function updateUI(GameUI, newTurn = false) {
 			}
 		}
 	}
+}
+
+function partyToStr(party) {
+	const partyNames = Array.from(party).map(([id, _]) => GameUI.troopData.get(id).name);
+	if (partyNames.length == 1) {
+		return `${partyNames[0]} is`;
+	}
+	const last = partyNames.pop();
+	return `${partyNames.join(", ")} and ${last} are`;
+}
+
+function estimatedDifficulty(weeks, enoughCautiousness) {
+
+	let timeDifficulty = 0;
+	if (weeks < 3) {
+		timeDifficulty = 0;
+	}
+	else if (weeks < 5) {
+		timeDifficulty = 1;
+	}
+	else if (weeks < 10) {
+		timeDifficulty = 2;
+	}
+	else if (weeks < 20) {
+		timeDifficulty = 3;
+	}
+	else {
+		timeDifficulty = 4;
+	}
+
+	timeDifficulty += enoughCautiousness ? 0 : 1;
+
+	switch (timeDifficulty) {
+		case 0:
+			return "easy";
+		case 1:
+			return "average";
+		case 2:
+			return "hard";
+		case 3:
+			return "very hard";
+		default:
+			return "fiendish";
+	}
+}
+
+export function goldToStr(gold) {
+	return `${gold} ${gold <= 1 ? "gold" : "golds"}`;
 }
 
 export { GameUI };

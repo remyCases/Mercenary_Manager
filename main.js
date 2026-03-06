@@ -1,6 +1,6 @@
 import { getDistance, getItem, SNAP_DISTANCE, dropLogic, allowMissionDrop } from "./js/utils.js";
 import { resolveAction, computePartyStat } from "./js/logic.js"
-import { GameUI, start, updateUI, resetMission } from "./js/GameUI.js"
+import { GameUI, start, updateUI, resetMission, goldToStr } from "./js/GameUI.js"
 import { createTroopCard, createMissionTroopDisplay } from "./js/Troops.js"
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -86,7 +86,19 @@ document.addEventListener("DOMContentLoaded", () => {
 					clone.id = `eventModal-${missionId}`;
 					clone.classList.add("mission-resolve-dialog");
 					clone.classList.add("small-dialog");
-					clone.querySelector(".end-mission-message").textContent = `Mission to ${location.name} ${win ? `was successful.\nYou win ${mission.reward} golds` : "failed."}`;
+
+					let endMessage = "";
+					if (win) {
+						endMessage = "was successful.<br>";
+						if (mission.missionDuration == 0) {
+							endMessage += `You win <span class="bold">${mission.reward} golds</span>.`;
+						} else {
+							endMessage += `From the initial <span class="bold">${goldToStr(location.reward)}</span>, you win <span class="bold">${goldToStr(mission.reward)}</span> and lost <span class="bold">${goldToStr(location.reward - mission.reward)}</span> as late fees.`;
+						}
+					} else {
+						endMessage = "failed."
+					}
+					clone.querySelector(".end-mission-message").innerHTML = `Mission to ${location.name} ${endMessage}`;
 
 					clone.querySelector(".end-mission-button").addEventListener("click", () => {
 						clone.remove();
@@ -96,7 +108,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					clone.showModal();
 					GameUI.gameStateData.get("mission")[missionId] = resetMission();
 				} else {
-					mission.reward = Math.floor(mission.reward * 0.90);
+					mission.missionDuration += 1;
+					mission.reward = Math.floor(mission.reward - 0.1 * location.reward)
+					if (mission.reward < 0) {
+						mission.reward = 0;
+					}
 				}
 			}
 		});

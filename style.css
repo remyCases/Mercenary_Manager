@@ -2,6 +2,7 @@
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
+	text-align: center;
 }
 
 body {
@@ -100,6 +101,10 @@ h3 {
 	padding: 20px;
 	border-radius: 8px;
 	margin-bottom: 20px;
+}
+
+.text-info {
+	text-align: justify;
 }
 
 button {
