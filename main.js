@@ -133,6 +133,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		updateUI(GameUI, true);
 
 		// handles game over
+		if (GameUI.gameStateData.get("week") >= 100) {
+
+		}
 		if (GameUI.resourceData.get("food").value <= 0) {
 			GameUI.gameOverDialog.showModal();
 		} else if (GameUI.resourceData.get("food").value < 13) {

@@ -9,9 +9,8 @@
 <body>
     <div class="container">
         <h1>Mercenary Manager Prototype</h1>
-
         <div class="info">
-            <p><strong>Instructions: </strong>Survive as a mercenary company for 100. Missions give you moey, use money to buy food and feed your troops. Beware, running out of food will end your game.</p>
+            <p><strong>Instructions: </strong>Survive as a mercenary company for 100 weeks. Missions give you money, use money to buy food and feed your troops. Beware, running out of food will end your game.</p>
 			<p id="state" data-description="Reach week 100 to win">Weeks: 1</p>
 			<div>
 				<button id="newWeekButton" data-description="End the current week">Next Week</button>
@@ -20,41 +19,43 @@
 
 			<div class="vbox">
 				<div class="hbox">
+					<h3>Resources</h3>
 					<div class="vbox">
-						<img src="images/fb97.png" data-description="Action Point, used for improving your troops and various actions">
-						<p class="res-ap"></p>
-					</div>
-					<div class="vbox">
-						<img src="images/fb171.png" data-description="Gold, used for buying food and supplies and for paying your troops">
-						<p class="res-gold"></p>
-					</div>
-					<div class="vbox">
-						<img src="images/fb441.png" data-description="Food, used for feeding your troops, if you run out of food, you will loose">
-						<p class="res-food"></p>
-					</div>
-					<div class="vbox">
-						<img src="images/fb671.png" data-description="Supplies, used to improve your troops during missions">
-						<p class="res-supplies"></p>
+						<div class="vbox">
+							<img src="images/fb97.png" data-description="Action Point, used for improving your troops and various actions">
+							<p class="res-ap"></p>
+						</div>
+						<div class="vbox">
+							<img src="images/fb171.png" data-description="Gold, used for buying food and supplies and for paying your troops">
+							<p class="res-gold"></p>
+						</div>
+						<div class="vbox">
+							<img src="images/fb441.png" data-description="Food, used for feeding your troops, if you run out of food, you will loose">
+							<p class="res-food"></p>
+						</div>
+						<div class="vbox">
+							<img src="images/fb671.png" data-description="Supplies, used to improve your troops during missions">
+							<p class="res-supplies"></p>
+						</div>
 					</div>
 				</div>
 				<div class="hbox">
-					<p>Merchant</p>
+					<h3>Merchant</h3>
 					<button id="buyFood" data-description="Cost 1 AP and 1 gold">Buy Food</button>
 					<button id="buySupplies" data-description="Cost 1 AP and 10 golds">Buy Supplies</button>
 				</div>
 			</div>
-
         </div>
 
 		<div class="vbox">
 			<div class="hbox">
-        		<h2 style="margin-bottom: 15px;" data-description="Available troops live here">Barracks</h2>
+        		<h2 data-description="Available troops live here">Barracks</h2>
 				<div class="troop-pool" id="troopPool"></div>
 			</div>
 			
 			<div class="hbox">
 				<div class="hbox">
-					<h2 style="margin-bottom: 15px;" data-description="Assign up to 4 troops to a mission to gain gold">Missions</h2>
+					<h2 data-description="Assign up to 4 troops to a mission to gain gold">Missions</h2>
 					<div class="vbox">
 						<div class="hbox">
 							<button class="mission-button" data-num="0" data-description="Troops in a mission are unavailable until the mission ends">Prepare Mission</button>
@@ -74,7 +75,7 @@
 				</div>
 
 				<div class="hbox">
-					<h2 style="margin-bottom: 15px;" data-description="Assign up to 4 troops to rest to regain 1 health">Rest</h2>
+					<h2 data-description="Assign up to 4 troops to rest to regain 1 health">Rest</h2>
 					<div class="vbox">
 						<div class="hbox">
 							<button class="rest-button" data-num="0" data-description="Resting troops will be unavailable until next week">Rest</button>
@@ -83,7 +84,6 @@
 					</div>
 				</div>
 			</div>
-
 		</div>
     </div>
 
@@ -100,7 +100,10 @@
 								
 				<div class="additional-tooltip" id="regionTooltip"></div>
 			</div>
-			<p id=missionDescription>This is a description</p>
+			<p id=missionDescription>
+				Ekor are going to City A, they are expected to reach destination in 1 weeks.<br>
+				They are expected to spend 4 weeks to finish this contract that is prized at 10 golds
+			</p>
 			<div class="vbox">
 				<button id="sendMission" disabled="true">Send mission</button>
 				<button id="cancelMission">Cancel mission</button>

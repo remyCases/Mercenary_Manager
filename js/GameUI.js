@@ -252,14 +252,14 @@ export function updateUI(GameUI, newTurn = false) {
 		if (slot.classList.contains("frozen")) {
 			const travelDuration = GameUI.gameStateData.get("mission")[missionId].travelDuration;
 			if (travelDuration >= 1) {
-				textOverlay.style.display = "block";
+				textOverlay.style.visibility = "visible";
 				textOverlay.textContent = `TRAVEL TO MISSION\r\n${travelDuration} weeks remaining`;
-				giveOrder.style.display = "none";
+				giveOrder.style.visibility = "hidden";
 				giveOrder.disabled = true;
 			} else {
-				textOverlay.style.display = "none";
+				textOverlay.style.visibility = "hidden";
 				textOverlay.textContent = "";
-				giveOrder.style.display = "block";
+				giveOrder.style.visibility = "visible";
 				if (newTurn) {
 					giveOrder.disabled = false;
 				}
@@ -271,9 +271,9 @@ export function updateUI(GameUI, newTurn = false) {
 			getItem(GameUI.missionButtons, missionId).disabled = true;
 		} else {
 
-			textOverlay.style.display = "none";
+			textOverlay.style.visibility = "hidden";
 			textOverlay.textContent = "";
-			giveOrder.style.display = "none";
+			giveOrder.style.visibility = "hidden";
 
 			if (GameUI.resourceData.get("ap").value <= 0 || !slot.classList.contains("occupied")) {
 				getItem(GameUI.missionButtons, missionId).disabled = true;
@@ -340,11 +340,12 @@ export function updateUI(GameUI, newTurn = false) {
 		const partyNames = Array.from(mission.party).map(([id, _]) => GameUI.troopData.get(id).name);
 		const estimatedWeeksWork = Math.ceil(location.efficiency / mission.efficiency);
 
+		GameUI.missionDescription.style.visibility = "visible"
 		GameUI.missionDescription.innerHTML = `${partyNames} are going to <span class="bold">${location.name}</span>, they are expected to reach destination in <span class="bold">${location.travelDuration} weeks</span>.<br>They are expected to spend <span class="bold">${estimatedWeeksWork} weeks</span> to finish this contract that is prized at <span class="bold">${location.reward} golds</span>`;
 
 		GameUI.sendMission.disabled = false;
 	} else {
-		GameUI.missionDescription.textContent = "";
+		GameUI.missionDescription.style.visibility = "hidden"
 		GameUI.sendMission.disabled = true;
 	}
 
@@ -380,10 +381,10 @@ export function updateUI(GameUI, newTurn = false) {
 
 				if (troop.health == 0) {
 					text.textContent = "Cant fight";
-					ap.style.display = "none";
-					supplies.style.display = "none";
-					lostHp.style.display = "none";
-					strategyBox.style.display = "none";
+					ap.style.visibility = "hidden";
+					supplies.style.visibility = "hidden";
+					lostHp.style.visibility = "hidden";
+					strategyBox.style.visibility = "hidden";
 					return;
 				} else {
 					text.textContent = `Efficiency: ${totalEfficiency}\nCautiousness: ${totalCautiousness}`;
@@ -391,22 +392,22 @@ export function updateUI(GameUI, newTurn = false) {
 
 				const costAp = strategy.cost.find((e) => e.type === "ap");
 				if (costAp && costAp.value > 0) {
-					ap.style.display = "block";
+					ap.style.visibility = "visible";
 				} else {
-					ap.style.display = "none";
+					ap.style.visibility = "hidden";
 				}
 
 				const costSupplies = strategy.cost.find((e) => e.type === "supplies");
 				if (costSupplies && costSupplies.value > 0) {
-					supplies.style.display = "block";
+					supplies.style.visibility = "visible";
 				} else {
-					supplies.style.display = "none";
+					supplies.style.visibility = "hidden";
 				}
 
 				if (location.danger > mission.cautiousness) {
-					lostHp.style.display = "block";
+					lostHp.style.visibility = "visible";
 				} else {
-					lostHp.style.display = "none";
+					lostHp.style.visibility = "hidden";
 				}
 
 				strategyBox.textContent = strategy.name;
