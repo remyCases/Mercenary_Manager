@@ -134,6 +134,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		// handles game over
 		if (GameUI.resourceData.get("food").value <= 0) {
 			GameUI.gameOverDialog.showModal();
+		} else if (GameUI.resourceData.get("food").value < 13) {
+			GameUI.lowOnFoodDialog.showModal();
+
 		}
 	});
 
@@ -265,8 +268,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		updateUI(GameUI);
 	});
 
-	GameUI.continueButton.addEventListener("click", () => {
+	GameUI.endMissionButton.addEventListener("click", () => {
 		endMissionDialog.close();
+		updateUI(GameUI);
+	});
+
+	GameUI.lowOnFoodButton.addEventListener("click", () => {
+		lowOnFoodDialog.close();
 		updateUI(GameUI);
 	});
 
@@ -284,10 +292,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				const container = createMissionTroopDisplay(GameUI, card, troopId, stratId);
 
 				GameUI.missionTroopBox.appendChild(container);
-
 			});
 
-			missionResolveDialog.showModal();
+			GameUI.missionResolveDialog.showModal();
 
 			computePartyStat(GameUI);
 			updateUI(GameUI);
@@ -298,6 +305,16 @@ document.addEventListener("DOMContentLoaded", () => {
 		GameUI.currentMission = null;
 		GameUI.missionResolveDialog.close();
 
+		updateUI(GameUI);
+	});
+
+	GameUI.resetMissionResolve.addEventListener("click", () => {
+		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
+		mission.party.forEach((_, troopId) => {
+			mission.party.set(troopId, "A");
+		});
+
+		computePartyStat(GameUI);
 		updateUI(GameUI);
 	});
 
@@ -317,7 +334,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		option.addEventListener("click", () => {
 			const troopId = GameUI.selectedStrategy.getAttribute("data-num");
 			const optionId = option.getAttribute("data-num");
-			GameUI.selectedStrategy.textContent = GameUI.strategyData.get(optionId).name;
 			GameUI.strategyMenu.style.display = "none";
 
 			const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];

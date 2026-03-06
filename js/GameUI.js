@@ -59,6 +59,7 @@ const GameUI = {
 	progressBarPrev: document.getElementById("progressBarPrev"),
 	rewardInfo: document.getElementById("rewardInfo"),
 	confirmMissionResolve: document.getElementById("confirmMissionResolve"),
+	resetMissionResolve: document.getElementById("resetMissionResolve"),
 	cancelMissionResolve: document.getElementById("cancelMissionResolve"),
 
 	// strategies
@@ -72,9 +73,13 @@ const GameUI = {
 	gameOverDialog: document.getElementById("gameOverDialog"),
 	restartButton: document.getElementById("restart"),
 
-	// gameover modal
+	// end of mission modal
 	endMissionDialog: document.getElementById("endMissionDialog"),
-	continueButton: document.getElementById("continue"),
+	endMissionButton: document.getElementById("endMissionButton"),
+
+	// alert low on food
+	lowOnFoodDialog: document.getElementById("lowOnFoodDialog"),
+	lowOnFoodButton: document.getElementById("lowOnFoodButton"),
 
 	// buyer buttons
 	buyFoodButton: document.getElementById("buyFood"),
@@ -403,6 +408,8 @@ export function updateUI(GameUI, newTurn = false) {
 				} else {
 					lostHp.style.display = "none";
 				}
+
+				strategyBox.textContent = strategy.name;
 			});
 
 			GameUI.progressBar.style.width = Math.ceil(100 * mission.efficiency / location.efficiency) + "%";

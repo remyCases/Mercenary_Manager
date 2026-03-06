@@ -160,33 +160,6 @@ button[disabled]{
 	display: inline-block;
 }
 
-#missionDialog {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-	min-width: 40%;
-	min-height: 40%;
-	transform: translate(-50%, -50%);
-}
-
-#gameOverDialog {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-	min-width: 40%;
-	min-height: 40%;
-	transform: translate(-50%, -50%);
-}
-
-#endMissionDialog {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-	min-width: 40%;
-	min-height: 40%;
-	transform: translate(-50%, -50%);
-}
-
 .mission-resolve-dialog {
 	position: absolute;
 	left: 50%;
@@ -197,6 +170,12 @@ button[disabled]{
 }
 
 dialog {
+	position: absolute;
+    left: 50%;
+    top: 50%;
+	min-width: 40%;
+	min-height: 40%;
+	transform: translate(-50%, -50%);
     z-index: 1000;
 }
 
