@@ -81,10 +81,10 @@ function addEvents(gameUI, card) {
 	}, { passive: false });
 }
 
-export function createMissionTroopDisplay(gameUI, card, troopId, stratId) {
+export function createMissionTroopDisplay(gameData, gameUI, card, troopId, strategyId) {
 	const strategyBox = document.createElement("div");
 	strategyBox.className = "strategy-box";
-	strategyBox.textContent = gameUI.strategyData.get(stratId).name;
+	strategyBox.textContent = gameData.strategy.get(strategyId).name;
 	strategyBox.dataset.num = troopId;
 	strategyBox.dataset.description = "";
 	strategyBox.addEventListener("click", (e) => {

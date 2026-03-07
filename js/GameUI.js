@@ -69,9 +69,6 @@ export const GameUI = {
 	confirmButton: confirmDialog.querySelector(".confirmButton"),
 	cancelButton: confirmDialog.querySelector(".cancelButton"),
 	confirmMessage: confirmDialog.querySelector("#confirmMessage"),
-
-	// story related
-	nextStoryButton: document.getElementById("nextStoryButton"),
 };
 
 export function start(gameData, gameUI) {
@@ -118,7 +115,7 @@ const MissionSlotUI = (() => {
 		if (frozen && travelDuration >= 1) {
 			textOverlay.textContent = `TRAVEL TO MISSION\r\n${travelDuration} weeks remaining`;
 			textOverlay.style.visibility = "visible";
-			
+
 			giveOrderButton.style.visibility = "hidden";
 			giveOrderButton.disabled = true;
 
@@ -139,27 +136,25 @@ const MissionSlotUI = (() => {
 		} else {
 			textOverlay.textContent = "";
 			textOverlay.style.visibility = "hidden";
-		
+
 			giveOrderButton.style.visibility = "hidden";
 
 			missionButton.disabled = (ap <= 0 || !occupied);
 		}
 	}
-
 	return { update };
 })();
 
 const RestSlotUI = (() => {
 	function update(slot, gameUI, gameData) {
-
 		const restId = slot.dataset.num;
 		const frozen = isFrozen(slot);
 		const occupied = isOccupied(slot);
 		const ap = gameData.resource.get("ap").value;
-		
+
 		const textOverlay = slot.querySelector(".frozen-overlay-text");
 		const restButton = getItem(gameUI.restButtons, restId);
-	
+
 		if (frozen) {
 			textOverlay.textContent = "Rest until next week";
 			textOverlay.style.visibility = "visible";
@@ -172,7 +167,27 @@ const RestSlotUI = (() => {
 			restButton.disabled = (ap <= 0 || !occupied);
 		}
 	}
+	return { update };
+})();
 
+const resourceUI = (() => {
+	function update(res) {
+		const uis = document.querySelectorAll("." + res.class);
+		uis.forEach((ui) => {
+			ui.textContent = res.value;
+		});
+	}
+	return { update };
+})();
+
+const buyButtonsUI = (() => {
+	function update(gameData, gameUI) {
+		const ap = gameData.resource.get("ap");
+		const gold = gameData.resource.get("gold");
+
+		gameUI.buyFoodButton.disabled = (ap.value <= 0 || gold.value <= 0);
+		gameUI.buySuppliesButton.disabled = (ap.value <= 0 || gold.value <= 0);
+	}
 	return { update };
 })();
 
@@ -189,19 +204,10 @@ export function updateUI(gameData, gameUI, newTurn = false) {
 	});
 
 	gameData.resource.forEach((v, _) => {
-		const uis = document.querySelectorAll("." + v.class);
-		uis.forEach((ui) => {
-			ui.textContent = v.value;
-		});
+		resourceUI.update(v);
 	});
 
-	if (gameData.resource.get("ap").value <= 0 || gameData.resource.get("gold").value <= 0) {
-		gameUI.buyFoodButton.disabled = true;
-		gameUI.buySuppliesButton.disabled = true;
-	} else {
-		gameUI.buyFoodButton.disabled = false;
-		gameUI.buySuppliesButton.disabled = false;
-	}
+	buyButtonsUI.update(gameData, gameUI);
 
 	document.querySelectorAll(".troop-card").forEach((card) => {
 		const id = card.dataset.num;
@@ -224,15 +230,15 @@ export function updateUI(gameData, gameUI, newTurn = false) {
 		}
 	});
 
-	if (gameUI.currentMission && gameUI.selectedLocation) {
-		const mission = gameUI.gameStateData.get("mission")[gameUI.currentMission];
-		const location = gameUI.regionData.get(gameUI.selectedLocation);
+	if (gameData.currentMission && gameData.selectedLocation) {
+		const mission = gameData.state.get("mission")[gameData.currentMission];
+		const location = gameData.region.get(gameData.selectedLocation);
 
 		const estimatedWeeksWork = Math.ceil(location.efficiency / mission.efficiency);
 		const enoughCautiousness = mission.cautiousness >= location.danger;
 
 		gameUI.missionDescription.style.visibility = "visible"
-		gameUI.missionDescription.innerHTML = `${partyToStr(mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span> and should earn <span class="bold">${location.reward} golds</span> if done during the first week.`;
+		gameUI.missionDescription.innerHTML = `${partyToStr(gameData, mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span> and should earn <span class="bold">${location.reward} golds</span> if done during the first week.`;
 
 		gameUI.sendMission.disabled = false;
 	} else {
@@ -245,9 +251,9 @@ export function updateUI(gameData, gameUI, newTurn = false) {
 		option.textContent = gameData.strategy.get(optionId).name;
 	});
 
-	if (gameUI.currentMission) {
-		const mission = gameUI.gameStateData.get("mission")[gameUI.currentMission];
-		const location = gameUI.regionData.get(mission.location);
+	if (gameData.currentMission) {
+		const mission = gameData.state.get("mission")[gameData.currentMission];
+		const location = gameData.region.get(mission.location);
 
 		if (location) {
 			gameUI.missionTroopBox.querySelectorAll(".stat-info").forEach((box) => {
@@ -307,7 +313,7 @@ export function updateUI(gameData, gameUI, newTurn = false) {
 			gameUI.progressBar.style.width = Math.ceil(100 * mission.efficiency / location.efficiency) + "%";
 			gameUI.progressBarPrev.style.width = Math.ceil(100 * mission.prevEfficiency / location.efficiency) + "%";
 			const latePenaltyFees = location.reward - mission.reward;
-			gameUI.durationInfo.innerHTML = `${partyToStr(mission.party)} working on this mission for <span class="bold">${mission.missionDuration} ${mission.missionDuration <= 1 ? "week" : "weeks"}</span> ${latePenaltyFees > 0 ? `<br>resulting in a loss of <span class="bold">${goldToStr(latePenaltyFees)}</span> as a late penalty fee.` : "."}`;
+			gameUI.durationInfo.innerHTML = `${partyToStr(gameData, mission.party)} working on this mission for <span class="bold">${mission.missionDuration} ${mission.missionDuration <= 1 ? "week" : "weeks"}</span> ${latePenaltyFees > 0 ? `<br>resulting in a loss of <span class="bold">${goldToStr(latePenaltyFees)}</span> as a late penalty fee.` : "."}`;
 
 			if (gameData.resource.get("ap").value < mission.costAp ||
 				gameData.resource.get("supplies").value < mission.costSupplies) {
@@ -319,7 +325,7 @@ export function updateUI(gameData, gameUI, newTurn = false) {
 	}
 }
 
-function partyToStr(party) {
+function partyToStr(gameData, party) {
 	const partyNames = Array.from(party).map(([id, _]) => gameData.troops.get(id).name);
 	if (partyNames.length == 1) {
 		return `${partyNames[0]} is`;
@@ -367,20 +373,17 @@ export function goldToStr(gold) {
 	return `${gold} ${gold <= 1 ? "gold" : "golds"}`;
 }
 
-export function cleanMissionSlot(gameData, gameUI, missionId) {
+export function cleanMissionSlot(gameUI, slot, mission) {
+	const region = getItem(gameUI.regions, mission.location);
 
-	const mission = gameData.state.get("mission")[missionId];
-	const slotToUnfreeze = getItem(gameUI.missionSlots, missionId);
-	const regionToUnfreeze = getItem(gameUI.regions, mission.location);
-
-	slotToUnfreeze.querySelectorAll(".troop-card").forEach((card) => {
+	slot.querySelectorAll(".troop-card").forEach((card) => {
 		card.classList.remove("frozen");
 		gameUI.troopPool.appendChild(card);
 	});
 
-	slotToUnfreeze.classList.remove("frozen");
-	slotToUnfreeze.classList.remove("occupied");
-	regionToUnfreeze.classList.remove("frozen");
+	slot.classList.remove("frozen");
+	slot.classList.remove("occupied");
+	region.classList.remove("frozen");
 }
 
 export function cleanRestSlot(gameData, gameUI, slot) {
@@ -395,7 +398,7 @@ export function cleanRestSlot(gameData, gameUI, slot) {
 		card.classList.remove("frozen");
 		gameUI.troopPool.appendChild(card);
 	});
-	
+
 	slot.classList.remove("frozen");
 	slot.classList.remove("occupied");
 }

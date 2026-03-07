@@ -219,7 +219,7 @@ dialog::backdrop {
     z-index: 10;
 }
 
-.overlay-button {
+.give-order-button {
     white-space: pre-line;
     position: absolute;
     top: 50%;

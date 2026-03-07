@@ -1,5 +1,3 @@
-let intro = false;
-
 const StoryElements = {
 	mainContainer: document.querySelector(".main-container"),
 	storyContainer: document.querySelector(".story-container"),
@@ -7,16 +5,26 @@ const StoryElements = {
 	dialogueContainer: document.getElementById("dialogueContainer"),
 	contentArea: document.getElementById("contentArea"),
 	infoStory: document.getElementById("infoStory"),
+
+	nextStoryButton: document.getElementById("nextStoryButton"),
+	resetStoryButton: document.getElementById("resetStoryButton"),
+	passStoryButton: document.getElementById("passStoryButton"),
 }
 
 const StoryData = {
 	story: [
-		"<strong>Linkerburg</strong>, a small farming village in the middle of nowhere.",
-		"The last place on the whole kingdom to start a mercenary company.",
-		"But here I am, with a few golds and my fellow <strong>Frivkyl</strong>.",
-		"At least, the food is cheap here.<br>And I won't have any troubles to convince locals to works for me.",
-		"As soon as we arrived, we heard a local merchant was looking for a caravan hand for a delivery in <strong>Ata</strong>.",
-		"<h1>ACT 1</h1><br>Nothing ever happens at <strong>Linkerburg</strong>",
+		{
+			name: "intro",
+			paragraphs: [
+				"<strong>Linkerburg</strong>, a small farming village in the middle of nowhere.",
+				"The last place in the whole kingdom to start a mercenary company.",
+				"But here I am, with a few golds and my fellow <strong>Frivkyl</strong>.",
+				"At least, the food is cheap here.<br>And I won't have any troubles to convince locals to works for me.",
+				"As soon as we arrived, we heard a local merchant was looking for a caravan hand for a delivery in <strong>Ata</strong>.",
+				"<h1>ACT 1</h1><br>Nothing ever happens at <strong>Linkerburg</strong>",
+			],
+			done: false,
+		},
 	],
 	dialogue: [
 		{ from: "a", img: "./../images/RangerMan.png", text: "You know when I said I'd follow you whenever we go, I didn't expect the whenever to be <strong>Linkerburg</strong>." },
@@ -25,38 +33,44 @@ const StoryData = {
 	triggers: [
 		{
 			id: "game_start",
-			condition: () => intro,
+			condition: () => StoryData.story[0].done,
 			action: () => {
 				StoryElements.storyContainer.style.display = "none";
 				StoryElements.mainContainer.style.display = "block";
 			}
 		},
-		{
-			id: "intro_end",
-			condition: () => StoryLogic.currentParagraph >= StoryData.story.length - 1,
-			action: () => intro = true
-		},
 	]
 };
 
 const StoryLogic = {
+	currentStory: 0,
 	currentParagraph: 0,
 	currentDialogue: 0,
 	inStoryMode: true,
 
+	getParagraphs() {
+		return StoryData.story[this.currentStory].paragraphs;
+	},
+
 	nextParagraph() {
-		if (this.currentParagraph < StoryData.story.length - 1) {
+		if (this.currentParagraph < this.getParagraphs().length - 1) {
 			this.currentParagraph++;
 			this.renderStory();
+		}
+		else {
+			StoryData.story[this.currentStory].done = true;
+			this.currentParagraph = 0;
+			this.currentStory++;
 		}
 		this.checkTriggers();
 	},
 
 	renderStory() {
-		const text = StoryData.story[this.currentParagraph];
+		const paragraphs = this.getParagraphs();
+		const text = paragraphs[this.currentParagraph];
 		StoryElements.contentArea.innerHTML = `<div class="story-text">${text}</div>`;
 
-		const progress = `${this.currentParagraph + 1}/${StoryData.story.length}`;
+		const progress = `${this.currentParagraph + 1}/${paragraphs.length}`;
 		StoryElements.infoStory.textContent = progress;
 	},
 
@@ -117,12 +131,33 @@ const StoryLogic = {
 		});
 	},
 
-	reset() {
+	resetStory() {
 		this.currentParagraph = 0;
 		this.currentDialogue = 0;
 		this.showStory();
-		StoryElements.infoStory.textContent = "";
 	}
 };
 
-export { StoryLogic };
+const Story = (() => {
+
+	function start() {
+		StoryLogic.renderStory();
+	}
+
+	StoryElements.nextStoryButton.addEventListener("click", () => {
+		StoryLogic.nextParagraph();
+	});
+
+	StoryElements.resetStoryButton.addEventListener("click", () => {
+		StoryLogic.resetStory();
+	});
+
+	StoryElements.passStoryButton.addEventListener("click", () => {
+		StoryData.story[0].done = true;
+		StoryLogic.checkTriggers();
+	});
+
+	return { start };
+})();
+
+export { Story };
