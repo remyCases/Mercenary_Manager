@@ -1,18 +1,20 @@
 import { getDistance, getItem, SNAP_DISTANCE, dropLogic, allowMissionDrop } from "./js/utils.js";
 import { resolveAction, computePartyStat } from "./js/logic.js"
-import { GameUI, start, updateUI, resetMission, goldToStr, cleanMissionSlot } from "./js/GameUI.js"
+import { GameUI, start, updateUI, goldToStr, cleanMissionSlot } from "./js/GameUI.js"
 import { createTroopCard, createMissionTroopDisplay } from "./js/Troops.js"
 import { StoryLogic } from "./js/Story.js"
+import { GameData, initData, resetMission } from "./js/GameData.js"
 
 document.addEventListener("DOMContentLoaded", () => {
-	start(GameUI);
-	updateUI(GameUI);
+	initData(GameData);
+	start(GameData, GameUI);
+	updateUI(GameData, GameUI);
 
 	GameUI.dropableSlots.forEach(slot => {
 		slot.addEventListener("drop", (e) => {
 			e.preventDefault();
 			dropLogic(GameUI, e.clientX, e.clientY);
-			updateUI(GameUI);
+			updateUI(GameData, GameUI);
 		});
 
 		slot.addEventListener("dragover", (e) => {
@@ -57,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				let sumHealth = 0;
 				mission.party.forEach((_, troopId) => {
 					mission.party.set(troopId, "A");
-					const troop = GameUI.troopData.get(troopId);
+					const troop = gameData.troop.get(troopId);
 					if (mission.cautiousness < location.danger && troop.health > 0) {
 						troop.health -= 1;
 					}
@@ -70,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					cleanMissionSlot(GameUI, missionId);
 
 					if (win) {
-						GameUI.resourceData.get("gold").value += mission.reward;
+						gameData.resource.get("gold").value += mission.reward;
 					}
 
 					const clone = GameUI.endMissionDialog.cloneNode(true);
@@ -114,8 +116,8 @@ document.addEventListener("DOMContentLoaded", () => {
 				while (slot.firstChild) {
 					const child = slot.lastChild;
 					const childId = child.dataset.num;
-					if (GameUI.troopData.get(childId).health < GameUI.troopData.get(childId).max_health) {
-						GameUI.troopData.get(childId).health += 1;
+					if (gameData.troop.get(childId).health < gameData.troop.get(childId).max_health) {
+						gameData.troop.get(childId).health += 1;
 					}
 					child.classList.remove("frozen");
 					GameUI.troopPool.appendChild(child);
@@ -127,15 +129,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 
 		// handles resources
-		GameUI.resourceData.get("ap").value = 5;
+		gameData.resource.get("ap").value = 5;
 		const res = resolveAction(
 			6,
-			GameUI.resourceData.get("gold").value,
-			GameUI.resourceData.get("food").value,
+			gameData.resource.get("gold").value,
+			gameData.resource.get("food").value,
 			0,
 		);
-		GameUI.resourceData.get("gold").value = res[0];
-		GameUI.resourceData.get("food").value = res[1];
+		gameData.resource.get("gold").value = res[0];
+		gameData.resource.get("food").value = res[1];
 
 		updateUI(GameUI, true);
 
@@ -143,9 +145,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (GameUI.gameStateData.get("week") >= 100) {
 
 		}
-		if (GameUI.resourceData.get("food").value <= 0) {
+		if (gameData.resource.get("food").value <= 0) {
 			GameUI.gameOverDialog.showModal();
-		} else if (GameUI.resourceData.get("food").value < 13) {
+		} else if (gameData.resource.get("food").value < 13) {
 			GameUI.lowOnFoodDialog.showModal();
 
 		}
@@ -171,21 +173,21 @@ document.addEventListener("DOMContentLoaded", () => {
 		GameUI.regions.forEach(region => region.classList.remove("selected"));
 		GameUI.currentMission = null;
 
-		updateUI(GameUI);
+		updateUI(GameData, GameUI);
 	});
 
 	GameUI.buyFoodButton.addEventListener("click", () => {
-		GameUI.resourceData.get("ap").value -= 1;
-		GameUI.resourceData.get("gold").value -= 1;
-		GameUI.resourceData.get("food").value += 10;
-		updateUI(GameUI);
+		gameData.resource.get("ap").value -= 1;
+		gameData.resource.get("gold").value -= 1;
+		gameData.resource.get("food").value += 10;
+		updateUI(GameData, GameUI);
 	});
 
 	GameUI.buySuppliesButton.addEventListener("click", () => {
-		GameUI.resourceData.get("ap").value -= 1;
-		GameUI.resourceData.get("gold").value -= 10;
-		GameUI.resourceData.get("supplies").value += 10;
-		updateUI(GameUI);
+		gameData.resource.get("ap").value -= 1;
+		gameData.resource.get("gold").value -= 10;
+		gameData.resource.get("supplies").value += 10;
+		updateUI(GameData, GameUI);
 	});
 
 	GameUI.missionButtons.forEach(b => {
@@ -202,14 +204,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	GameUI.restButtons.forEach(b => {
 		b.addEventListener("click", () => {
-			GameUI.resourceData.get("ap").value -= 1;
+			gameData.resource.get("ap").value -= 1;
 			const restId = b.dataset.num;
 			const slot = getItem(GameUI.restSlots, restId);
 			slot.classList.add("frozen");
 			for (const child of slot.children) {
 				child.classList.add("frozen");
 			}
-			updateUI(GameUI);
+			updateUI(GameData, GameUI);
 		});
 	});
 
@@ -231,13 +233,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			card.classList.add("frozen");
 		});
 
-		GameUI.resourceData.get("ap").value -= 1;
+		gameData.resource.get("ap").value -= 1;
 
 		GameUI.currentMission = null;
 		GameUI.selectedLocation = null;
 		missionDialog.close();
 
-		updateUI(GameUI);
+		updateUI(GameData, GameUI);
 	});
 
 	GameUI.cancelMission.addEventListener("click", () => {
@@ -246,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		GameUI.selectedLocation = null;
 		missionDialog.close();
 
-		updateUI(GameUI);
+		updateUI(GameData, GameUI);
 	});
 
 	GameUI.regions.forEach(region => {
@@ -255,7 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			region.classList.add("selected");
 			GameUI.selectedLocation = region.dataset.num;
 
-			updateUI(GameUI);
+			updateUI(GameData, GameUI);
 		});
 
 		region.addEventListener("mouseenter", () => {
@@ -276,17 +278,17 @@ document.addEventListener("DOMContentLoaded", () => {
 	GameUI.restartButton.addEventListener("click", () => {
 		gameOverDialog.close();
 		start(GameUI);
-		updateUI(GameUI);
+		updateUI(GameData, GameUI);
 	});
 
 	GameUI.endMissionButton.addEventListener("click", () => {
 		endMissionDialog.close();
-		updateUI(GameUI);
+		updateUI(GameData, GameUI);
 	});
 
 	GameUI.lowOnFoodButton.addEventListener("click", () => {
 		lowOnFoodDialog.close();
-		updateUI(GameUI);
+		updateUI(GameData, GameUI);
 	});
 
 	GameUI.giveOrderButtons.forEach((b) => {
@@ -308,7 +310,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			GameUI.missionResolveDialog.showModal();
 
 			computePartyStat(GameUI);
-			updateUI(GameUI);
+			updateUI(GameData, GameUI);
 		});
 	});
 
@@ -318,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		GameUI.currentMission = null;
 		GameUI.missionResolveDialog.close();
 
-		updateUI(GameUI);
+		updateUI(GameData, GameUI);
 	});
 
 
@@ -326,7 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		GameUI.currentMission = null;
 		GameUI.missionResolveDialog.close();
 
-		updateUI(GameUI);
+		updateUI(GameData, GameUI);
 	});
 
 	GameUI.resetMissionResolve.addEventListener("click", () => {
@@ -336,19 +338,19 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 
 		computePartyStat(GameUI);
-		updateUI(GameUI);
+		updateUI(GameData, GameUI);
 	});
 
 	GameUI.confirmMissionResolve.addEventListener("click", () => {
 		getItem(GameUI.giveOrderButtons, GameUI.currentMission).disabled = true;
 
 		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission]
-		GameUI.resourceData.get("ap").value -= mission.costAp;
-		GameUI.resourceData.get("supplies").value -= mission.costSupplies;
+		gameData.resource.get("ap").value -= mission.costAp;
+		gameData.resource.get("supplies").value -= mission.costSupplies;
 		GameUI.currentMission = null;
 		GameUI.missionResolveDialog.close();
 
-		updateUI(GameUI);
+		updateUI(GameData, GameUI);
 	});
 
 	GameUI.strategyOptions.forEach((option) => {
@@ -361,7 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			mission.party.set(troopId, optionId);
 
 			computePartyStat(GameUI);
-			updateUI(GameUI);
+			updateUI(GameData, GameUI);
 		});
 
 		option.addEventListener("mouseenter", (e) => {

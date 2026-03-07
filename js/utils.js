@@ -70,7 +70,7 @@ export function dropLogic(GameUI, X, Y) {
 
 export function allowMissionDrop(GameUI, slot) {
 	const troopId = GameUI.draggedElement.dataset.num;
-	const health = GameUI.troopData.get(troopId).health;
+	const health = gameData.troop.get(troopId).health;
 
 	if (health == 0 && slot.classList.contains("mission-slot")) {
 		return false;
@@ -79,3 +79,10 @@ export function allowMissionDrop(GameUI, slot) {
 	return true;
 }
 
+export function isFrozen(element) {
+	return element.classList.contains("frozen");
+}
+
+export function isOccupied(element) {
+	return element.classList.contains("occupied");
+}

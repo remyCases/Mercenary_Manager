@@ -23,7 +23,7 @@ export function computePartyStat(GameUI) {
 	let partyCostSupplies = 0;
 
 	mission.party.forEach((stratId, troopId) => {
-		const troop = GameUI.troopData.get(troopId);
+		const troop = gameData.troop.get(troopId);
 
 		if (troop.health == 0) return;
 		const strategy = GameUI.strategyData.get(stratId);

@@ -1,8 +1,8 @@
 import { getDistance, SNAP_DISTANCE, dropLogic } from "./utils.js";
 
-export function createTroopCard(GameUI, troopId, draggable, resetHealth = true) {
+export function createTroopCard(gameData, gameUI, troopId, draggable, resetHealth = true) {
 
-	const troopInfo = GameUI.troopData.get(troopId);
+	const troopInfo = gameData.troops.get(troopId);
 
 	const card = document.createElement("div");
 	card.className = "troop-card";
@@ -32,15 +32,15 @@ export function createTroopCard(GameUI, troopId, draggable, resetHealth = true) 
 		return card;
 	}
 
-	addEvents(GameUI, card);
+	addEvents(gameUI, card);
 
 	return card;
 }
 
-function addEvents(GameUI, card) {
+function addEvents(gameUI, card) {
 	card.addEventListener("dragstart", (e) => {
-		GameUI.draggedElement = card;
-		GameUI.originalParent = card.parentElement;
+		gameUI.draggedElement = card;
+		gameUI.originalParent = card.parentElement;
 
 		card.classList.add("dragging");
 		e.dataTransfer.effectAllowed = "move";
@@ -51,26 +51,26 @@ function addEvents(GameUI, card) {
 	});
 
 	card.addEventListener("touchstart", (e) => {
-		GameUI.draggedElement = card;
-		GameUI.originalParent = card.parentElement;
+		gameUI.draggedElement = card;
+		gameUI.originalParent = card.parentElement;
 
 		card.classList.add("dragging");
 		e.dataTransfer.effectAllowed = "move";
 	}, { passive: false });
 
 	card.addEventListener("touchend", (e) => {
-		dropLogic(GameUI, e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-		updateUI(GameUI);
+		dropLogic(gameUI, e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+		updateUI(gameUI);
 	}, { passive: false });
 
 	card.addEventListener("touchmove", () => {
-		if (!GameUI.draggedElement) return;
+		if (!gameUI.draggedElement) return;
 
 		const touchX = e.touches[0].clientX;
 		const touchY = e.touches[0].clientY;
 
-		GameUI.dropableSlots.forEach(slot => {
-			if (!allowMissionDrop(GameUI, slot)) return;
+		gameUI.dropableSlots.forEach(slot => {
+			if (!allowMissionDrop(gameUI, slot)) return;
 			const distance = getDistance(touchX, touchY, slot);
 			if (distance < SNAP_DISTANCE) {
 				slot.classList.add("hover");
@@ -81,16 +81,16 @@ function addEvents(GameUI, card) {
 	}, { passive: false });
 }
 
-export function createMissionTroopDisplay(GameUI, card, troopId, stratId) {
+export function createMissionTroopDisplay(gameUI, card, troopId, stratId) {
 	const strategyBox = document.createElement("div");
 	strategyBox.className = "strategy-box";
-	strategyBox.textContent = GameUI.strategyData.get(stratId).name;
+	strategyBox.textContent = gameUI.strategyData.get(stratId).name;
 	strategyBox.dataset.num = troopId;
 	strategyBox.dataset.description = "";
 	strategyBox.addEventListener("click", (e) => {
 		e.stopPropagation();
-		GameUI.strategyMenu.style.display = "block";
-		GameUI.selectedStrategy = strategyBox;
+		gameUI.strategyMenu.style.display = "block";
+		gameUI.selectedStrategy = strategyBox;
 	});
 
 	const stat = document.createElement("p");
