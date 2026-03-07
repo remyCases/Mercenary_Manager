@@ -8,7 +8,7 @@ export const GameUI = {
 	missionSlots: document.querySelectorAll(".mission-slot"),
 	restSlots: document.querySelectorAll(".rest-slot"),
 	troopPool: document.getElementById("troopPool"),
-	dropableSlots: document.querySelectorAll(".slot, .troop-pool"),
+	droppableSlots: document.querySelectorAll(".slot, .troop-pool"),
 
 	// buttons
 	resetButton: document.getElementById("resetSlots"),
@@ -30,8 +30,7 @@ export const GameUI = {
 	missionDescription: document.getElementById("missionDescription"),
 
 	// mission resolve
-	frozenTexts: document.querySelectorAll(".frozen-overlay-text"),
-	giveOrderButtons: document.querySelectorAll(".overlay-button"),
+	giveOrderButtons: document.querySelectorAll(".give-order-button"),
 	missionResolveDialog: document.getElementById("missionResolveDialog"),
 	missionTroopBox: document.getElementById("missionTroopBox"),
 	progressBar: document.getElementById("progressBar"),
@@ -49,7 +48,7 @@ export const GameUI = {
 	// tooltip of strategies
 	strategyTooltip: document.getElementById("strategyTooltip"),
 
-	// gameover modal
+	// game over modal
 	gameOverDialog: document.getElementById("gameOverDialog"),
 	restartButton: gameOverDialog.querySelector("#restart"),
 
@@ -89,7 +88,7 @@ export function start(gameData, gameUI) {
 		troopPool.appendChild(card);
 	});
 
-	gameUI.dropableSlots.forEach(slot => {
+	gameUI.droppableSlots.forEach(slot => {
 		slot.className = "slot";
 	});
 
@@ -112,22 +111,23 @@ const MissionSlotUI = (() => {
 		const travelDuration = gameData.state.get("mission")[missionId].travelDuration;
 		const ap = gameData.resource.get("ap").value;
 
-		const textOverlay = getItem(gameUI.frozenTexts, missionId);
+		const textOverlay = slot.querySelector(".frozen-overlay-text");
 		const giveOrderButton = getItem(gameUI.giveOrderButtons, missionId);
 		const missionButton = getItem(gameUI.missionButtons, missionId);
 
 		if (frozen && travelDuration >= 1) {
 			textOverlay.textContent = `TRAVEL TO MISSION\r\n${travelDuration} weeks remaining`;
-
 			textOverlay.style.visibility = "visible";
+			
 			giveOrderButton.style.visibility = "hidden";
 			giveOrderButton.disabled = true;
+
 			missionButton.disabled = true;
 		}
 		else if (frozen && travelDuration < 1) {
 			textOverlay.textContent = "";
-
 			textOverlay.style.visibility = "hidden";
+
 			giveOrderButton.style.visibility = "visible";
 			if (newTurn) {
 				giveOrderButton.disabled = false;
@@ -138,15 +138,38 @@ const MissionSlotUI = (() => {
 			}
 		} else {
 			textOverlay.textContent = "";
-
 			textOverlay.style.visibility = "hidden";
+		
 			giveOrderButton.style.visibility = "hidden";
 
-			if (ap <= 0 || !occupied) {
-				missionButton.disabled = true;
-			} else {
-				missionButton.disabled = false;
-			}
+			missionButton.disabled = (ap <= 0 || !occupied);
+		}
+	}
+
+	return { update };
+})();
+
+const RestSlotUI = (() => {
+	function update(slot, gameUI, gameData) {
+
+		const restId = slot.dataset.num;
+		const frozen = isFrozen(slot);
+		const occupied = isOccupied(slot);
+		const ap = gameData.resource.get("ap").value;
+		
+		const textOverlay = slot.querySelector(".frozen-overlay-text");
+		const restButton = getItem(gameUI.restButtons, restId);
+	
+		if (frozen) {
+			textOverlay.textContent = "Rest until next week";
+			textOverlay.style.visibility = "visible";
+
+			restButton.disabled = true;
+		} else {
+			textOverlay.textContent = "";
+
+			textOverlay.style.visibility = "hidden";
+			restButton.disabled = (ap <= 0 || !occupied);
 		}
 	}
 
@@ -162,17 +185,7 @@ export function updateUI(gameData, gameUI, newTurn = false) {
 	});
 
 	gameUI.restSlots.forEach((slot) => {
-		const restId = slot.dataset.num;
-		if (slot.classList.contains("frozen")) {
-			slot.setAttribute("data-frozen-text", "Rest until next week");
-			getItem(gameUI.restButtons, restId).disabled = true;
-		} else {
-			if (gameData.resource.get("ap").value <= 0 || !slot.classList.contains("occupied")) {
-				getItem(gameUI.restButtons, restId).disabled = true;
-			} else {
-				getItem(gameUI.restButtons, restId).disabled = false;
-			}
-		}
+		RestSlotUI.update(slot, gameUI, gameData);
 	});
 
 	gameData.resource.forEach((v, _) => {
@@ -354,9 +367,9 @@ export function goldToStr(gold) {
 	return `${gold} ${gold <= 1 ? "gold" : "golds"}`;
 }
 
-export function cleanMissionSlot(gameUI, missionId) {
+export function cleanMissionSlot(gameData, gameUI, missionId) {
 
-	const mission = gameUI.gameStateData.get("mission")[missionId];
+	const mission = gameData.state.get("mission")[missionId];
 	const slotToUnfreeze = getItem(gameUI.missionSlots, missionId);
 	const regionToUnfreeze = getItem(gameUI.regions, mission.location);
 
@@ -368,4 +381,21 @@ export function cleanMissionSlot(gameUI, missionId) {
 	slotToUnfreeze.classList.remove("frozen");
 	slotToUnfreeze.classList.remove("occupied");
 	regionToUnfreeze.classList.remove("frozen");
+}
+
+export function cleanRestSlot(gameData, gameUI, slot) {
+
+	slot.querySelectorAll(".troop-card").forEach((card) => {
+		const troopId = card.dataset.num;
+		const troop = gameData.troops.get(troopId);
+		if (troop.health < troop.max_health) {
+			troop.health += 1;
+		}
+
+		card.classList.remove("frozen");
+		gameUI.troopPool.appendChild(card);
+	});
+	
+	slot.classList.remove("frozen");
+	slot.classList.remove("occupied");
 }

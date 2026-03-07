@@ -69,7 +69,7 @@ function addEvents(gameUI, card) {
 		const touchX = e.touches[0].clientX;
 		const touchY = e.touches[0].clientY;
 
-		gameUI.dropableSlots.forEach(slot => {
+		gameUI.droppableSlots.forEach(slot => {
 			if (!allowMissionDrop(gameUI, slot)) return;
 			const distance = getDistance(touchX, touchY, slot);
 			if (distance < SNAP_DISTANCE) {

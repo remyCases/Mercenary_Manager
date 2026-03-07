@@ -1,6 +1,6 @@
 import { getDistance, getItem, SNAP_DISTANCE, dropLogic, allowMissionDrop } from "./js/utils.js";
 import { resolveAction, computePartyStat } from "./js/logic.js"
-import { GameUI, start, updateUI, goldToStr, cleanMissionSlot } from "./js/GameUI.js"
+import { GameUI, start, updateUI, goldToStr, cleanMissionSlot, cleanRestSlot } from "./js/GameUI.js"
 import { createTroopCard, createMissionTroopDisplay } from "./js/Troops.js"
 import { StoryLogic } from "./js/Story.js"
 import { GameData, initData, resetMission } from "./js/GameData.js"
@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	start(GameData, GameUI);
 	updateUI(GameData, GameUI);
 
-	GameUI.dropableSlots.forEach(slot => {
+	GameUI.droppableSlots.forEach(slot => {
 		slot.addEventListener("drop", (e) => {
 			e.preventDefault();
 			dropLogic(GameUI, e.clientX, e.clientY);
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 
 		slot.addEventListener("dragover", (e) => {
-			if (!allowMissionDrop(GameUI, slot)) return;
+			if (!allowMissionDrop(GameData, GameUI, slot)) return;
 			e.preventDefault();
 			e.dataTransfer.dropEffect = "move";
 
@@ -42,13 +42,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		GameUI.resetButton.click();
 
 		// handles time
-		GameUI.gameStateData.set("week", GameUI.gameStateData.get("week") + 1);
+		GameData.state.set("week", GameData.state.get("week") + 1);
 
 		// handles missions
 		GameUI.missionSlots.forEach((slot) => {
 			const missionId = slot.dataset.num;
-			const mission = GameUI.gameStateData.get("mission")[missionId];
-			const location = GameUI.regionData.get(mission.location);
+			const mission = GameData.state.get("mission")[missionId];
+			const location = GameData.region.get(mission.location);
 			if (mission.travelDuration) {
 				mission.travelDuration -= 1;
 			} else if (mission.travelDuration == 0) {
@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				let sumHealth = 0;
 				mission.party.forEach((_, troopId) => {
 					mission.party.set(troopId, "A");
-					const troop = gameData.troop.get(troopId);
+					const troop = GameData.troops.get(troopId);
 					if (mission.cautiousness < location.danger && troop.health > 0) {
 						troop.health -= 1;
 					}
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					cleanMissionSlot(GameUI, missionId);
 
 					if (win) {
-						gameData.resource.get("gold").value += mission.reward;
+						GameData.resource.get("gold").value += mission.reward;
 					}
 
 					const clone = GameUI.endMissionDialog.cloneNode(true);
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 					document.body.appendChild(clone);
 					clone.showModal();
-					GameUI.gameStateData.get("mission")[missionId] = resetMission();
+					GameData.state.get("mission")[missionId] = resetMission();
 				} else {
 					mission.missionDuration += 1;
 					mission.reward = Math.floor(mission.reward - 0.1 * location.reward)
@@ -113,41 +113,30 @@ document.addEventListener("DOMContentLoaded", () => {
 		// handles rest
 		GameUI.restSlots.forEach((slot) => {
 			if (slot.classList.contains("frozen")) {
-				while (slot.firstChild) {
-					const child = slot.lastChild;
-					const childId = child.dataset.num;
-					if (gameData.troop.get(childId).health < gameData.troop.get(childId).max_health) {
-						gameData.troop.get(childId).health += 1;
-					}
-					child.classList.remove("frozen");
-					GameUI.troopPool.appendChild(child);
-				}
-
-				slot.classList.remove("frozen");
-				slot.classList.remove("occupied");
+				cleanRestSlot(GameData, GameUI, slot);
 			}
 		});
 
 		// handles resources
-		gameData.resource.get("ap").value = 5;
+		GameData.resource.get("ap").value = 5;
 		const res = resolveAction(
 			6,
-			gameData.resource.get("gold").value,
-			gameData.resource.get("food").value,
+			GameData.resource.get("gold").value,
+			GameData.resource.get("food").value,
 			0,
 		);
-		gameData.resource.get("gold").value = res[0];
-		gameData.resource.get("food").value = res[1];
+		GameData.resource.get("gold").value = res[0];
+		GameData.resource.get("food").value = res[1];
 
-		updateUI(GameUI, true);
+		updateUI(GameData, GameUI, true);
 
 		// handles game over
-		if (GameUI.gameStateData.get("week") >= 100) {
+		if (GameData.state.get("week") >= 100) {
 
 		}
-		if (gameData.resource.get("food").value <= 0) {
+		if (GameData.resource.get("food").value <= 0) {
 			GameUI.gameOverDialog.showModal();
-		} else if (gameData.resource.get("food").value < 13) {
+		} else if (GameData.resource.get("food").value < 13) {
 			GameUI.lowOnFoodDialog.showModal();
 
 		}
@@ -155,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	GameUI.resetButton.addEventListener("click", () => {
 		// Move all cards back to pool
-		GameUI.dropableSlots.forEach(slot => {
+		GameUI.droppableSlots.forEach(slot => {
 			if (slot == GameUI.troopPool) {
 				return;
 			}
@@ -171,32 +160,32 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 
 		GameUI.regions.forEach(region => region.classList.remove("selected"));
-		GameUI.currentMission = null;
+		GameData.currentMission = null;
 
 		updateUI(GameData, GameUI);
 	});
 
 	GameUI.buyFoodButton.addEventListener("click", () => {
-		gameData.resource.get("ap").value -= 1;
-		gameData.resource.get("gold").value -= 1;
-		gameData.resource.get("food").value += 10;
+		GameData.resource.get("ap").value -= 1;
+		GameData.resource.get("gold").value -= 1;
+		GameData.resource.get("food").value += 10;
 		updateUI(GameData, GameUI);
 	});
 
 	GameUI.buySuppliesButton.addEventListener("click", () => {
-		gameData.resource.get("ap").value -= 1;
-		gameData.resource.get("gold").value -= 10;
-		gameData.resource.get("supplies").value += 10;
+		GameData.resource.get("ap").value -= 1;
+		GameData.resource.get("gold").value -= 10;
+		GameData.resource.get("supplies").value += 10;
 		updateUI(GameData, GameUI);
 	});
 
 	GameUI.missionButtons.forEach(b => {
 		b.addEventListener("click", () => {
-			GameUI.currentMission = b.dataset.num;
-			const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
-			mission.party = getPartyFromSlot(GameUI.currentMission);
+			GameData.currentMission = b.dataset.num;
+			const mission = GameData.state.get("mission")[GameData.currentMission];
+			mission.party = getPartyFromSlot(GameData.currentMission);
 
-			computePartyStat(GameUI);
+			computePartyStat(GameData);
 
 			missionDialog.showModal();
 		});
@@ -204,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	GameUI.restButtons.forEach(b => {
 		b.addEventListener("click", () => {
-			gameData.resource.get("ap").value -= 1;
+			GameData.resource.get("ap").value -= 1;
 			const restId = b.dataset.num;
 			const slot = getItem(GameUI.restSlots, restId);
 			slot.classList.add("frozen");
@@ -216,8 +205,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	GameUI.sendMission.addEventListener("click", () => {
-		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
-		const location = GameUI.regionData.get(GameUI.selectedLocation);
+		const mission = GameData.state.get("mission")[GameData.currentMission];
+		const location = GameData.region.get(GameUI.selectedLocation);
 
 		const travelDuration = location.travelDuration;
 		mission.travelDuration = travelDuration;
@@ -227,15 +216,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		mission.location = GameUI.selectedLocation;
 		mission.reward = location.reward;
 
-		const slot = getItem(GameUI.missionSlots, GameUI.currentMission);
+		const slot = getItem(GameUI.missionSlots, GameData.currentMission);
 		slot.classList.add("frozen");
 		slot.querySelectorAll(".troop-card").forEach((card) => {
 			card.classList.add("frozen");
 		});
 
-		gameData.resource.get("ap").value -= 1;
+		GameData.resource.get("ap").value -= 1;
 
-		GameUI.currentMission = null;
+		GameData.currentMission = null;
 		GameUI.selectedLocation = null;
 		missionDialog.close();
 
@@ -244,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	GameUI.cancelMission.addEventListener("click", () => {
 		GameUI.regions.forEach(slot => slot.classList.remove("selected"));
-		GameUI.currentMission = null;
+		GameData.currentMission = null;
 		GameUI.selectedLocation = null;
 		missionDialog.close();
 
@@ -262,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		region.addEventListener("mouseenter", () => {
 			const id = region.dataset.num;
-			const location = GameUI.regionData.get(id);
+			const location = GameData.region.get(id);
 
 			GameUI.regionTooltip.textContent = `${location.name}`;
 			GameUI.regionTooltip.style.display = "block";
@@ -293,12 +282,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	GameUI.giveOrderButtons.forEach((b) => {
 		b.addEventListener("click", () => {
-			GameUI.currentMission = b.dataset.num;
+			GameData.currentMission = b.dataset.num;
 			while (GameUI.missionTroopBox.firstChild) {
 				GameUI.missionTroopBox.removeChild(GameUI.missionTroopBox.lastChild);
 			}
 
-			const party = GameUI.gameStateData.get("mission")[GameUI.currentMission].party
+			const party = GameData.state.get("mission")[GameData.currentMission].party
 
 			party.forEach((stratId, troopId) => {
 				const card = createTroopCard(GameUI, troopId, false, false);
@@ -315,9 +304,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	GameUI.giveUpMissionResolve.addEventListener("confirmed", () => {
-		cleanMissionSlot(GameUI, GameUI.currentMission);
-		GameUI.gameStateData.get("mission")[GameUI.currentMission] = resetMission();
-		GameUI.currentMission = null;
+		cleanMissionSlot(GameUI, GameData.currentMission);
+		GameData.state.get("mission")[GameData.currentMission] = resetMission();
+		GameData.currentMission = null;
 		GameUI.missionResolveDialog.close();
 
 		updateUI(GameData, GameUI);
@@ -325,14 +314,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 	GameUI.cancelMissionResolve.addEventListener("click", () => {
-		GameUI.currentMission = null;
+		GameData.currentMission = null;
 		GameUI.missionResolveDialog.close();
 
 		updateUI(GameData, GameUI);
 	});
 
 	GameUI.resetMissionResolve.addEventListener("click", () => {
-		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
+		const mission = GameData.state.get("mission")[GameData.currentMission];
 		mission.party.forEach((_, troopId) => {
 			mission.party.set(troopId, "A");
 		});
@@ -342,12 +331,12 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	GameUI.confirmMissionResolve.addEventListener("click", () => {
-		getItem(GameUI.giveOrderButtons, GameUI.currentMission).disabled = true;
+		getItem(GameUI.giveOrderButtons, GameData.currentMission).disabled = true;
 
-		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission]
-		gameData.resource.get("ap").value -= mission.costAp;
-		gameData.resource.get("supplies").value -= mission.costSupplies;
-		GameUI.currentMission = null;
+		const mission = GameData.state.get("mission")[GameData.currentMission]
+		GameData.resource.get("ap").value -= mission.costAp;
+		GameData.resource.get("supplies").value -= mission.costSupplies;
+		GameData.currentMission = null;
 		GameUI.missionResolveDialog.close();
 
 		updateUI(GameData, GameUI);
@@ -359,7 +348,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			const optionId = option.dataset.num;
 			GameUI.strategyMenu.style.display = "none";
 
-			const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
+			const mission = GameData.state.get("mission")[GameData.currentMission];
 			mission.party.set(troopId, optionId);
 
 			computePartyStat(GameUI);
