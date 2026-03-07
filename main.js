@@ -2,6 +2,7 @@ import { getDistance, getItem, SNAP_DISTANCE, dropLogic, allowMissionDrop } from
 import { resolveAction, computePartyStat } from "./js/logic.js"
 import { GameUI, start, updateUI, resetMission, goldToStr, cleanMissionSlot } from "./js/GameUI.js"
 import { createTroopCard, createMissionTroopDisplay } from "./js/Troops.js"
+import { StoryLogic } from "./js/Story.js"
 
 document.addEventListener("DOMContentLoaded", () => {
 	start(GameUI);
@@ -453,5 +454,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	GameUI.confirmDialog.addEventListener("close", () => {
 		GameUI.pendingAction = null;
+	});
+
+	document.querySelector(".main-container").style.display = "none";
+	StoryLogic.renderStory();
+	GameUI.nextStoryButton.addEventListener("click", () => {
+		StoryLogic.nextParagraph();
 	});
 });

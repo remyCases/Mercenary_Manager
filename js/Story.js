@@ -1,0 +1,128 @@
+let intro = false;
+
+const StoryElements = {
+	mainContainer: document.querySelector(".main-container"),
+	storyContainer: document.querySelector(".story-container"),
+
+	dialogueContainer: document.getElementById("dialogueContainer"),
+	contentArea: document.getElementById("contentArea"),
+	infoStory: document.getElementById("infoStory"),
+}
+
+const StoryData = {
+	story: [
+		"<strong>Linkerburg</strong>, a small farming village in the middle of nowhere.",
+		"The last place on the whole kingdom to start a mercenary company.",
+		"But here I am, with a few golds and my fellow <strong>Frivkyl</strong>.",
+		"At least, the food is cheap here.<br>And I won't have any troubles to convince locals to works for me.",
+		"As soon as we arrived, we heard a local merchant was looking for a caravan hand for a delivery in <strong>Ata</strong>.",
+		"<h1>ACT 1</h1><br>Nothing ever happens at <strong>Linkerburg</strong>",
+	],
+	dialogue: [
+		{ from: "a", img: "./../images/RangerMan.png", text: "You know when I said I'd follow you whenever we go, I didn't expect the whenever to be <strong>Linkerburg</strong>." },
+		{ from: "b", img: null, imgTxt: "You", text: "I know, I didn't expect it either." },
+	],
+	triggers: [
+		{
+			id: "game_start",
+			condition: () => intro,
+			action: () => {
+				StoryElements.storyContainer.style.display = "none";
+				StoryElements.mainContainer.style.display = "block";
+			}
+		},
+		{
+			id: "intro_end",
+			condition: () => StoryLogic.currentParagraph >= StoryData.story.length - 1,
+			action: () => intro = true
+		},
+	]
+};
+
+const StoryLogic = {
+	currentParagraph: 0,
+	currentDialogue: 0,
+	inStoryMode: true,
+
+	nextParagraph() {
+		if (this.currentParagraph < StoryData.story.length - 1) {
+			this.currentParagraph++;
+			this.renderStory();
+		}
+		this.checkTriggers();
+	},
+
+	renderStory() {
+		const text = StoryData.story[this.currentParagraph];
+		StoryElements.contentArea.innerHTML = `<div class="story-text">${text}</div>`;
+
+		const progress = `${this.currentParagraph + 1}/${StoryData.story.length}`;
+		StoryElements.infoStory.textContent = progress;
+	},
+
+	showDialogue() {
+		this.inStoryMode = false;
+		StoryElements.contentArea.style.display = "none";
+		StoryElements.dialogueContainer.style.display = "flex";
+		this.renderDialogue();
+	},
+
+	showStory() {
+		this.inStoryMode = true;
+		StoryElements.contentArea.style.display = "flex";
+		StoryElements.dialogueContainer.style.display = "none";
+		this.renderStory();
+	},
+
+	renderDialogue() {
+		StoryElements.dialogueContainer.innerHTML = "";
+
+		StoryData.dialogue.slice(0, this.currentDialogue + 1).forEach(msg => {
+			const messageFrom = document.createElement("div");
+			messageFrom.className = `message from-${msg.from}`;
+
+			let portrait;
+			if (msg.img) {
+				portrait = document.createElement("img");
+				portrait.className = `portrait person-${msg.from}`;
+				portrait.src = msg.img;
+			} else {
+				portrait = document.createElement("div");
+				portrait.className = `portrait person-${msg.from}`;
+				portrait.textContent = msg.imgTxt;
+			}
+
+			const text = document.createElement("div");
+			text.className = "dialogue-text";
+			text.innerHTML = msg.text;
+
+			messageFrom.appendChild(portrait);
+			messageFrom.appendChild(text);
+			StoryElements.dialogueContainer.appendChild(messageFrom);
+		});
+
+		// Auto-scroll to bottom
+		StoryElements.dialogueContainer.scrollTop = StoryElements.dialogueContainer.scrollHeight;
+
+		if (this.currentDialogue < StoryData.dialogue.length - 1) {
+			this.currentDialogue++;
+		}
+	},
+
+	checkTriggers() {
+		StoryData.triggers.forEach(trigger => {
+			if (trigger.condition()) {
+				trigger.action();
+			}
+		});
+	},
+
+	reset() {
+		this.currentParagraph = 0;
+		this.currentDialogue = 0;
+		this.showStory();
+		StoryElements.infoStory.textContent = "";
+	}
+};
+
+export { StoryLogic };

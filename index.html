@@ -7,7 +7,7 @@
 	<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="main-container">
         <h1>Mercenary Manager Prototype</h1>
         <div class="info">
             <p class="text-info"><strong>Instructions: </strong>Survive as a mercenary company for 100 weeks. Missions give you money, use money to buy food and feed your troops. Beware, running out of food will end your game.</p>
@@ -85,6 +85,19 @@
 				</div>
 			</div>
 		</div>
+    </div>
+
+	<div class="story-container">
+        <div class="story-dialog" id="storyDialog">
+            <div class="story-content" id="contentArea">
+                <div class="story-text">Click "Start Story" to begin...</div>
+            </div>
+            <div class="dialogue-container" id="dialogueContainer" style="display: none;"></div>
+        </div>
+        <div class="vbox">
+            <button id="nextStoryButton">Next</button>
+            <div class="info-story" id="infoStory"></div>
+        </div>
     </div>
 
 	<dialog id="missionDialog">

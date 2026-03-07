@@ -91,6 +91,9 @@ const GameUI = {
 	confirmButton: confirmDialog.querySelector(".confirmButton"),
 	cancelButton: confirmDialog.querySelector(".cancelButton"),
 	confirmMessage: confirmDialog.querySelector("#confirmMessage"),
+
+	// story related
+	nextStoryButton: document.getElementById("nextStoryButton"),
 };
 
 export function resetMission() {
@@ -499,4 +502,5 @@ export function cleanMissionSlot(GameUI, missionId) {
 	slotToUnfreeze.classList.remove("occupied");
 	regionToUnfreeze.classList.remove("frozen");
 }
+
 export { GameUI };
