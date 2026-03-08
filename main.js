@@ -4,13 +4,23 @@ import { GameUI, start, updateUI, goldToStr, cleanMissionSlot, cleanRestSlot } f
 import { createTroopCard, createMissionTroopDisplay } from "./js/Troops.js"
 import { Story } from "./js/Story.js"
 import { GameData, initData, resetMission } from "./js/GameData.js"
+import { Signals } from "./js/EventEmitter.js";
+import { DialogLowOnFood } from "./js/dialogs/DialogLowOnFood.js"
+import { DialogGameOver } from "./js/dialogs/DialogGameOver.js"
 
-document.addEventListener("DOMContentLoaded", () => {
+function startGame() {
+	document.querySelector(".main-container").style.display = "none";
+	document.querySelector(".story-container").style.display = "";
 	initData(GameData);
 	start(GameData, GameUI);
 	updateUI(GameData, GameUI);
-	document.querySelector(".main-container").style.display = "none";
 	Story.start();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+	Signals.on("start_game", startGame);
+	startGame();
+
 
 	GameUI.droppableSlots.forEach(slot => {
 		slot.addEventListener("drop", (e) => {
@@ -137,9 +147,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		}
 		if (GameData.resource.get("food").value <= 0) {
-			GameUI.gameOverDialog.showModal();
+			DialogGameOver.open();
 		} else if (GameData.resource.get("food").value < 13) {
-			GameUI.lowOnFoodDialog.showModal();
+			DialogLowOnFood.open();
 
 		}
 	});
@@ -266,20 +276,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	GameUI.restartButton.addEventListener("click", () => {
-		gameOverDialog.close();
-		initData(GameData);
-		start(GameData, GameUI);
-		updateUI(GameData, GameUI);
-	});
+
 
 	GameUI.endMissionButton.addEventListener("click", () => {
 		endMissionDialog.close();
-		updateUI(GameData, GameUI);
-	});
-
-	GameUI.lowOnFoodButton.addEventListener("click", () => {
-		lowOnFoodDialog.close();
 		updateUI(GameData, GameUI);
 	});
 

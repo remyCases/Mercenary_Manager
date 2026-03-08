@@ -48,17 +48,9 @@ export const GameUI = {
 	// tooltip of strategies
 	strategyTooltip: document.getElementById("strategyTooltip"),
 
-	// game over modal
-	gameOverDialog: document.getElementById("gameOverDialog"),
-	restartButton: gameOverDialog.querySelector("#restart"),
-
 	// end of mission modal
 	endMissionDialog: document.getElementById("endMissionDialog"),
 	endMissionButton: endMissionDialog.querySelector("#endMissionButton"),
-
-	// alert low on food
-	lowOnFoodDialog: document.getElementById("lowOnFoodDialog"),
-	lowOnFoodButton: lowOnFoodDialog.querySelector("#lowOnFoodButton"),
 
 	// buyer buttons
 	buyFoodButton: document.getElementById("buyFood"),

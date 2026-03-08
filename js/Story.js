@@ -39,7 +39,13 @@ const StoryData = {
 				StoryElements.mainContainer.style.display = "block";
 			}
 		},
-	]
+	],
+
+	reset() {
+		this.story.forEach((s) => {
+			s.done = false;
+		});
+	}
 };
 
 const StoryLogic = {
@@ -135,13 +141,19 @@ const StoryLogic = {
 		this.currentParagraph = 0;
 		this.currentDialogue = 0;
 		this.showStory();
-	}
+	},
+
+	reset() {
+		this.currentStory = 0;
+		this.resetStory();
+	},
 };
 
 const Story = (() => {
 
 	function start() {
-		StoryLogic.renderStory();
+		StoryData.reset();
+		StoryLogic.reset();
 	}
 
 	StoryElements.nextStoryButton.addEventListener("click", () => {
