@@ -56,11 +56,6 @@ export const GameUI = {
 	buyFoodButton: document.getElementById("buyFood"),
 	buySuppliesButton: document.getElementById("buySupplies"),
 
-	// danger zone
-	confirmDialog: document.getElementById("confirmDialog"),
-	confirmButton: confirmDialog.querySelector(".confirmButton"),
-	cancelButton: confirmDialog.querySelector(".cancelButton"),
-	confirmMessage: confirmDialog.querySelector("#confirmMessage"),
 };
 
 export function start(gameData, gameUI) {

@@ -7,6 +7,7 @@ import { GameData, initData, resetMission } from "./js/GameData.js"
 import { Signals } from "./js/EventEmitter.js";
 import { DialogLowOnFood } from "./js/dialogs/DialogLowOnFood.js"
 import { DialogGameOver } from "./js/dialogs/DialogGameOver.js"
+import "./js/dialogs/DialogConfirm.js"
 
 function startGame() {
 	document.querySelector(".main-container").style.display = "none";
@@ -416,38 +417,5 @@ document.addEventListener("DOMContentLoaded", () => {
 		return new Map(Array.from(slot.querySelectorAll(".troop-card"))
 			.map((card) => [card.dataset.num, "A"]));
 	}
-
-	document.addEventListener("click", (e) => {
-		const button = e.target.closest("button.danger");
-		if (!button) return;
-
-		e.preventDefault();
-		e.stopPropagation();
-
-		GameUI.pendingAction = button;
-
-		const message = button.dataset.confirmMessage ||
-			`Are you sure you want to ${button.textContent.toLowerCase()} ?`;
-		GameUI.confirmMessage.textContent = message;
-		GameUI.confirmDialog.showModal();
-	});
-
-	GameUI.confirmButton.addEventListener("click", () => {
-		if (GameUI.pendingAction) {
-			GameUI.pendingAction.dispatchEvent(new Event("confirmed"));
-			GameUI.pendingAction.click();
-		}
-		GameUI.confirmDialog.close();
-		GameUI.pendingAction = null;
-	});
-
-	GameUI.cancelButton.addEventListener("click", () => {
-		GameUI.confirmDialog.close();
-		GameUI.pendingAction = null;
-	});
-
-	GameUI.confirmDialog.addEventListener("close", () => {
-		GameUI.pendingAction = null;
-	});
 
 });
