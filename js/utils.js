@@ -34,10 +34,10 @@ export function getItem(items, val) {
 	return Array.from(items).find((item) => item.dataset.num === val)
 }
 
-export function dropLogic(gameUI, X, Y) {
-	if (!gameUI.draggedElement) return;
+export function dropLogic(gameData, gameUI, X, Y) {
+	if (!gameData.draggedElement) return;
 
-	gameUI.draggedElement.classList.remove("dragging");
+	gameData.draggedElement.classList.remove("dragging");
 
 	const closestSlot = findClosestSlot(X, Y, gameUI.droppableSlots);
 	if (closestSlot && isWithinSnapDistance(X, Y, closestSlot)) {
@@ -51,34 +51,27 @@ export function dropLogic(gameUI, X, Y) {
 			gameUI.troopPool.appendChild(existingCards[0]);
 		}
 
-		const oldParent = gameUI.draggedElement.parentElement;
-		closestSlot.appendChild(gameUI.draggedElement);
+		const oldParent = gameData.draggedElement.parentElement;
+		closestSlot.appendChild(gameData.draggedElement);
 		closestSlot.classList.add("occupied");
 
 		if (oldParent && oldParent.querySelectorAll(".troop-card").length === 0) {
 			oldParent.classList.remove("occupied");
 		}
 	} else {
-		if (gameUI.originalParent && gameUI.originalParent !== gameUI.draggedElement.parentElement) {
-			gameUI.originalParent.appendChild(gameUI.draggedElement);
+		if (gameData.originalParent && gameData.originalParent !== gameData.draggedElement.parentElement) {
+			gameData.originalParent.appendChild(gameData.draggedElement);
 		}
 	}
 
 	gameUI.droppableSlots.forEach(s => s.classList.remove("hover"));
-	gameUI.draggedElement = null;
+	gameData.draggedElement = null;
 }
 
-export function allowMissionDrop(gameData, gameUI, slot) {
-	const troopId = gameUI.draggedElement.dataset.num;
+export function allowMissionDrop(gameData, slot) {
+	const troopId = gameData.draggedElement.dataset.num;
 	const health = gameData.troops.get(troopId).health;
 
 	return health != 0 || !slot.classList.contains("mission-slot");
 }
 
-export function isFrozen(element) {
-	return element.classList.contains("frozen");
-}
-
-export function isOccupied(element) {
-	return element.classList.contains("occupied");
-}

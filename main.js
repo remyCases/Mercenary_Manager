@@ -1,13 +1,14 @@
 import { getDistance, getItem, SNAP_DISTANCE, dropLogic, allowMissionDrop } from "./js/utils.js";
+import { goldToStr } from "./js/UtilsUI.js";
 import { resolveAction, computePartyStat } from "./js/Logic.js"
-import { GameUI, start, updateUI, goldToStr, cleanMissionSlot, cleanRestSlot } from "./js/GameUI.js"
-import { createTroopCard, createMissionTroopDisplay } from "./js/Troops.js"
+import { GameUI, start, updateUI, cleanMissionSlot, cleanRestSlot } from "./js/GameUI.js"
 import { Story } from "./js/Story.js"
 import { GameData, initData, resetMission } from "./js/GameData.js"
 import { Signals } from "./js/EventEmitter.js";
 import { DialogLowOnFood } from "./js/dialogs/DialogLowOnFood.js"
 import { DialogGameOver } from "./js/dialogs/DialogGameOver.js"
 import { DialogMissionPreparation } from "./js/dialogs/DialogMissionPreparation.js"
+import { DialogMissionResolve } from "./js/dialogs/DialogMissionResolve.js"
 import "./js/dialogs/DialogConfirm.js"
 
 function startGame() {
@@ -23,33 +24,45 @@ function update() {
 	updateUI(GameData, GameUI);
 }
 
-function clearMissionSlot() {
-	const slot = getItem(GameUI.missionSlots, GameData.currentMission); // AIE
+function freezeMissionSlot(id = GameData.currentMission) {
+	const slot = getItem(GameUI.missionSlots, id);
 	slot.classList.add("frozen");
 	slot.querySelectorAll(".troop-card").forEach((card) => {
 		card.classList.add("frozen");
 	});
 }
 
+function unfreezeMissionSlot(id = GameData.currentMission) {
+	const slot = getItem(GameUI.missionSlots, id);
+	slot.querySelectorAll(".troop-card").forEach((card) => {
+		card.classList.remove("frozen");
+		GameUI.troopPool.appendChild(card);
+	});
+
+	slot.classList.remove("frozen");
+	slot.classList.remove("occupied");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 	Signals.on("start_game", startGame);
 	Signals.on("update", update);
-	Signals.on("clearMissionSlot", clearMissionSlot);
+	Signals.on("freezeMissionSlot", freezeMissionSlot);
+	Signals.on("unfreezeMissionSlot", unfreezeMissionSlot);
 	startGame();
 
 	GameUI.droppableSlots.forEach(slot => {
 		slot.addEventListener("drop", (e) => {
 			e.preventDefault();
-			dropLogic(GameUI, e.clientX, e.clientY);
+			dropLogic(GameData, GameUI, e.clientX, e.clientY);
 			updateUI(GameData, GameUI);
 		});
 
 		slot.addEventListener("dragover", (e) => {
-			if (!allowMissionDrop(GameData, GameUI, slot)) return;
+			if (!allowMissionDrop(GameData, slot)) return;
 			e.preventDefault();
 			e.dataTransfer.dropEffect = "move";
 
-			if (GameUI.draggedElement) {
+			if (GameData.draggedElement) {
 				const distance = getDistance(e.clientX, e.clientY, slot);
 				if (distance < SNAP_DISTANCE) {
 					slot.classList.add("hover");
@@ -186,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		});
 
-		GameUI.regions.forEach(region => region.classList.remove("selected"));
+		DialogMissionPreparation.unselectRegions();
 		GameData.currentMission = null;
 
 		updateUI(GameData, GameUI);
@@ -239,105 +252,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	GameUI.giveOrderButtons.forEach((b) => {
 		b.addEventListener("click", () => {
 			GameData.currentMission = b.dataset.num;
-			while (GameUI.missionTroopBox.firstChild) {
-				GameUI.missionTroopBox.removeChild(GameUI.missionTroopBox.lastChild);
-			}
-
-			const party = GameData.state.get("mission")[GameData.currentMission].party
-
-			party.forEach((strategyId, troopId) => {
-				const card = createTroopCard(GameData, GameUI, troopId, false, false);
-				const container = createMissionTroopDisplay(GameData, GameUI, card, troopId, strategyId);
-
-				GameUI.missionTroopBox.appendChild(container);
-			});
-
-			GameUI.missionResolveDialog.showModal();
+			DialogMissionResolve.open();
 
 			computePartyStat(GameData);
 			updateUI(GameData, GameUI);
 		});
-	});
-
-	GameUI.giveUpMissionResolve.addEventListener("confirmed", () => {
-		cleanMissionSlot(GameUI, getItem(GameUI.missionSlots, GameData.currentMission), GameData.state.get("mission")[GameData.currentMission]);
-		GameData.state.get("mission")[GameData.currentMission] = resetMission();
-		GameData.currentMission = null;
-		GameUI.missionResolveDialog.close();
-
-		updateUI(GameData, GameUI);
-	});
-
-
-	GameUI.cancelMissionResolve.addEventListener("click", () => {
-		GameData.currentMission = null;
-		GameUI.missionResolveDialog.close();
-
-		updateUI(GameData, GameUI);
-	});
-
-	GameUI.resetMissionResolve.addEventListener("click", () => {
-		const mission = GameData.state.get("mission")[GameData.currentMission];
-		mission.party.forEach((_, troopId) => {
-			mission.party.set(troopId, "A");
-		});
-
-		computePartyStat(GameData);
-		updateUI(GameData, GameUI);
-	});
-
-	GameUI.confirmMissionResolve.addEventListener("click", () => {
-		getItem(GameUI.giveOrderButtons, GameData.currentMission).disabled = true;
-
-		const mission = GameData.state.get("mission")[GameData.currentMission]
-		GameData.resource.get("ap").value -= mission.costAp;
-		GameData.resource.get("supplies").value -= mission.costSupplies;
-		GameData.currentMission = null;
-		GameUI.missionResolveDialog.close();
-
-		updateUI(GameData, GameUI);
-	});
-
-	GameUI.strategyOptions.forEach((option) => {
-		option.addEventListener("click", () => {
-			const troopId = GameUI.selectedStrategy.dataset.num;
-			const optionId = option.dataset.num;
-			GameUI.strategyMenu.style.display = "none";
-
-			const mission = GameData.state.get("mission")[GameData.currentMission];
-			mission.party.set(troopId, optionId);
-
-			computePartyStat(GameData);
-			updateUI(GameData, GameUI);
-		});
-
-		option.addEventListener("mouseenter", (e) => {
-			const optionId = option.dataset.num;
-			const strategy = GameData.strategy.get(optionId);
-
-			let stringBuilder = "";
-			strategy.cost.forEach((c) => {
-				stringBuilder += `${c.type}: ${c.value}\n`;
-			});
-
-			// Position tooltip on the element
-			const modalRect = GameUI.missionResolveDialog.getBoundingClientRect();
-			const rect = e.target.getBoundingClientRect();
-			GameUI.strategyTooltip.textContent = stringBuilder;
-			GameUI.strategyTooltip.style.display = "block";
-			GameUI.strategyTooltip.style.left = rect.left - modalRect.left - 10 + "px";
-			GameUI.strategyTooltip.style.top = rect.top - modalRect.top - 10 + "px";
-		});
-
-		option.addEventListener("mouseleave", () => {
-			GameUI.strategyTooltip.style.display = "none";
-		});
-
-	});
-
-	// close strategy menu if clicked outside
-	document.addEventListener("click", () => {
-		GameUI.strategyMenu.style.display = "none";
 	});
 
 	// handles general tooltips

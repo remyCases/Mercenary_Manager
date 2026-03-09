@@ -10,6 +10,8 @@ export const DialogMissionPreparation = (() => {
 	const regionTooltip = dialog.querySelector("#regionTooltip");
 
 	function init() {
+		Signals.on("unfreezeRegion", unfreezeRegion);
+
 		sendMissionButton.addEventListener("click", () => {
 			const mission = GameData.state.get("mission")[GameData.currentMission];
 			const location = GameData.region.get(GameData.selectedLocation);
@@ -22,7 +24,7 @@ export const DialogMissionPreparation = (() => {
 			mission.location = GameData.selectedLocation;
 			mission.reward = location.reward;
 
-			Signals.emit("clearMissionSlot");
+			Signals.emit("freezeMissionSlot");
 
 			GameData.resource.get("ap").value -= 1;
 
@@ -79,11 +81,22 @@ export const DialogMissionPreparation = (() => {
 		sendMission.disabled = val;
 	}
 
+	function unselectRegions() {
+		regions.forEach(region => region.classList.remove("selected"));
+	}
+
 	function open() {
 		dialog.showModal();
 	}
 
-	return { init, start, disableSendMission, open };
+	function unfreezeRegion(id = GameData.currentMission) {
+		const mission = GameData.state.get("mission")[id];
+		const region = getItem(regions, mission.location);
+		region.classList.remove("frozen");
+	}
+
+	return { init, start, disableSendMission, open, unselectRegions };
 })();
+
 
 DialogMissionPreparation.init();
