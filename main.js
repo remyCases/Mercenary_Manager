@@ -7,6 +7,7 @@ import { GameData, initData, resetMission } from "./js/GameData.js"
 import { Signals } from "./js/EventEmitter.js";
 import { DialogLowOnFood } from "./js/dialogs/DialogLowOnFood.js"
 import { DialogGameOver } from "./js/dialogs/DialogGameOver.js"
+import { DialogMissionPreparation } from "./js/dialogs/DialogMissionPreparation.js"
 import "./js/dialogs/DialogConfirm.js"
 
 function startGame() {
@@ -18,10 +19,23 @@ function startGame() {
 	Story.start();
 }
 
+function update() {
+	updateUI(GameData, GameUI);
+}
+
+function clearMissionSlot() {
+	const slot = getItem(GameUI.missionSlots, GameData.currentMission); // AIE
+	slot.classList.add("frozen");
+	slot.querySelectorAll(".troop-card").forEach((card) => {
+		card.classList.add("frozen");
+	});
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 	Signals.on("start_game", startGame);
+	Signals.on("update", update);
+	Signals.on("clearMissionSlot", clearMissionSlot);
 	startGame();
-
 
 	GameUI.droppableSlots.forEach(slot => {
 		slot.addEventListener("drop", (e) => {
@@ -200,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			computePartyStat(GameData);
 
-			missionDialog.showModal();
+			DialogMissionPreparation.open();
 		});
 	});
 
@@ -216,68 +230,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			updateUI(GameData, GameUI);
 		});
 	});
-
-	GameUI.sendMission.addEventListener("click", () => {
-		const mission = GameData.state.get("mission")[GameData.currentMission];
-		const location = GameData.region.get(GameData.selectedLocation);
-
-		const travelDuration = location.travelDuration;
-		mission.travelDuration = travelDuration;
-
-		const region = getItem(GameUI.regions, GameData.selectedLocation);
-		region.classList.add("frozen");
-		mission.location = GameData.selectedLocation;
-		mission.reward = location.reward;
-
-		const slot = getItem(GameUI.missionSlots, GameData.currentMission);
-		slot.classList.add("frozen");
-		slot.querySelectorAll(".troop-card").forEach((card) => {
-			card.classList.add("frozen");
-		});
-
-		GameData.resource.get("ap").value -= 1;
-
-		GameData.currentMission = null;
-		GameData.selectedLocation = null;
-		missionDialog.close();
-
-		updateUI(GameData, GameUI);
-	});
-
-	GameUI.cancelMission.addEventListener("click", () => {
-		GameUI.regions.forEach(slot => slot.classList.remove("selected"));
-		GameData.currentMission = null;
-		GameData.selectedLocation = null;
-		missionDialog.close();
-
-		updateUI(GameData, GameUI);
-	});
-
-	GameUI.regions.forEach(region => {
-		region.addEventListener("click", () => {
-			GameUI.regions.forEach(r => r.classList.remove("selected"));
-			region.classList.add("selected");
-			GameData.selectedLocation = region.dataset.num;
-
-			updateUI(GameData, GameUI);
-		});
-
-		region.addEventListener("mouseenter", () => {
-			const id = region.dataset.num;
-			const location = GameData.region.get(id);
-
-			GameUI.regionTooltip.textContent = `${location.name}`;
-			GameUI.regionTooltip.style.display = "block";
-			GameUI.regionTooltip.style.left = region.getAttribute("cx") + "px";
-			GameUI.regionTooltip.style.top = region.getAttribute("cy") + "px";
-		});
-
-		region.addEventListener("mouseleave", () => {
-			GameUI.regionTooltip.style.display = "none";
-		});
-	});
-
-
 
 	GameUI.endMissionButton.addEventListener("click", () => {
 		endMissionDialog.close();

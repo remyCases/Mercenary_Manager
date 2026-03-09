@@ -1,5 +1,6 @@
 import { createTroopCard } from "./Troops.js"
 import { getItem, isFrozen, isOccupied } from "./utils.js"
+import { DialogMissionPreparation } from "./dialogs/DialogMissionPreparation.js"
 
 export const GameUI = {
 	// general tooltip
@@ -16,15 +17,6 @@ export const GameUI = {
 	missionButtons: document.querySelectorAll(".mission-button"),
 	restButtons: document.querySelectorAll(".rest-button"),
 	stateDisplay: document.getElementById("state"),
-
-	// main buttons of missions
-	missionDialog: document.getElementById("missionDialog"),
-	sendMission: document.getElementById("sendMission"),
-	cancelMission: document.getElementById("cancelMission"),
-	regions: document.querySelectorAll(".region"),
-
-	// tooltip of missions
-	regionTooltip: document.getElementById("regionTooltip"),
 
 	// description of missions
 	missionDescription: document.getElementById("missionDescription"),
@@ -63,7 +55,6 @@ export function start(gameData, gameUI) {
 	gameUI.tooltip = document.createElement("div");
 	gameUI.tooltip.className = "tooltip";
 	document.body.appendChild(gameUI.tooltip);
-	gameUI.sendMission.disabled = true;
 
 	document.querySelectorAll(".troop-card").forEach((card) => card.remove());
 
@@ -80,10 +71,6 @@ export function start(gameData, gameUI) {
 
 	gameUI.missionSlots.forEach(slot => {
 		slot.classList.add("mission-slot");
-	});
-
-	gameUI.regions.forEach(region => {
-		region.classList.add("region");
 	});
 }
 
@@ -227,10 +214,10 @@ export function updateUI(gameData, gameUI, newTurn = false) {
 		gameUI.missionDescription.style.visibility = "visible"
 		gameUI.missionDescription.innerHTML = `${partyToStr(gameData, mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span> and should earn <span class="bold">${location.reward} golds</span> if done during the first week.`;
 
-		gameUI.sendMission.disabled = false;
+		DialogMissionPreparation.disableSendMission(false);
 	} else {
 		gameUI.missionDescription.style.visibility = "hidden"
-		gameUI.sendMission.disabled = true;
+		DialogMissionPreparation.disableSendMission(true);
 	}
 
 	gameUI.strategyOptions.forEach((option) => {
