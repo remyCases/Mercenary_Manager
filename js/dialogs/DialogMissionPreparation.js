@@ -1,6 +1,7 @@
 import { Signals } from "../EventEmitter.js";
 import { GameData } from "../GameData.js"
 import { getItem } from "../utils.js";
+import { partyToStr } from "../UtilsUI.js";
 
 export const DialogMissionPreparation = (() => {
 	const dialog = document.getElementById("missionDialog");
@@ -8,6 +9,7 @@ export const DialogMissionPreparation = (() => {
 	const cancelMissionButton = dialog.querySelector("#cancelMission");
 	const regions = dialog.querySelectorAll(".region");
 	const regionTooltip = dialog.querySelector("#regionTooltip");
+	const missionDescription = dialog.querySelector("#missionDescription");
 
 	function init() {
 		Signals.on("unfreezeRegion", unfreezeRegion);
@@ -77,6 +79,25 @@ export const DialogMissionPreparation = (() => {
 		});
 	}
 
+	function update() {
+		if (dialog.open) {
+			const mission = GameData.state.get("mission")[GameData.currentMission];
+			const location = GameData.region.get(GameData.selectedLocation);
+
+			const estimatedWeeksWork = Math.ceil(location.efficiency / mission.efficiency);
+			const enoughCautiousness = mission.cautiousness >= location.danger;
+
+			missionDescription.style.visibility = "visible"
+			missionDescription.innerHTML = `${partyToStr(GameData, mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span> and should earn <span class="bold">${location.reward} golds</span> if done during the first week.`;
+
+			sendMission.disabled = false;
+		} else {
+			missionDescription.style.visibility = "hidden"
+			sendMission.disabled = true;
+
+		}
+	}
+
 	function disableSendMission(val) {
 		sendMission.disabled = val;
 	}
@@ -95,8 +116,42 @@ export const DialogMissionPreparation = (() => {
 		region.classList.remove("frozen");
 	}
 
-	return { init, start, disableSendMission, open, unselectRegions };
+	return { init, start, update, disableSendMission, open, unselectRegions };
 })();
 
+function estimatedDifficulty(weeks, enoughCautiousness) {
+
+	let timeDifficulty = 0;
+	if (weeks < 3) {
+		timeDifficulty = 0;
+	}
+	else if (weeks < 5) {
+		timeDifficulty = 1;
+	}
+	else if (weeks < 10) {
+		timeDifficulty = 2;
+	}
+	else if (weeks < 20) {
+		timeDifficulty = 3;
+	}
+	else {
+		timeDifficulty = 4;
+	}
+
+	timeDifficulty += enoughCautiousness ? 0 : 1;
+
+	switch (timeDifficulty) {
+		case 0:
+			return "easy";
+		case 1:
+			return "average";
+		case 2:
+			return "hard";
+		case 3:
+			return "very hard";
+		default:
+			return "fiendish";
+	}
+}
 
 DialogMissionPreparation.init();

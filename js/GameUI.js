@@ -1,6 +1,6 @@
 import { createTroopCard } from "./Troops.js"
 import { getItem } from "./utils.js"
-import { isFrozen, isOccupied, partyToStr } from "./UtilsUI.js"
+import { isFrozen, isOccupied } from "./UtilsUI.js"
 import { DialogMissionPreparation } from "./dialogs/DialogMissionPreparation.js"
 import { DialogMissionResolve } from "./dialogs/DialogMissionResolve.js"
 
@@ -21,9 +21,6 @@ export const GameUI = {
 	restButtons: document.querySelectorAll(".rest-button"),
 	stateDisplay: document.getElementById("state"),
 
-	// description of missions
-	missionDescription: document.getElementById("missionDescription"),
-
 	// mission resolve
 	giveOrderButtons: document.querySelectorAll(".give-order-button"),
 
@@ -37,11 +34,11 @@ export const GameUI = {
 
 };
 
-export function start(gameData, gameUI) {
+export function start(gameData) {
 
-	gameUI.tooltip = document.createElement("div");
-	gameUI.tooltip.className = "tooltip";
-	document.body.appendChild(gameUI.tooltip);
+	GameUI.tooltip = document.createElement("div");
+	GameUI.tooltip.className = "tooltip";
+	document.body.appendChild(GameUI.tooltip);
 
 	document.querySelectorAll(".troop-card").forEach((card) => card.remove());
 
@@ -50,19 +47,19 @@ export function start(gameData, gameUI) {
 		troopPool.appendChild(card);
 	});
 
-	gameUI.droppableSlots.forEach(slot => {
+	GameUI.droppableSlots.forEach(slot => {
 		slot.className = "slot";
 	});
 
-	gameUI.troopPool.className = "troop-pool";
+	GameUI.troopPool.className = "troop-pool";
 
-	gameUI.missionSlots.forEach(slot => {
+	GameUI.missionSlots.forEach(slot => {
 		slot.classList.add("mission-slot");
 	});
 }
 
 const MissionSlotUI = (() => {
-	function update(slot, gameUI, gameData, newTurn) {
+	function update(slot, gameData, newTurn) {
 		const missionId = slot.dataset.num;
 		const frozen = isFrozen(slot);
 		const occupied = isOccupied(slot);
@@ -70,8 +67,8 @@ const MissionSlotUI = (() => {
 		const ap = gameData.resource.get("ap").value;
 
 		const textOverlay = slot.querySelector(".frozen-overlay-text");
-		const giveOrderButton = getItem(gameUI.giveOrderButtons, missionId);
-		const missionButton = getItem(gameUI.missionButtons, missionId);
+		const giveOrderButton = getItem(GameUI.giveOrderButtons, missionId);
+		const missionButton = getItem(GameUI.missionButtons, missionId);
 
 		if (frozen && travelDuration >= 1) {
 			textOverlay.textContent = `TRAVEL TO MISSION\r\n${travelDuration} weeks remaining`;
@@ -92,7 +89,7 @@ const MissionSlotUI = (() => {
 			}
 
 			if (!giveOrderButton.disabled) {
-				gameUI.newWeekButton.disabled = true;
+				GameUI.newWeekButton.disabled = true;
 			}
 		} else {
 			textOverlay.textContent = "";
@@ -107,14 +104,14 @@ const MissionSlotUI = (() => {
 })();
 
 const RestSlotUI = (() => {
-	function update(slot, gameUI, gameData) {
+	function update(slot, gameData) {
 		const restId = slot.dataset.num;
 		const frozen = isFrozen(slot);
 		const occupied = isOccupied(slot);
 		const ap = gameData.resource.get("ap").value;
 
 		const textOverlay = slot.querySelector(".frozen-overlay-text");
-		const restButton = getItem(gameUI.restButtons, restId);
+		const restButton = getItem(GameUI.restButtons, restId);
 
 		if (frozen) {
 			textOverlay.textContent = "Rest until next week";
@@ -142,35 +139,35 @@ const resourceUI = (() => {
 })();
 
 const buyButtonsUI = (() => {
-	function update(gameData, gameUI) {
+	function update(gameData) {
 		const ap = gameData.resource.get("ap");
 		const gold = gameData.resource.get("gold");
 
-		gameUI.buyFoodButton.disabled = (ap.value <= 0 || gold.value <= 0);
-		gameUI.buySuppliesButton.disabled = (ap.value <= 0 || gold.value <= 0);
+		GameUI.buyFoodButton.disabled = (ap.value <= 0 || gold.value <= 0);
+		GameUI.buySuppliesButton.disabled = (ap.value <= 0 || gold.value <= 0);
 	}
 	return { update };
 })();
 
-export function updateUI(gameData, gameUI, newTurn = false) {
-	gameUI.newWeekButton.disabled = false;
-	gameUI.stateDisplay.textContent = `Weeks: ${gameData.state.get("week")}`;
+export function updateUI(gameData, newTurn = false) {
+	GameUI.newWeekButton.disabled = false;
+	GameUI.stateDisplay.textContent = `Weeks: ${gameData.state.get("week")}`;
 
-	gameUI.missionSlots.forEach((slot) => {
-		MissionSlotUI.update(slot, gameUI, gameData, newTurn);
+	GameUI.missionSlots.forEach((slot) => {
+		MissionSlotUI.update(slot, gameData, newTurn);
 	});
 
-	gameUI.restSlots.forEach((slot) => {
-		RestSlotUI.update(slot, gameUI, gameData);
+	GameUI.restSlots.forEach((slot) => {
+		RestSlotUI.update(slot, gameData);
 	});
 
 	gameData.resource.forEach((v, _) => {
 		resourceUI.update(v);
 	});
 
-	buyButtonsUI.update(gameData, gameUI);
+	buyButtonsUI.update(gameData);
 
-	gameUI.getTroopCards().forEach((card) => {
+	GameUI.getTroopCards().forEach((card) => {
 		const id = card.dataset.num;
 		const troop = gameData.troops.get(id);
 		const healthIndicator = card.querySelector(".health-indicator")
@@ -191,76 +188,11 @@ export function updateUI(gameData, gameUI, newTurn = false) {
 		}
 	});
 
-	if (gameData.currentMission && gameData.selectedLocation) {
-		const mission = gameData.state.get("mission")[gameData.currentMission];
-		const location = gameData.region.get(gameData.selectedLocation);
-
-		const estimatedWeeksWork = Math.ceil(location.efficiency / mission.efficiency);
-		const enoughCautiousness = mission.cautiousness >= location.danger;
-
-		gameUI.missionDescription.style.visibility = "visible"
-		gameUI.missionDescription.innerHTML = `${partyToStr(gameData, mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span> and should earn <span class="bold">${location.reward} golds</span> if done during the first week.`;
-
-		DialogMissionPreparation.disableSendMission(false);
-	} else {
-		gameUI.missionDescription.style.visibility = "hidden"
-		DialogMissionPreparation.disableSendMission(true);
-	}
-
+	DialogMissionPreparation.update();
 	DialogMissionResolve.update();
 }
 
-
-function estimatedDifficulty(weeks, enoughCautiousness) {
-
-	let timeDifficulty = 0;
-	if (weeks < 3) {
-		timeDifficulty = 0;
-	}
-	else if (weeks < 5) {
-		timeDifficulty = 1;
-	}
-	else if (weeks < 10) {
-		timeDifficulty = 2;
-	}
-	else if (weeks < 20) {
-		timeDifficulty = 3;
-	}
-	else {
-		timeDifficulty = 4;
-	}
-
-	timeDifficulty += enoughCautiousness ? 0 : 1;
-
-	switch (timeDifficulty) {
-		case 0:
-			return "easy";
-		case 1:
-			return "average";
-		case 2:
-			return "hard";
-		case 3:
-			return "very hard";
-		default:
-			return "fiendish";
-	}
-}
-
-
-export function cleanMissionSlot(gameUI, slot, mission) {
-	const region = getItem(gameUI.regions, mission.location);
-
-	slot.querySelectorAll(".troop-card").forEach((card) => {
-		card.classList.remove("frozen");
-		gameUI.troopPool.appendChild(card);
-	});
-
-	slot.classList.remove("frozen");
-	slot.classList.remove("occupied");
-	region.classList.remove("frozen");
-}
-
-export function cleanRestSlot(gameData, gameUI, slot) {
+export function cleanRestSlot(gameData, slot) {
 
 	slot.querySelectorAll(".troop-card").forEach((card) => {
 		const troopId = card.dataset.num;
@@ -270,7 +202,7 @@ export function cleanRestSlot(gameData, gameUI, slot) {
 		}
 
 		card.classList.remove("frozen");
-		gameUI.troopPool.appendChild(card);
+		GameUI.troopPool.appendChild(card);
 	});
 
 	slot.classList.remove("frozen");

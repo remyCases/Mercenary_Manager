@@ -1,7 +1,7 @@
 import { getDistance, getItem, SNAP_DISTANCE, dropLogic, allowMissionDrop } from "./js/utils.js";
 import { goldToStr } from "./js/UtilsUI.js";
 import { resolveAction, computePartyStat } from "./js/Logic.js"
-import { GameUI, start, updateUI, cleanMissionSlot, cleanRestSlot } from "./js/GameUI.js"
+import { GameUI, start, updateUI, cleanRestSlot } from "./js/GameUI.js"
 import { Story } from "./js/Story.js"
 import { GameData, initData, resetMission } from "./js/GameData.js"
 import { Signals } from "./js/EventEmitter.js";
@@ -15,13 +15,13 @@ function startGame() {
 	document.querySelector(".main-container").style.display = "none";
 	document.querySelector(".story-container").style.display = "";
 	initData(GameData);
-	start(GameData, GameUI);
-	updateUI(GameData, GameUI);
+	start(GameData);
+	updateUI(GameData);
 	Story.start();
 }
 
 function update() {
-	updateUI(GameData, GameUI);
+	updateUI(GameData);
 }
 
 function freezeMissionSlot(id = GameData.currentMission) {
@@ -43,18 +43,23 @@ function unfreezeMissionSlot(id = GameData.currentMission) {
 	slot.classList.remove("occupied");
 }
 
+function disableGiveOrderButton(id = GameData.currentMission) {
+	getItem(GameUI.giveOrderButtons, id).disabled = true;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 	Signals.on("start_game", startGame);
 	Signals.on("update", update);
 	Signals.on("freezeMissionSlot", freezeMissionSlot);
 	Signals.on("unfreezeMissionSlot", unfreezeMissionSlot);
+	Signals.on("disableGiveOrderButton", disableGiveOrderButton);
 	startGame();
 
 	GameUI.droppableSlots.forEach(slot => {
 		slot.addEventListener("drop", (e) => {
 			e.preventDefault();
 			dropLogic(GameData, GameUI, e.clientX, e.clientY);
-			updateUI(GameData, GameUI);
+			updateUI(GameData);
 		});
 
 		slot.addEventListener("dragover", (e) => {
@@ -109,8 +114,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				const win = mission.prevEfficiency >= location.efficiency;
 
 				if (win || sumHealth == 0) {
-					cleanMissionSlot(GameUI, slot, mission);
 
+					Signals.emit("unfreezeMissionSlot", missionId);
+					Signals.emit("unfreezeRegion", missionId);
 					if (win) {
 						GameData.resource.get("gold").value += mission.reward;
 					}
@@ -153,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		// handles rest
 		GameUI.restSlots.forEach((slot) => {
 			if (slot.classList.contains("frozen")) {
-				cleanRestSlot(GameData, GameUI, slot);
+				cleanRestSlot(GameData, slot);
 			}
 		});
 
@@ -168,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		GameData.resource.get("gold").value = res[0];
 		GameData.resource.get("food").value = res[1];
 
-		updateUI(GameData, GameUI, true);
+		updateUI(GameData, true);
 
 		// handles game over
 		if (GameData.state.get("week") >= 100) {
@@ -202,21 +208,21 @@ document.addEventListener("DOMContentLoaded", () => {
 		DialogMissionPreparation.unselectRegions();
 		GameData.currentMission = null;
 
-		updateUI(GameData, GameUI);
+		updateUI(GameData);
 	});
 
 	GameUI.buyFoodButton.addEventListener("click", () => {
 		GameData.resource.get("ap").value -= 1;
 		GameData.resource.get("gold").value -= 1;
 		GameData.resource.get("food").value += 10;
-		updateUI(GameData, GameUI);
+		updateUI(GameData);
 	});
 
 	GameUI.buySuppliesButton.addEventListener("click", () => {
 		GameData.resource.get("ap").value -= 1;
 		GameData.resource.get("gold").value -= 10;
 		GameData.resource.get("supplies").value += 10;
-		updateUI(GameData, GameUI);
+		updateUI(GameData);
 	});
 
 	GameUI.missionButtons.forEach(b => {
@@ -240,13 +246,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			for (const child of slot.children) {
 				child.classList.add("frozen");
 			}
-			updateUI(GameData, GameUI);
+			updateUI(GameData);
 		});
 	});
 
 	GameUI.endMissionButton.addEventListener("click", () => {
 		endMissionDialog.close();
-		updateUI(GameData, GameUI);
+		updateUI(GameData);
 	});
 
 	GameUI.giveOrderButtons.forEach((b) => {
@@ -255,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			DialogMissionResolve.open();
 
 			computePartyStat(GameData);
-			updateUI(GameData, GameUI);
+			updateUI(GameData);
 		});
 	});
 

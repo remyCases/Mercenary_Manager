@@ -1,7 +1,6 @@
 import { Signals } from "../EventEmitter.js";
 import { GameData, resetMission } from "../GameData.js"
-import { getItem } from "../utils.js";
-import { partyToStr } from "../UtilsUI.js";
+import { partyToStr, goldToStr } from "../UtilsUI.js";
 import { createTroopCard } from "../Troops.js";
 import { computePartyStat } from "../Logic.js";
 
@@ -58,7 +57,7 @@ export const DialogMissionResolve = (() => {
 		});
 
 		confirmMissionResolve.addEventListener("click", () => {
-			getItem(GameUI.giveOrderButtons, GameData.currentMission).disabled = true;
+			Signals.emit("disableGiveOrderButton", GameData.currentMission);
 
 			const mission = GameData.state.get("mission")[GameData.currentMission]
 			GameData.resource.get("ap").value -= mission.costAp;
