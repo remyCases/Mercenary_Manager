@@ -1,3 +1,5 @@
+import { DialogGoal } from "./dialogs/DialogGoal.js"
+
 const StoryElements = {
 	mainContainer: document.querySelector(".main-container"),
 	storyContainer: document.querySelector(".story-container"),
@@ -37,6 +39,7 @@ const StoryData = {
 			action: () => {
 				StoryElements.storyContainer.style.display = "none";
 				StoryElements.mainContainer.style.display = "block";
+				setTimeout(DialogGoal.open, 1000);
 			}
 		},
 	],

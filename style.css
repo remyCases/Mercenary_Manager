@@ -30,6 +30,7 @@ h1 {
 
 h2 {
 	margin-bottom: 15px;
+	color: white;
 	text-align: center;
 }
 
@@ -182,6 +183,8 @@ button.danger {
 .small-dialog {
 	width: 30vw;
     height: 30vh;
+	background: #16213e;
+	color: white;
 }
 
 dialog {
@@ -308,7 +311,6 @@ dialog::backdrop {
     position: absolute;
     height: 100%;
     background: #2ecc71;
-    transition: width 0.3s ease;
     width: 0%;
 }
 
@@ -316,7 +318,6 @@ dialog::backdrop {
     position: absolute;
     height: 100%;
     background: #3498db;
-    transition: width 0.3s ease;
     width: 0%;
     z-index: 1;
 }
@@ -352,12 +353,12 @@ dialog::backdrop {
 
 .story-container {
 	width: 100%;
-	max-width: 800px;
 	overflow: hidden;
 }
 
 .story-dialog {
 	height: 500px;
+	width: 800px;
 	display: flex;
 	flex-direction: column;
 	background: #16213e;

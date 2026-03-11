@@ -9,8 +9,8 @@
 <body>
     <div class="main-container">
         <div class="info">
-            <p class="text-info"><strong>Instructions: </strong>Survive as a mercenary company for 100 weeks. Missions give you money, use money to buy food and feed your troops. Beware, running out of food will end your game.</p>
-			<p id="state" data-description="Reach week 100 to win" class="text-info">Weeks: 1</p>
+            <p id="goalInfo" class="bold text-info"><strong>Goal: </p>
+			<p id="weekDisplay" data-description="Reach week 100 to win" class="text-info">Weeks: 1</p>
 			<div>
 				<button id="newWeekButton" data-description="End the current week">Next Week</button>
             	<button id="resetSlots" data-description="Return unused troops to the Barracks">Reset</button>
@@ -102,6 +102,13 @@
             <div class="info-story" id="infoStory"></div>
         </div>
     </div>
+
+	<dialog id="goalDialog" class="small-dialog">
+		<div class="hbox">
+			<p id = "goalMessage" class="goal-message"></p>
+			<button id="confirmGoalButton" class="confirm-goal-button">Ok</button>
+		</div>
+	</dialog>
 
 	<dialog id="missionDialog">
 		<div class="hbox">

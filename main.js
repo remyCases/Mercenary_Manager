@@ -3,7 +3,7 @@ import { goldToStr } from "./js/UtilsUI.js";
 import { resolveAction, computePartyStat } from "./js/Logic.js"
 import { GameUI, start, updateUI, cleanRestSlot } from "./js/GameUI.js"
 import { Story } from "./js/Story.js"
-import { GameData, initData, resetMission } from "./js/GameData.js"
+import { GameData, initData, nextConditions, resetMission } from "./js/GameData.js"
 import { Signals } from "./js/EventEmitter.js";
 import { DialogLowOnFood } from "./js/dialogs/DialogLowOnFood.js"
 import { DialogGameOver } from "./js/dialogs/DialogGameOver.js"
@@ -14,7 +14,7 @@ import "./js/dialogs/DialogConfirm.js"
 function startGame() {
 	document.querySelector(".main-container").style.display = "none";
 	document.querySelector(".story-container").style.display = "";
-	initData(GameData);
+	initData();
 	start(GameData);
 	updateUI(GameData);
 	Story.start();
@@ -120,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					Signals.emit("unfreezeRegion", missionId);
 					if (win) {
 						GameData.resources.get("gold").value += mission.reward;
+						contract.done = true;
 					}
 
 					const clone = GameUI.endMissionDialog.cloneNode(true);
@@ -177,15 +178,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		updateUI(GameData, true);
 
-		// handles game over
-		if (GameData.state.get("week") >= 100) {
-
-		}
-		if (GameData.resources.get("food").value <= 0) {
+		if (GameData.state.get("winCondition").condition()) {
+			nextConditions();
+		} else if (GameData.state.get("loseCondition").condition() || GameData.resources.get("food").value <= 0) {
 			DialogGameOver.open();
 		} else if (GameData.resources.get("food").value < 13) {
 			DialogLowOnFood.open();
+		}
 
+		if (GameData.state.get("win")) {
+			// TODO create a win dialog
+			setTimeout(() => alert("End of content reach, thanks for playing"), 2000);
 		}
 	});
 

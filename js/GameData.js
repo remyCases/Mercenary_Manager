@@ -35,63 +35,73 @@ export function resetMission() {
 	};
 }
 
-export function initData(gameData) {
-	gameData.draggedElement = null;
-	gameData.originalParent = null;
-	gameData.currentMission = null;
-	gameData.selectedLocation = null;
-	gameData.selectedStrategy = null;
+export function initData() {
+	GameData.draggedElement = null;
+	GameData.originalParent = null;
+	GameData.currentMission = null;
+	GameData.selectedLocation = null;
+	GameData.selectedStrategy = null;
 
-	gameData.state.set("week", 1);
-	gameData.state.set("mission", {
+	GameData.state.set("win", false);
+	GameData.state.set("step", 0);
+	GameData.state.set("week", 1);
+	GameData.state.set("mission", {
 		0: resetMission(),
 		1: resetMission(),
 	});
-	gameData.state.set("winCondition", null);
-	gameData.state.set("loseCondition", null);
+	GameData.state.set("winCondition", { condition: null, description: "" });
+	GameData.state.set("loseCondition", { condition: null, description: "" });
 
-	gameData.regions.set("A", {
+	GameData.regions.set("A", {
 		name: "Ata",
 		travelDuration: 1,
 		available: true,
 		contract: "A",
 	});
-	gameData.regions.set("B", {
+	GameData.regions.set("B", {
 		name: "City B",
 		travelDuration: 2,
 		available: false,
 		contract: null,
 	});
-	gameData.regions.set("C", {
+	GameData.regions.set("C", {
 		name: "City C",
 		travelDuration: 2,
 		available: false,
 		contract: null,
 	});
-	gameData.regions.set("D", {
+	GameData.regions.set("D", {
 		name: "Linkerburg",
 		travelDuration: 0,
 		available: true,
 		contract: null,
 	});
 
-	gameData.contracts.set("A", {
+	GameData.contracts.set("A", {
 		efficiency: 5,
 		danger: 3,
 		reward: 5,
+		done: false,
+		repeatable: false,
 	});
-	gameData.contracts.set("B", {
+	GameData.contracts.set("B", {
 		efficiency: 20,
 		danger: 5,
 		reward: 20,
+		done: false,
+		repeatable: false,
+
 	});
-	gameData.contracts.set("C", {
+	GameData.contracts.set("C", {
 		efficiency: 30,
 		danger: 10,
 		reward: 30,
+		done: false,
+		repeatable: false,
+
 	});
 
-	gameData.troops.set("A", {
+	GameData.troops.set("A", {
 		name: "Anae",
 		png: "images/MageLady.png",
 		health: 0,
@@ -99,7 +109,7 @@ export function initData(gameData) {
 		efficiency: 3,
 		cautiousness: 3
 	});
-	gameData.troops.set("B", {
+	GameData.troops.set("B", {
 		name: "Ekor",
 		png: "images/MageMan.png",
 		health: 0,
@@ -107,7 +117,7 @@ export function initData(gameData) {
 		efficiency: 3,
 		cautiousness: 3
 	});
-	gameData.troops.set("C", {
+	GameData.troops.set("C", {
 		name: "Krisa",
 		png: "images/PalLady.png",
 		health: 0,
@@ -115,7 +125,7 @@ export function initData(gameData) {
 		efficiency: 2,
 		cautiousness: 3
 	});
-	gameData.troops.set("D", {
+	GameData.troops.set("D", {
 		name: "Istriac",
 		png: "images/PalMan.png",
 		health: 0,
@@ -123,7 +133,7 @@ export function initData(gameData) {
 		efficiency: 2,
 		cautiousness: 3
 	});
-	gameData.troops.set("E", {
+	GameData.troops.set("E", {
 		name: "Hjop",
 		png: "images/RangerLady.png",
 		health: 0,
@@ -131,7 +141,7 @@ export function initData(gameData) {
 		efficiency: 2,
 		cautiousness: 3
 	});
-	gameData.troops.set("F", {
+	GameData.troops.set("F", {
 		name: "Frivkyl",
 		png: "images/RangerMan.png",
 		health: 0,
@@ -140,15 +150,15 @@ export function initData(gameData) {
 		cautiousness: 3
 	});
 
-	gameData.resources.set("ap", { class: "res-ap", value: 5 });
-	gameData.resources.set("gold", { class: "res-gold", value: 100 });
-	gameData.resources.set("food", { class: "res-food", value: 20 });
-	gameData.resources.set("supplies", { class: "res-supplies", value: 10 });
+	GameData.resources.set("ap", { class: "res-ap", value: 5 });
+	GameData.resources.set("gold", { class: "res-gold", value: 100 });
+	GameData.resources.set("food", { class: "res-food", value: 20 });
+	GameData.resources.set("supplies", { class: "res-supplies", value: 10 });
 
-	gameData.strategies.set("A", {
+	GameData.strategies.set("A", {
 		name: "Default", cost: [], modifiers: []
 	});
-	gameData.strategies.set("B", {
+	GameData.strategies.set("B", {
 		name: "Passive",
 		cost: [
 			{ type: "ap", value: 1 },
@@ -158,7 +168,7 @@ export function initData(gameData) {
 			{ type: "cautiousness", value: +2 }
 		]
 	});
-	gameData.strategies.set("C", {
+	GameData.strategies.set("C", {
 		name: "Aggressive",
 		cost: [
 			{ type: "ap", value: 1 },
@@ -169,7 +179,7 @@ export function initData(gameData) {
 			{ type: "cautiousness", value: -1 }
 		]
 	});
-	gameData.strategies.set("D", {
+	GameData.strategies.set("D", {
 		name: "Defensive",
 		cost: [
 			{ type: "ap", value: 1 },
@@ -180,4 +190,26 @@ export function initData(gameData) {
 			{ type: "cautiousness", value: +1 }
 		]
 	});
+
+	nextConditions()
+}
+
+export function nextConditions() {
+
+	const currentStep = GameData.state.get("step");
+	if (currentStep == 0) {
+		GameData.state.set("winCondition", {
+			condition: () => GameData.contracts.get("A").done,
+			description: "Complete the mission to Ata",
+		});
+		GameData.state.set("loseCondition", {
+			condition: () => false,
+			description: "",
+		});
+
+	} else {
+		GameData.state.set("win", true);
+	}
+
+	GameData.state.set("step", currentStep + 1);
 }

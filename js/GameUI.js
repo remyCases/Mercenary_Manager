@@ -19,7 +19,8 @@ export const GameUI = {
 	newWeekButton: document.getElementById("newWeekButton"),
 	missionButtons: document.querySelectorAll(".mission-button"),
 	restButtons: document.querySelectorAll(".rest-button"),
-	stateDisplay: document.getElementById("state"),
+	goalInfo: document.getElementById("goalInfo"),
+	weekDisplay: document.getElementById("weekDisplay"),
 
 	// mission resolve
 	giveOrderButtons: document.querySelectorAll(".give-order-button"),
@@ -152,7 +153,8 @@ const buyButtonsUI = (() => {
 
 export function updateUI(gameData, newTurn = false) {
 	GameUI.newWeekButton.disabled = false;
-	GameUI.stateDisplay.textContent = `Weeks: ${gameData.state.get("week")}`;
+	GameUI.weekDisplay.textContent = `Weeks: ${gameData.state.get("week")}`;
+	GameUI.goalInfo.textContent = `Goal: ${gameData.state.get("winCondition").description}`;
 
 	GameUI.missionSlots.forEach((slot) => {
 		MissionSlotUI.update(slot, gameData, newTurn);
