@@ -60,8 +60,8 @@ export const DialogMissionResolve = (() => {
 			Signals.emit("disableGiveOrderButton", GameData.currentMission);
 
 			const mission = GameData.state.get("mission")[GameData.currentMission]
-			GameData.resource.get("ap").value -= mission.costAp;
-			GameData.resource.get("supplies").value -= mission.costSupplies;
+			GameData.resources.get("ap").value -= mission.costAp;
+			GameData.resources.get("supplies").value -= mission.costSupplies;
 			GameData.currentMission = null;
 			dialog.close();
 
@@ -83,7 +83,7 @@ export const DialogMissionResolve = (() => {
 
 			option.addEventListener("mouseenter", (e) => {
 				const optionId = option.dataset.num;
-				const strategy = GameData.strategy.get(optionId);
+				const strategy = GameData.strategies.get(optionId);
 
 				let stringBuilder = "";
 				strategy.cost.forEach((c) => {
@@ -129,11 +129,11 @@ export const DialogMissionResolve = (() => {
 	}
 
 	function update() {
-		if (GameData.currentMission) {
+		if (dialog.open) {
 			const mission = GameData.state.get("mission")[GameData.currentMission];
-			const location = GameData.region.get(mission.location);
+			const contract = GameData.contracts.get(mission.contract);
 
-			if (location) {
+			if (contract) {
 				missionTroopBox.querySelectorAll(".stat-info").forEach((box) => {
 
 					const text = box.querySelector(".stat-info-text");
@@ -146,7 +146,7 @@ export const DialogMissionResolve = (() => {
 					const troop = GameData.troops.get(troopId);
 
 					const strategyId = mission.party.get(troopId);
-					const strategy = GameData.strategy.get(strategyId);
+					const strategy = GameData.strategies.get(strategyId);
 
 					const modEfficiency = strategy.modifiers.find((e) => e.type === "efficiency");
 					const totalEfficiency = troop.efficiency + (modEfficiency ? modEfficiency.value : 0);
@@ -179,7 +179,7 @@ export const DialogMissionResolve = (() => {
 						supplies.style.visibility = "hidden";
 					}
 
-					if (location.danger > mission.cautiousness) {
+					if (contract.danger > mission.cautiousness) {
 						lostHp.style.visibility = "visible";
 					} else {
 						lostHp.style.visibility = "hidden";
@@ -188,13 +188,13 @@ export const DialogMissionResolve = (() => {
 					strategyBox.textContent = strategy.name;
 				});
 
-				progressBar.style.width = Math.ceil(100 * mission.efficiency / location.efficiency) + "%";
-				progressBarPrev.style.width = Math.ceil(100 * mission.prevEfficiency / location.efficiency) + "%";
-				const latePenaltyFees = location.reward - mission.reward;
+				progressBar.style.width = Math.ceil(100 * mission.efficiency / contract.efficiency) + "%";
+				progressBarPrev.style.width = Math.ceil(100 * mission.prevEfficiency / contract.efficiency) + "%";
+				const latePenaltyFees = contract.reward - mission.reward;
 				durationInfo.innerHTML = `${partyToStr(GameData, mission.party)} working on this mission for <span class="bold">${mission.missionDuration} ${mission.missionDuration <= 1 ? "week" : "weeks"}</span> ${latePenaltyFees > 0 ? `<br>resulting in a loss of <span class="bold">${goldToStr(latePenaltyFees)}</span> as a late penalty fee.` : "."}`;
 
-				if (GameData.resource.get("ap").value < mission.costAp ||
-					GameData.resource.get("supplies").value < mission.costSupplies) {
+				if (GameData.resources.get("ap").value < mission.costAp ||
+					GameData.resources.get("supplies").value < mission.costSupplies) {
 					confirmMissionResolve.disabled = true;
 				} else {
 					confirmMissionResolve.disabled = false;
@@ -203,14 +203,14 @@ export const DialogMissionResolve = (() => {
 		}
 		strategyOptions.forEach((option) => {
 			const optionId = option.dataset.num;
-			option.textContent = GameData.strategy.get(optionId).name;
+			option.textContent = GameData.strategies.get(optionId).name;
 		});
 	}
 
 	function createMissionTroopDisplay(card, troopId, strategyId) {
 		const strategyBox = document.createElement("div");
 		strategyBox.className = "strategy-box";
-		strategyBox.textContent = GameData.strategy.get(strategyId).name;
+		strategyBox.textContent = GameData.strategies.get(strategyId).name;
 		strategyBox.dataset.num = troopId;
 		strategyBox.dataset.description = "";
 		strategyBox.addEventListener("click", (e) => {

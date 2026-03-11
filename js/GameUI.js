@@ -31,7 +31,6 @@ export const GameUI = {
 	// buyer buttons
 	buyFoodButton: document.getElementById("buyFood"),
 	buySuppliesButton: document.getElementById("buySupplies"),
-
 };
 
 export function start(gameData) {
@@ -56,6 +55,8 @@ export function start(gameData) {
 	GameUI.missionSlots.forEach(slot => {
 		slot.classList.add("mission-slot");
 	});
+
+	DialogMissionPreparation.init();
 }
 
 const MissionSlotUI = (() => {
@@ -64,7 +65,7 @@ const MissionSlotUI = (() => {
 		const frozen = isFrozen(slot);
 		const occupied = isOccupied(slot);
 		const travelDuration = gameData.state.get("mission")[missionId].travelDuration;
-		const ap = gameData.resource.get("ap").value;
+		const ap = gameData.resources.get("ap").value;
 
 		const textOverlay = slot.querySelector(".frozen-overlay-text");
 		const giveOrderButton = getItem(GameUI.giveOrderButtons, missionId);
@@ -108,7 +109,7 @@ const RestSlotUI = (() => {
 		const restId = slot.dataset.num;
 		const frozen = isFrozen(slot);
 		const occupied = isOccupied(slot);
-		const ap = gameData.resource.get("ap").value;
+		const ap = gameData.resources.get("ap").value;
 
 		const textOverlay = slot.querySelector(".frozen-overlay-text");
 		const restButton = getItem(GameUI.restButtons, restId);
@@ -140,8 +141,8 @@ const resourceUI = (() => {
 
 const buyButtonsUI = (() => {
 	function update(gameData) {
-		const ap = gameData.resource.get("ap");
-		const gold = gameData.resource.get("gold");
+		const ap = gameData.resources.get("ap");
+		const gold = gameData.resources.get("gold");
 
 		GameUI.buyFoodButton.disabled = (ap.value <= 0 || gold.value <= 0);
 		GameUI.buySuppliesButton.disabled = (ap.value <= 0 || gold.value <= 0);
@@ -161,7 +162,7 @@ export function updateUI(gameData, newTurn = false) {
 		RestSlotUI.update(slot, gameData);
 	});
 
-	gameData.resource.forEach((v, _) => {
+	gameData.resources.forEach((v, _) => {
 		resourceUI.update(v);
 	});
 

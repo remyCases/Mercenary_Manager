@@ -16,7 +16,8 @@ export const DialogMissionPreparation = (() => {
 
 		sendMissionButton.addEventListener("click", () => {
 			const mission = GameData.state.get("mission")[GameData.currentMission];
-			const location = GameData.region.get(GameData.selectedLocation);
+			const location = GameData.regions.get(GameData.selectedLocation);
+			const contract = GameData.contracts.get(location.contract);
 
 			const travelDuration = location.travelDuration;
 			mission.travelDuration = travelDuration;
@@ -24,11 +25,12 @@ export const DialogMissionPreparation = (() => {
 			const region = getItem(regions, GameData.selectedLocation);
 			region.classList.add("frozen");
 			mission.location = GameData.selectedLocation;
-			mission.reward = location.reward;
+			mission.contract = location.contract;
+			mission.reward = contract.reward;
 
 			Signals.emit("freezeMissionSlot");
 
-			GameData.resource.get("ap").value -= 1;
+			GameData.resources.get("ap").value -= 1;
 
 			GameData.currentMission = null;
 			GameData.selectedLocation = null;
@@ -46,7 +48,11 @@ export const DialogMissionPreparation = (() => {
 		});
 
 		regions.forEach(region => {
+			const regionData = GameData.regions.get(region.dataset.num);
+			region.style.visibility = regionData.available ? "visible" : "hidden";
 			region.addEventListener("click", () => {
+				if (!regionData.contract) return;
+
 				regions.forEach(r => r.classList.remove("selected"));
 				region.classList.add("selected");
 				GameData.selectedLocation = region.dataset.num;
@@ -56,7 +62,7 @@ export const DialogMissionPreparation = (() => {
 
 			region.addEventListener("mouseenter", () => {
 				const id = region.dataset.num;
-				const location = GameData.region.get(id);
+				const location = GameData.regions.get(id);
 
 				// AIE
 				regionTooltip.textContent = `${location.name}`;
@@ -69,6 +75,7 @@ export const DialogMissionPreparation = (() => {
 				regionTooltip.style.display = "none";
 			});
 		});
+
 	}
 
 	function start() {
@@ -81,20 +88,24 @@ export const DialogMissionPreparation = (() => {
 
 	function update() {
 		if (dialog.open) {
-			const mission = GameData.state.get("mission")[GameData.currentMission];
-			const location = GameData.region.get(GameData.selectedLocation);
 
-			const estimatedWeeksWork = Math.ceil(location.efficiency / mission.efficiency);
-			const enoughCautiousness = mission.cautiousness >= location.danger;
 
-			missionDescription.style.visibility = "visible"
-			missionDescription.innerHTML = `${partyToStr(GameData, mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span> and should earn <span class="bold">${location.reward} golds</span> if done during the first week.`;
+			if (GameData.currentMission && GameData.selectedLocation) {
+				const mission = GameData.state.get("mission")[GameData.currentMission];
+				const location = GameData.regions.get(GameData.selectedLocation);
+				const contract = GameData.contracts.get(location.contract);
 
-			sendMission.disabled = false;
+				const estimatedWeeksWork = Math.ceil(contract.efficiency / mission.efficiency);
+				const enoughCautiousness = mission.cautiousness >= contract.danger;
+
+				missionDescription.style.visibility = "visible";
+				missionDescription.innerHTML = `${partyToStr(GameData, mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span> and should earn <span class="bold">${contract.reward} golds</span> if done during the first week.`;
+
+				sendMission.disabled = false;
+			}
 		} else {
-			missionDescription.style.visibility = "hidden"
+			missionDescription.style.visibility = "hidden";
 			sendMission.disabled = true;
-
 		}
 	}
 
@@ -153,5 +164,3 @@ function estimatedDifficulty(weeks, enoughCautiousness) {
 			return "fiendish";
 	}
 }
-
-DialogMissionPreparation.init();

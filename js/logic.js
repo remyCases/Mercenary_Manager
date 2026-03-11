@@ -26,7 +26,7 @@ export function computePartyStat(gameData) {
 		const troop = gameData.troops.get(troopId);
 
 		if (troop.health == 0) return;
-		const strategy = gameData.strategy.get(strategyId);
+		const strategy = gameData.strategies.get(strategyId);
 
 		const modEfficiency = strategy.modifiers.find((e) => e.type === "efficiency");
 		const totalEfficiency = troop.efficiency + (modEfficiency ? modEfficiency.value : 0);

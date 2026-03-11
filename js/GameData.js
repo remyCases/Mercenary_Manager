@@ -1,10 +1,11 @@
 export const GameData = {
 	// persistent data storage
 	state: new Map(),
-	region: new Map(),
+	regions: new Map(),
 	troops: new Map(),
-	resource: new Map(),
-	strategy: new Map(),
+	resources: new Map(),
+	strategies: new Map(),
+	contracts: new Map(),
 
 	// dragging cards
 	draggedElement: null,
@@ -22,6 +23,7 @@ export function resetMission() {
 	return {
 		travelDuration: null,
 		location: null,
+		contract: null,
 		efficiency: 0,
 		cautiousness: 0,
 		costAp: 0,
@@ -40,20 +42,54 @@ export function initData(gameData) {
 	gameData.selectedLocation = null;
 	gameData.selectedStrategy = null;
 
-	gameData.state = new Map();
-	gameData.region = new Map();
-	gameData.troops = new Map();
-	gameData.resource = new Map();
-
 	gameData.state.set("week", 1);
 	gameData.state.set("mission", {
 		0: resetMission(),
 		1: resetMission(),
 	});
+	gameData.state.set("winCondition", null);
+	gameData.state.set("loseCondition", null);
 
-	gameData.region.set("A", { name: "City A", distance: "250km", travelDuration: 1, efficiency: 10, danger: 5, reward: 10, });
-	gameData.region.set("B", { name: "City B", distance: "300km", travelDuration: 2, efficiency: 20, danger: 5, reward: 20, });
-	gameData.region.set("C", { name: "City C", distance: "350km", travelDuration: 2, efficiency: 30, danger: 10, reward: 30, });
+	gameData.regions.set("A", {
+		name: "Ata",
+		travelDuration: 1,
+		available: true,
+		contract: "A",
+	});
+	gameData.regions.set("B", {
+		name: "City B",
+		travelDuration: 2,
+		available: false,
+		contract: null,
+	});
+	gameData.regions.set("C", {
+		name: "City C",
+		travelDuration: 2,
+		available: false,
+		contract: null,
+	});
+	gameData.regions.set("D", {
+		name: "Linkerburg",
+		travelDuration: 0,
+		available: true,
+		contract: null,
+	});
+
+	gameData.contracts.set("A", {
+		efficiency: 5,
+		danger: 3,
+		reward: 5,
+	});
+	gameData.contracts.set("B", {
+		efficiency: 20,
+		danger: 5,
+		reward: 20,
+	});
+	gameData.contracts.set("C", {
+		efficiency: 30,
+		danger: 10,
+		reward: 30,
+	});
 
 	gameData.troops.set("A", {
 		name: "Anae",
@@ -104,15 +140,15 @@ export function initData(gameData) {
 		cautiousness: 3
 	});
 
-	gameData.resource.set("ap", { class: "res-ap", value: 5 });
-	gameData.resource.set("gold", { class: "res-gold", value: 100 });
-	gameData.resource.set("food", { class: "res-food", value: 20 });
-	gameData.resource.set("supplies", { class: "res-supplies", value: 10 });
+	gameData.resources.set("ap", { class: "res-ap", value: 5 });
+	gameData.resources.set("gold", { class: "res-gold", value: 100 });
+	gameData.resources.set("food", { class: "res-food", value: 20 });
+	gameData.resources.set("supplies", { class: "res-supplies", value: 10 });
 
-	gameData.strategy.set("A", {
+	gameData.strategies.set("A", {
 		name: "Default", cost: [], modifiers: []
 	});
-	gameData.strategy.set("B", {
+	gameData.strategies.set("B", {
 		name: "Passive",
 		cost: [
 			{ type: "ap", value: 1 },
@@ -122,7 +158,7 @@ export function initData(gameData) {
 			{ type: "cautiousness", value: +2 }
 		]
 	});
-	gameData.strategy.set("C", {
+	gameData.strategies.set("C", {
 		name: "Aggressive",
 		cost: [
 			{ type: "ap", value: 1 },
@@ -133,7 +169,7 @@ export function initData(gameData) {
 			{ type: "cautiousness", value: -1 }
 		]
 	});
-	gameData.strategy.set("D", {
+	gameData.strategies.set("D", {
 		name: "Defensive",
 		cost: [
 			{ type: "ap", value: 1 },

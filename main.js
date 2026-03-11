@@ -93,7 +93,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		GameUI.missionSlots.forEach((slot) => {
 			const missionId = slot.dataset.num;
 			const mission = GameData.state.get("mission")[missionId];
-			const location = GameData.region.get(mission.location);
+			const location = GameData.regions.get(mission.location);
+			const contract = GameData.contracts.get(mission.contract);
 			if (mission.travelDuration) {
 				mission.travelDuration -= 1;
 			} else if (mission.travelDuration == 0) {
@@ -105,20 +106,20 @@ document.addEventListener("DOMContentLoaded", () => {
 				mission.party.forEach((_, troopId) => {
 					mission.party.set(troopId, "A");
 					const troop = GameData.troops.get(troopId);
-					if (mission.cautiousness < location.danger && troop.health > 0) {
+					if (mission.cautiousness < contract.danger && troop.health > 0) {
 						troop.health -= 1;
 					}
 					sumHealth += troop.health;
 				});
 
-				const win = mission.prevEfficiency >= location.efficiency;
+				const win = mission.prevEfficiency >= contract.efficiency;
 
 				if (win || sumHealth == 0) {
 
 					Signals.emit("unfreezeMissionSlot", missionId);
 					Signals.emit("unfreezeRegion", missionId);
 					if (win) {
-						GameData.resource.get("gold").value += mission.reward;
+						GameData.resources.get("gold").value += mission.reward;
 					}
 
 					const clone = GameUI.endMissionDialog.cloneNode(true);
@@ -132,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						if (mission.missionDuration == 0) {
 							endMessage += `You win <span class="bold">${mission.reward} golds</span>.`;
 						} else {
-							endMessage += `From the initial <span class="bold">${goldToStr(location.reward)}</span>, you win <span class="bold">${goldToStr(mission.reward)}</span> and lost <span class="bold">${goldToStr(location.reward - mission.reward)}</span> as a late penalty fee.`;
+							endMessage += `From the initial <span class="bold">${goldToStr(contract.reward)}</span>, you win <span class="bold">${goldToStr(mission.reward)}</span> and lost <span class="bold">${goldToStr(contract.reward - mission.reward)}</span> as a late penalty fee.`;
 						}
 					} else {
 						endMessage = "failed."
@@ -148,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					GameData.state.get("mission")[missionId] = resetMission();
 				} else {
 					mission.missionDuration += 1;
-					mission.reward = Math.floor(mission.reward - 0.1 * location.reward)
+					mission.reward = Math.floor(mission.reward - 0.1 * contract.reward)
 					if (mission.reward < 0) {
 						mission.reward = 0;
 					}
@@ -164,15 +165,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 
 		// handles resources
-		GameData.resource.get("ap").value = 5;
+		GameData.resources.get("ap").value = 5;
 		const res = resolveAction(
 			6,
-			GameData.resource.get("gold").value,
-			GameData.resource.get("food").value,
+			GameData.resources.get("gold").value,
+			GameData.resources.get("food").value,
 			0,
 		);
-		GameData.resource.get("gold").value = res[0];
-		GameData.resource.get("food").value = res[1];
+		GameData.resources.get("gold").value = res[0];
+		GameData.resources.get("food").value = res[1];
 
 		updateUI(GameData, true);
 
@@ -180,9 +181,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (GameData.state.get("week") >= 100) {
 
 		}
-		if (GameData.resource.get("food").value <= 0) {
+		if (GameData.resources.get("food").value <= 0) {
 			DialogGameOver.open();
-		} else if (GameData.resource.get("food").value < 13) {
+		} else if (GameData.resources.get("food").value < 13) {
 			DialogLowOnFood.open();
 
 		}
@@ -212,16 +213,16 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	GameUI.buyFoodButton.addEventListener("click", () => {
-		GameData.resource.get("ap").value -= 1;
-		GameData.resource.get("gold").value -= 1;
-		GameData.resource.get("food").value += 10;
+		GameData.resources.get("ap").value -= 1;
+		GameData.resources.get("gold").value -= 1;
+		GameData.resources.get("food").value += 10;
 		updateUI(GameData);
 	});
 
 	GameUI.buySuppliesButton.addEventListener("click", () => {
-		GameData.resource.get("ap").value -= 1;
-		GameData.resource.get("gold").value -= 10;
-		GameData.resource.get("supplies").value += 10;
+		GameData.resources.get("ap").value -= 1;
+		GameData.resources.get("gold").value -= 10;
+		GameData.resources.get("supplies").value += 10;
 		updateUI(GameData);
 	});
 
@@ -232,14 +233,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			mission.party = getPartyFromSlot(GameData.currentMission);
 
 			computePartyStat(GameData);
-
 			DialogMissionPreparation.open();
 		});
 	});
 
 	GameUI.restButtons.forEach(b => {
 		b.addEventListener("click", () => {
-			GameData.resource.get("ap").value -= 1;
+			GameData.resources.get("ap").value -= 1;
 			const restId = b.dataset.num;
 			const slot = getItem(GameUI.restSlots, restId);
 			slot.classList.add("frozen");
