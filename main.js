@@ -7,6 +7,7 @@ import { GameData, initData, nextConditions, resetMission } from "./js/GameData.
 import { Signals } from "./js/EventEmitter.js";
 import { DialogLowOnFood } from "./js/dialogs/DialogLowOnFood.js"
 import { DialogGameOver } from "./js/dialogs/DialogGameOver.js"
+import { DialogWin } from "./js/dialogs/DialogWin.js"
 import { DialogMissionPreparation } from "./js/dialogs/DialogMissionPreparation.js"
 import { DialogMissionResolve } from "./js/dialogs/DialogMissionResolve.js"
 import "./js/dialogs/DialogConfirm.js"
@@ -189,8 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		if (GameData.state.get("win")) {
-			// TODO create a win dialog
-			setTimeout(() => alert("End of content reach, thanks for playing"), 2000);
+			DialogWin.open();
 		}
 	});
 
