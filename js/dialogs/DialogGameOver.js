@@ -13,7 +13,7 @@ export const DialogGameOver = (() => {
 	function init() {
 		button.addEventListener("click", () => {
 			modal.close();
-			Signals.emit("start_game");
+			Signals.emit("start");
 		});
 	}
 

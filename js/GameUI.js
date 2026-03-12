@@ -34,7 +34,7 @@ export const GameUI = {
 	buySuppliesButton: document.getElementById("buySupplies"),
 };
 
-export function start(gameData) {
+export function initUI(gameData) {
 
 	GameUI.tooltip = document.createElement("div");
 	GameUI.tooltip.className = "tooltip";

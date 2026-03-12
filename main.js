@@ -1,24 +1,26 @@
 import { getDistance, getItem, SNAP_DISTANCE, dropLogic, allowMissionDrop } from "./js/utils.js";
 import { goldToStr } from "./js/UtilsUI.js";
 import { resolveAction, computePartyStat } from "./js/Logic.js"
-import { GameUI, start, updateUI, cleanRestSlot } from "./js/GameUI.js"
+import { GameUI, initUI, updateUI, cleanRestSlot } from "./js/GameUI.js"
 import { Story } from "./js/Story.js"
 import { GameData, initData, nextConditions, resetMission } from "./js/GameData.js"
 import { Signals } from "./js/EventEmitter.js";
 import { DialogLowOnFood } from "./js/dialogs/DialogLowOnFood.js"
 import { DialogGameOver } from "./js/dialogs/DialogGameOver.js"
-import { DialogWin } from "./js/dialogs/DialogWin.js"
 import { DialogMissionPreparation } from "./js/dialogs/DialogMissionPreparation.js"
 import { DialogMissionResolve } from "./js/dialogs/DialogMissionResolve.js"
 import "./js/dialogs/DialogConfirm.js"
 
-function startGame() {
+function start() {
 	document.querySelector(".main-container").style.display = "none";
 	document.querySelector(".story-container").style.display = "";
-	initData();
-	start(GameData);
-	updateUI(GameData);
 	Story.start();
+}
+
+function gameStart() {
+	initData();
+	initUI(GameData);
+	updateUI(GameData);
 }
 
 function update() {
@@ -49,12 +51,13 @@ function disableGiveOrderButton(id = GameData.currentMission) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-	Signals.on("start_game", startGame);
+	Signals.on("start", start);
+	Signals.on("game_start", gameStart);
 	Signals.on("update", update);
 	Signals.on("freezeMissionSlot", freezeMissionSlot);
 	Signals.on("unfreezeMissionSlot", unfreezeMissionSlot);
 	Signals.on("disableGiveOrderButton", disableGiveOrderButton);
-	startGame();
+	start();
 
 	GameUI.droppableSlots.forEach(slot => {
 		slot.addEventListener("drop", (e) => {
@@ -122,6 +125,9 @@ document.addEventListener("DOMContentLoaded", () => {
 					if (win) {
 						GameData.resources.get("gold").value += mission.reward;
 						contract.done = true;
+						if (!contract.repeatable) {
+							location.contract = null;
+						}
 					}
 
 					const clone = GameUI.endMissionDialog.cloneNode(true);
@@ -187,10 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			DialogGameOver.open(GameData.state.get("loseCondition").description);
 		} else if (GameData.resources.get("food").value < 13) {
 			DialogLowOnFood.open();
-		}
-
-		if (GameData.state.get("win")) {
-			DialogWin.open();
 		}
 	});
 

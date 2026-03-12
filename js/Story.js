@@ -1,4 +1,4 @@
-import { DialogGoal } from "./dialogs/DialogGoal.js"
+import { Signals } from "./EventEmitter.js";
 
 const StoryElements = {
 	mainContainer: document.querySelector(".main-container"),
@@ -39,7 +39,7 @@ const StoryData = {
 			action: () => {
 				StoryElements.storyContainer.style.display = "none";
 				StoryElements.mainContainer.style.display = "block";
-				setTimeout(DialogGoal.open, 1000);
+				Signals.emit("game_start");
 			}
 		},
 	],

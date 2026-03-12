@@ -6,13 +6,13 @@ export const DialogWin = (() => {
 	const continueButton = modal.querySelector("#continueButton");
 
 	function open() {
-		setTimeout(() => modal.showModal(), 1000);
+		modal.showModal();
 	}
 
 	function init() {
 		restartButton.addEventListener("click", () => {
 			modal.close();
-			Signals.emit("start_game");
+			Signals.emit("start");
 		});
 
 		continueButton.addEventListener("click", () => {

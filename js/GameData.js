@@ -1,3 +1,7 @@
+import { Signals } from "./EventEmitter.js";
+import { DialogGoal } from "./dialogs/DialogGoal.js"
+import { DialogWin } from "./dialogs/DialogWin.js"
+
 export const GameData = {
 	// persistent data storage
 	state: new Map(),
@@ -78,8 +82,8 @@ export function initData() {
 	});
 
 	GameData.contracts.set("A", {
-		efficiency: 5,
-		danger: 3,
+		efficiency: 3,
+		danger: 0,
 		reward: 5,
 		done: false,
 		repeatable: false,
@@ -90,7 +94,6 @@ export function initData() {
 		reward: 20,
 		done: false,
 		repeatable: false,
-
 	});
 	GameData.contracts.set("C", {
 		efficiency: 30,
@@ -98,7 +101,6 @@ export function initData() {
 		reward: 30,
 		done: false,
 		repeatable: false,
-
 	});
 
 	GameData.troops.set("A", {
@@ -206,10 +208,37 @@ export function nextConditions() {
 			condition: () => false,
 			description: "",
 		});
+	}
+	else if (currentStep == 1) {
+		GameData.state.set("winCondition", {
+			condition: () => GameData.troops.get("A").max_health == GameData.troops.get("A").health,
+			description: "Rest until Frivkyl regain all his health",
+		});
+		GameData.state.set("loseCondition", {
+			condition: () => false,
+			description: "",
+		});
+	}
+	else {
+		GameData.state.set("winCondition", {
+			condition: () => false,
+			description: "Enjoy playing",
+		});
+		GameData.state.set("loseCondition", {
+			condition: () => false,
+			description: "",
+		});
 
-	} else {
 		GameData.state.set("win", true);
 	}
 
+	Signals.emit("update");
+
+	if (!GameData.state.get("win")) {
+		DialogGoal.open();
+	}
+	else {
+		DialogWin.open();
+	}
 	GameData.state.set("step", currentStep + 1);
 }
