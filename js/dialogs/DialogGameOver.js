@@ -2,9 +2,11 @@ import { Signals } from "../EventEmitter.js";
 
 export const DialogGameOver = (() => {
 	const modal = document.getElementById("gameOverDialog");
-	const button = modal.querySelector("#restart");
+	const gameOverMessage = modal.querySelector("#gameOverMessage");
+	const button = modal.querySelector("#gameOverButton");
 
-	function open() {
+	function open(message = null) {
+		gameOverMessage.innerHTML = `GAME OVER<br>${message}`;
 		modal.showModal();
 	}
 

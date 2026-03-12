@@ -180,8 +180,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		if (GameData.state.get("winCondition").condition()) {
 			nextConditions();
-		} else if (GameData.state.get("loseCondition").condition() || GameData.resources.get("food").value <= 0) {
-			DialogGameOver.open();
+		} else if (GameData.resources.get("food").value <= 0) {
+			DialogGameOver.open("You ran out of food");
+		} else if (GameData.state.get("loseCondition").condition()) {
+			DialogGameOver.open(GameData.state.get("loseCondition").description);
 		} else if (GameData.resources.get("food").value < 13) {
 			DialogLowOnFood.open();
 		}
