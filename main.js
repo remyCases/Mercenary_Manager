@@ -21,7 +21,7 @@ function gameStart() {
 	initData();
 	initUI(GameData);
 	updateUI(GameData);
-	const currentStep = GameData.state.get("phase").value;
+	const currentStep = GameData.state.get("phase");
 	nextPhase(currentStep);
 }
 
@@ -55,9 +55,10 @@ function disableGiveOrderButton(id = GameData.currentMission) {
 function nextPhase(currentStep) {
 	nextPhaseData(currentStep);
 	nextPhaseUI(currentStep);
-	GameData.state.get("phase").value = currentStep + 1;
-	GameData.state.get("phase").duration = 0;
+	GameData.state.set("phase", currentStep + 1);
 }
+
+window.nextPhase = nextPhase;
 
 document.addEventListener("DOMContentLoaded", () => {
 	Signals.on("start", start);
@@ -101,7 +102,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// handles time
 		GameData.state.set("week", GameData.state.get("week") + 1);
-		GameData.state.get("phase").duration += 1;
+
+		if (GameData.state.get("deathCounter")) {
+			GameData.state.get("deathCounter").counter -= 1;
+
+			if (GameData.state.get("deathCounter").counter <= 0) {
+				GameData.state.get("deathCounter").counter = 0;
+			}
+		}
 
 		// handles missions
 		GameUI.missionSlots.forEach((slot) => {
@@ -198,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		updateUI(GameData, true);
 
 		if (GameData.state.get("winCondition").condition()) {
-			const currentStep = GameData.state.get("phase").value;
+			const currentStep = GameData.state.get("phase");
 			nextPhase(currentStep);
 		} else if (GameData.resources.get("food").value <= 0) {
 			DialogGameOver.open("You ran out of food");

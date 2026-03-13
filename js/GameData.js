@@ -47,7 +47,8 @@ export function initData() {
 	GameData.selectedStrategy = null;
 
 	GameData.state.set("win", false);
-	GameData.state.set("phase", { value: 0, duration: 0 });
+	GameData.state.set("phase", 0);
+	GameData.state.set("deathCounter", null);
 	GameData.state.set("week", 1);
 	GameData.state.set("mission", {
 		0: resetMission(),
@@ -103,14 +104,15 @@ export function initData() {
 		repeatable: false,
 	});
 
-	GameData.troops.set("F", {
-		name: "Anae",
-		png: "images/MageLady.png",
+	GameData.troops.set("A", {
+		name: "Frivkyl",
+		png: "images/RangerMan.png",
 		health: 0,
 		max_health: 2,
 		efficiency: 3,
 		cautiousness: 3,
-		available: false,
+		available: true,
+
 	});
 	GameData.troops.set("B", {
 		name: "Ekor",
@@ -150,17 +152,15 @@ export function initData() {
 		efficiency: 2,
 		cautiousness: 3,
 		available: false,
-
 	});
-	GameData.troops.set("A", {
-		name: "Frivkyl",
-		png: "images/RangerMan.png",
+	GameData.troops.set("F", {
+		name: "Anae",
+		png: "images/MageLady.png",
 		health: 0,
 		max_health: 2,
 		efficiency: 3,
 		cautiousness: 3,
-		available: true,
-
+		available: false,
 	});
 
 	GameData.resources.set("ap", { class: "res-ap", value: 5 });
@@ -235,8 +235,12 @@ const PHASE_DATA = {
 			description: "Save Krisa in Ata in less than 3 weeks",
 		},
 		"lose": {
-			condition: () => GameData.state.get("phase").duration > 4,
-			description: "You fail to save Ata in time",
+			condition: () => GameData.state.get("deathCounter").counter == 0,
+			description: "You fail to save Krisa in time",
+		},
+		"deathCounter": {
+			name: "Krisa",
+			counter: 3,
 		},
 		"regions": {
 			"A": "B",
@@ -251,6 +255,10 @@ export function nextPhaseData(currentStep) {
 	if (config) {
 		GameData.state.set("winCondition", config.win);
 		GameData.state.set("loseCondition", config.lose);
+
+		if (config.deathCounter) {
+			GameData.state.set("deathCounter", config.deathCounter);
+		}
 
 		if (config.regions) {
 			Object.entries(config.regions).forEach(([region, contract]) => {

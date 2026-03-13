@@ -352,7 +352,6 @@ dialog::backdrop {
 }
 
 .story-container {
-	width: 100%;
 	overflow: hidden;
 }
 
@@ -464,4 +463,17 @@ dialog::backdrop {
 	font-size: 12px;
 	margin-top: 10px;
 	font-family: monospace;
+}
+
+#goalInfo {
+	text-align: left;
+	font-weight: bold;
+  	flex-grow: 1;
+}
+
+#warningInfo {
+	text-align: right;
+	font-weight: bold;
+	color: #AA4A44;
+  	flex-grow: 1;
 }

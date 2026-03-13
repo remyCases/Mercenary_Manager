@@ -20,6 +20,7 @@ export const GameUI = {
 	missionButtons: document.querySelectorAll(".mission-button"),
 	restButtons: document.querySelectorAll(".rest-button"),
 	goalInfo: document.getElementById("goalInfo"),
+	warningInfo: document.getElementById("warningInfo"),
 	weekDisplay: document.getElementById("weekDisplay"),
 
 	// mission resolve
@@ -155,6 +156,7 @@ export function updateUI(gameData, newTurn = false) {
 	GameUI.newWeekButton.disabled = false;
 	GameUI.weekDisplay.textContent = `Weeks: ${gameData.state.get("week")}`;
 	GameUI.goalInfo.textContent = `Goal: ${gameData.state.get("winCondition").description}`;
+	GameUI.warningInfo.textContent = gameData.state.get("deathCounter") ? `Warning: ${gameData.state.get("deathCounter").name} will die in ${gameData.state.get("deathCounter").counter} weeks`: "";
 
 	GameUI.missionSlots.forEach((slot) => {
 		MissionSlotUI.update(slot, gameData, newTurn);
