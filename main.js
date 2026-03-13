@@ -184,8 +184,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// handles resources
 		GameData.resources.get("ap").value = 5;
+		let partySize = 0;
+		for (const [_, entry] of GameData.troops) partySize += entry.available ? 1 : 0
 		const res = resolveAction(
-			6,
+			partySize,
 			GameData.resources.get("gold").value,
 			GameData.resources.get("food").value,
 			0,
