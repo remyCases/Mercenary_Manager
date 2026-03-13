@@ -47,7 +47,7 @@ export function initData() {
 	GameData.selectedStrategy = null;
 
 	GameData.state.set("win", false);
-	GameData.state.set("step", 0);
+	GameData.state.set("phase", { value: 0, duration: 0 });
 	GameData.state.set("week", 1);
 	GameData.state.set("mission", {
 		0: resetMission(),
@@ -89,9 +89,9 @@ export function initData() {
 		repeatable: false,
 	});
 	GameData.contracts.set("B", {
-		efficiency: 20,
-		danger: 5,
-		reward: 20,
+		efficiency: 8,
+		danger: 50,
+		reward: 0,
 		done: false,
 		repeatable: false,
 	});
@@ -103,13 +103,14 @@ export function initData() {
 		repeatable: false,
 	});
 
-	GameData.troops.set("A", {
+	GameData.troops.set("F", {
 		name: "Anae",
 		png: "images/MageLady.png",
 		health: 0,
 		max_health: 2,
 		efficiency: 3,
-		cautiousness: 3
+		cautiousness: 3,
+		available: false,
 	});
 	GameData.troops.set("B", {
 		name: "Ekor",
@@ -117,7 +118,9 @@ export function initData() {
 		health: 0,
 		max_health: 2,
 		efficiency: 3,
-		cautiousness: 3
+		cautiousness: 3,
+		available: false,
+
 	});
 	GameData.troops.set("C", {
 		name: "Krisa",
@@ -125,7 +128,9 @@ export function initData() {
 		health: 0,
 		max_health: 3,
 		efficiency: 2,
-		cautiousness: 3
+		cautiousness: 3,
+		available: false,
+
 	});
 	GameData.troops.set("D", {
 		name: "Istriac",
@@ -133,7 +138,9 @@ export function initData() {
 		health: 0,
 		max_health: 3,
 		efficiency: 2,
-		cautiousness: 3
+		cautiousness: 3,
+		available: false,
+
 	});
 	GameData.troops.set("E", {
 		name: "Hjop",
@@ -141,15 +148,19 @@ export function initData() {
 		health: 0,
 		max_health: 3,
 		efficiency: 2,
-		cautiousness: 3
+		cautiousness: 3,
+		available: false,
+
 	});
-	GameData.troops.set("F", {
+	GameData.troops.set("A", {
 		name: "Frivkyl",
 		png: "images/RangerMan.png",
 		health: 0,
 		max_health: 2,
 		efficiency: 3,
-		cautiousness: 3
+		cautiousness: 3,
+		available: true,
+
 	});
 
 	GameData.resources.set("ap", { class: "res-ap", value: 5 });
@@ -192,32 +203,60 @@ export function initData() {
 			{ type: "cautiousness", value: +1 }
 		]
 	});
-
-	nextConditions()
 }
 
-export function nextConditions() {
-
-	const currentStep = GameData.state.get("step");
-	if (currentStep == 0) {
-		GameData.state.set("winCondition", {
+const PHASE_DATA = {
+	0: {
+		"win": {
 			condition: () => GameData.contracts.get("A").done,
 			description: "Complete the mission to Ata",
-		});
-		GameData.state.set("loseCondition", {
+		},
+		"lose": {
 			condition: () => false,
 			description: "",
-		});
-	}
-	else if (currentStep == 1) {
-		GameData.state.set("winCondition", {
+		},
+		"regions": {
+			"A": "A",
+		}
+	},
+	1: {
+		"win": {
 			condition: () => GameData.troops.get("A").max_health == GameData.troops.get("A").health,
 			description: "Rest until Frivkyl regain all his health",
-		});
-		GameData.state.set("loseCondition", {
+		},
+		"lose": {
 			condition: () => false,
 			description: "",
-		});
+		},
+	},
+	2: {
+		"win": {
+			condition: () => GameData.contracts.get("B").done,
+			description: "Save Krisa in Ata in less than 3 weeks",
+		},
+		"lose": {
+			condition: () => GameData.state.get("phase").duration > 4,
+			description: "You fail to save Ata in time",
+		},
+		"regions": {
+			"A": "B",
+		}
+
+	}
+};
+
+export function nextPhaseData(currentStep) {
+
+	const config = PHASE_DATA[currentStep];
+	if (config) {
+		GameData.state.set("winCondition", config.win);
+		GameData.state.set("loseCondition", config.lose);
+
+		if (config.regions) {
+			Object.entries(config.regions).forEach(([region, contract]) => {
+				GameData.regions.get(region).contract = contract;
+			});
+		}
 	}
 	else {
 		GameData.state.set("winCondition", {
@@ -240,5 +279,4 @@ export function nextConditions() {
 	else {
 		DialogWin.open();
 	}
-	GameData.state.set("step", currentStep + 1);
 }

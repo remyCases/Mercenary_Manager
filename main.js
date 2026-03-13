@@ -1,9 +1,9 @@
 import { getDistance, getItem, SNAP_DISTANCE, dropLogic, allowMissionDrop } from "./js/utils.js";
 import { goldToStr } from "./js/UtilsUI.js";
 import { resolveAction, computePartyStat } from "./js/Logic.js"
-import { GameUI, initUI, updateUI, cleanRestSlot } from "./js/GameUI.js"
+import { GameUI, initUI, updateUI, cleanRestSlot, nextPhaseUI } from "./js/GameUI.js"
 import { Story } from "./js/Story.js"
-import { GameData, initData, nextConditions, resetMission } from "./js/GameData.js"
+import { GameData, initData, nextPhaseData, resetMission } from "./js/GameData.js"
 import { Signals } from "./js/EventEmitter.js";
 import { DialogLowOnFood } from "./js/dialogs/DialogLowOnFood.js"
 import { DialogGameOver } from "./js/dialogs/DialogGameOver.js"
@@ -21,6 +21,8 @@ function gameStart() {
 	initData();
 	initUI(GameData);
 	updateUI(GameData);
+	const currentStep = GameData.state.get("phase").value;
+	nextPhase(currentStep);
 }
 
 function update() {
@@ -48,6 +50,13 @@ function unfreezeMissionSlot(id = GameData.currentMission) {
 
 function disableGiveOrderButton(id = GameData.currentMission) {
 	getItem(GameUI.giveOrderButtons, id).disabled = true;
+}
+
+function nextPhase(currentStep) {
+	nextPhaseData(currentStep);
+	nextPhaseUI(currentStep);
+	GameData.state.get("phase").value = currentStep + 1;
+	GameData.state.get("phase").duration = 0;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -92,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// handles time
 		GameData.state.set("week", GameData.state.get("week") + 1);
+		GameData.state.get("phase").duration += 1;
 
 		// handles missions
 		GameUI.missionSlots.forEach((slot) => {
@@ -138,9 +148,9 @@ document.addEventListener("DOMContentLoaded", () => {
 					let endMessage = "";
 					if (win) {
 						endMessage = "was successful.<br>";
-						if (mission.missionDuration == 0) {
+						if (mission.missionDuration == 0 && contract.reward > 0) {
 							endMessage += `You win <span class="bold">${mission.reward} golds</span>.`;
-						} else {
+						} else if (contract.reward > 0) {
 							endMessage += `From the initial <span class="bold">${goldToStr(contract.reward)}</span>, you win <span class="bold">${goldToStr(mission.reward)}</span> and lost <span class="bold">${goldToStr(contract.reward - mission.reward)}</span> as a late penalty fee.`;
 						}
 					} else {
@@ -186,7 +196,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		updateUI(GameData, true);
 
 		if (GameData.state.get("winCondition").condition()) {
-			nextConditions();
+			const currentStep = GameData.state.get("phase").value;
+			nextPhase(currentStep);
 		} else if (GameData.resources.get("food").value <= 0) {
 			DialogGameOver.open("You ran out of food");
 		} else if (GameData.state.get("loseCondition").condition()) {

@@ -211,3 +211,32 @@ export function cleanRestSlot(gameData, slot) {
 	slot.classList.remove("frozen");
 	slot.classList.remove("occupied");
 }
+
+const PHASE_UI = {
+	0: {
+		"#missionBox1": false,
+		"#missionBox0": true,
+		"#restBoxes": false,
+	},
+	1: {
+		"#missionBoxes": false,
+		"#missionBox0": false,
+		"#restBoxes": true,
+	},
+	2: {
+		"#missionBox0": true,
+		"#restBoxes": false,
+	}
+
+};
+
+export function nextPhaseUI(currentStep) {
+
+	const config = PHASE_UI[currentStep];
+
+	if (config) {
+		Object.entries(config).forEach(([selector, show]) => {
+			document.querySelector(selector).style.visibility = show ? "visible" : "hidden";
+		});
+	}
+}

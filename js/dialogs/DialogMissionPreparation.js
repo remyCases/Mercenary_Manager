@@ -99,7 +99,8 @@ export const DialogMissionPreparation = (() => {
 				const enoughCautiousness = mission.cautiousness >= contract.danger;
 
 				missionDescription.style.visibility = "visible";
-				missionDescription.innerHTML = `${partyToStr(GameData, mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span> and should earn <span class="bold">${contract.reward} golds</span> if done during the first week.`;
+				const contractDescription = `The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span>${contract.reward ? `and should earn <span class="bold">${contract.reward} golds</span> if done during the first week.` : "."}`
+				missionDescription.innerHTML = `${partyToStr(GameData, mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>${contractDescription}`;
 
 				sendMission.disabled = false;
 			}
