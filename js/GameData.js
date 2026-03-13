@@ -97,6 +97,13 @@ export function initData() {
 		repeatable: false,
 	});
 	GameData.contracts.set("C", {
+		efficiency: 8,
+		danger: 5,
+		reward: 15,
+		done: false,
+		repeatable: true,
+	});
+	GameData.contracts.set("D", {
 		efficiency: 30,
 		danger: 10,
 		reward: 30,
@@ -115,21 +122,21 @@ export function initData() {
 
 	});
 	GameData.troops.set("B", {
-		name: "Ekor",
-		png: "images/MageMan.png",
-		health: 0,
-		max_health: 2,
-		efficiency: 3,
-		cautiousness: 3,
-		available: false,
-
-	});
-	GameData.troops.set("C", {
 		name: "Krisa",
 		png: "images/PalLady.png",
 		health: 0,
 		max_health: 3,
 		efficiency: 2,
+		cautiousness: 3,
+		available: false,
+
+	});
+	GameData.troops.set("C", {
+		name: "Ekor",
+		png: "images/MageMan.png",
+		health: 0,
+		max_health: 2,
+		efficiency: 3,
 		cautiousness: 3,
 		available: false,
 
@@ -245,7 +252,22 @@ const PHASE_DATA = {
 		"regions": {
 			"A": "B",
 		}
-
+	},
+	3: {
+		"win": {
+			condition: () => GameData.resources.get("gold").value > 140,
+			description: "Earn at least 140 golds",
+		},
+		"lose": {
+			condition: () => false,
+			description: "",
+		},
+		"regions": {
+			"A": "C",
+		},
+		"troops": {
+			"B": true,
+		},
 	}
 };
 
@@ -255,14 +277,17 @@ export function nextPhaseData(currentStep) {
 	if (config) {
 		GameData.state.set("winCondition", config.win);
 		GameData.state.set("loseCondition", config.lose);
-
-		if (config.deathCounter) {
-			GameData.state.set("deathCounter", config.deathCounter);
-		}
+		GameData.state.set("deathCounter", config.deathCounter);
 
 		if (config.regions) {
 			Object.entries(config.regions).forEach(([region, contract]) => {
 				GameData.regions.get(region).contract = contract;
+			});
+		}
+
+		if (config.troops) {
+			Object.entries(config.troops).forEach(([troop, available]) => {
+				GameData.troops.get(troop).available = available;
 			});
 		}
 	}

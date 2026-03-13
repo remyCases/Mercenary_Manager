@@ -3,6 +3,7 @@ import { getItem } from "./utils.js"
 import { isFrozen, isOccupied } from "./UtilsUI.js"
 import { DialogMissionPreparation } from "./dialogs/DialogMissionPreparation.js"
 import { DialogMissionResolve } from "./dialogs/DialogMissionResolve.js"
+import { GameData } from "./GameData.js"
 
 export const GameUI = {
 	// general tooltip
@@ -156,7 +157,7 @@ export function updateUI(gameData, newTurn = false) {
 	GameUI.newWeekButton.disabled = false;
 	GameUI.weekDisplay.textContent = `Weeks: ${gameData.state.get("week")}`;
 	GameUI.goalInfo.textContent = `Goal: ${gameData.state.get("winCondition").description}`;
-	GameUI.warningInfo.textContent = gameData.state.get("deathCounter") ? `Warning: ${gameData.state.get("deathCounter").name} will die in ${gameData.state.get("deathCounter").counter} weeks`: "";
+	GameUI.warningInfo.textContent = gameData.state.get("deathCounter") ? `Warning: ${gameData.state.get("deathCounter").name} will die in ${gameData.state.get("deathCounter").counter} weeks` : "";
 
 	GameUI.missionSlots.forEach((slot) => {
 		MissionSlotUI.update(slot, gameData, newTurn);
@@ -191,6 +192,8 @@ export function updateUI(gameData, newTurn = false) {
 			img.draggable = false;
 			healthIndicator.appendChild(img);
 		}
+		card.style.visibility = troop.available ? "visible" : "hidden";
+
 	});
 
 	DialogMissionPreparation.update();
@@ -216,18 +219,29 @@ export function cleanRestSlot(gameData, slot) {
 
 const PHASE_UI = {
 	0: {
-		"#missionBox1": false,
-		"#missionBox0": true,
-		"#restBoxes": false,
+		selector: {
+			"#missionBox1": false,
+			"#missionBox0": true,
+			"#restBoxes": false,
+		},
 	},
 	1: {
-		"#missionBoxes": false,
-		"#missionBox0": false,
-		"#restBoxes": true,
+		selector: {
+			"#missionBoxes": false,
+			"#missionBox0": false,
+			"#restBoxes": true,
+		},
 	},
 	2: {
-		"#missionBox0": true,
-		"#restBoxes": false,
+		selector: {
+			"#missionBox0": true,
+			"#restBoxes": false,
+		},
+	},
+	3: {
+		selector: {
+			"#restBoxes": true,
+		},
 	}
 
 };
@@ -237,8 +251,10 @@ export function nextPhaseUI(currentStep) {
 	const config = PHASE_UI[currentStep];
 
 	if (config) {
-		Object.entries(config).forEach(([selector, show]) => {
-			document.querySelector(selector).style.visibility = show ? "visible" : "hidden";
-		});
+		if (config.selector) {
+			Object.entries(config.selector).forEach(([selector, show]) => {
+				document.querySelector(selector).style.visibility = show ? "visible" : "hidden";
+			});
+		}
 	}
 }

@@ -48,8 +48,6 @@ export function createTroopCard(troopId, draggable, resetHealth = true) {
 	card.appendChild(healthIndicator);
 	card.appendChild(document.createTextNode(troopInfo.name));
 
-	card.style.visibility = troopInfo.available ? "visible" : "hidden";
-
 	if (!draggable) {
 		return card;
 	}
