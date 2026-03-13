@@ -29,8 +29,17 @@ const StoryData = {
 		},
 	],
 	dialogue: [
-		{ from: "a", img: "./../images/RangerMan.png", text: "You know when I said I'd follow you whenever we go, I didn't expect the whenever to be <strong>Linkerburg</strong>." },
-		{ from: "b", img: null, imgTxt: "You", text: "I know, I didn't expect it either." },
+		{
+			name: "saving_krisa",
+			lines: [
+				{ from: "a", img: "./../images/RangerMan.png", text: "I've seen her, in <strong>Ata</strong>." },
+				{ from: "b", img: null, imgTxt: "You", text: "Who are you talking about ?" },
+				{ from: "a", img: "./../images/RangerMan.png", text: "<strong>Krisa</strong>, she's alive. But won't be long. I've heard she was sentenced to death." },
+				{ from: "b", img: null, imgTxt: "You", text: "I guess we can plan a little evasion. Do you feel ready to go back ?" },
+				{ from: "a", img: "./../images/RangerMan.png", text: "It won't be easy, I need some rest first." },
+			],
+			done: false,
+		},
 	],
 	triggers: [
 		{
@@ -40,6 +49,14 @@ const StoryData = {
 				StoryElements.storyContainer.style.display = "none";
 				StoryElements.mainContainer.style.display = "block";
 				Signals.emit("game_start");
+			}
+		},
+		{
+			id: "making_money",
+			condition: () => StoryData.dialogue[0].done,
+			action: () => {
+				StoryElements.storyContainer.style.display = "none";
+				StoryElements.mainContainer.style.display = "block";
 			}
 		},
 	],
@@ -55,10 +72,15 @@ const StoryLogic = {
 	currentStory: 0,
 	currentParagraph: 0,
 	currentDialogue: 0,
+	currentLine: 0,
 	inStoryMode: true,
 
 	getParagraphs() {
 		return StoryData.story[this.currentStory].paragraphs;
+	},
+
+	getLines() {
+		return StoryData.dialogue[this.currentDialogue].lines;
 	},
 
 	nextParagraph() {
@@ -83,13 +105,6 @@ const StoryLogic = {
 		StoryElements.infoStory.textContent = progress;
 	},
 
-	showDialogue() {
-		this.inStoryMode = false;
-		StoryElements.contentArea.style.display = "none";
-		StoryElements.dialogueContainer.style.display = "flex";
-		this.renderDialogue();
-	},
-
 	showStory() {
 		this.inStoryMode = true;
 		StoryElements.contentArea.style.display = "flex";
@@ -97,10 +112,24 @@ const StoryLogic = {
 		this.renderStory();
 	},
 
+	nextLine() {
+		if (this.currentLine < this.getLines().length - 1) {
+			this.currentLine++;
+			this.renderDialogue();
+		}
+		else {
+			StoryData.dialogue[this.currentDialogue].done = true;
+			this.currentLine = 0;
+			this.currentDialogue++;
+		}
+		this.checkTriggers();
+	},
+
 	renderDialogue() {
 		StoryElements.dialogueContainer.innerHTML = "";
 
-		StoryData.dialogue.slice(0, this.currentDialogue + 1).forEach(msg => {
+		const lines = this.getLines();
+		lines.slice(0, this.currentLine + 1).forEach(msg => {
 			const messageFrom = document.createElement("div");
 			messageFrom.className = `message from-${msg.from}`;
 
@@ -126,10 +155,13 @@ const StoryLogic = {
 
 		// Auto-scroll to bottom
 		StoryElements.dialogueContainer.scrollTop = StoryElements.dialogueContainer.scrollHeight;
+	},
 
-		if (this.currentDialogue < StoryData.dialogue.length - 1) {
-			this.currentDialogue++;
-		}
+	showDialogue() {
+		this.inStoryMode = false;
+		StoryElements.contentArea.style.display = "none";
+		StoryElements.dialogueContainer.style.display = "flex";
+		this.renderDialogue();
 	},
 
 	checkTriggers() {
@@ -142,37 +174,82 @@ const StoryLogic = {
 
 	resetStory() {
 		this.currentParagraph = 0;
-		this.currentDialogue = 0;
-		this.showStory();
+	},
+
+	resetDialogue() {
+		this.currentLine = 0;
+		this.showDialogue();
 	},
 
 	reset() {
 		this.currentStory = 0;
 		this.resetStory();
+		this.resetDialogue();
 	},
 };
 
 const Story = (() => {
 
+	let storyToPass = null;
+	let dialogueToPass = null;
+
 	function start() {
+		StoryElements.storyContainer.style.display = "block";
+		StoryElements.mainContainer.style.display = "none";
+		storyToPass = 0;
 		StoryData.reset();
 		StoryLogic.reset();
+		StoryLogic.showStory();
+	}
+
+	function continueStory(story) {
+		StoryElements.storyContainer.style.display = "block";
+		StoryElements.mainContainer.style.display = "none";
+		storyToPass = story;
+		StoryLogic.showStory();
+	}
+
+	function continueDialogue(dialogue) {
+		StoryElements.storyContainer.style.display = "block";
+		StoryElements.mainContainer.style.display = "none";
+		dialogueToPass = dialogue;
+		StoryLogic.showDialogue();
 	}
 
 	StoryElements.nextStoryButton.addEventListener("click", () => {
-		StoryLogic.nextParagraph();
+		if (StoryLogic.inStoryMode) {
+			StoryLogic.nextParagraph();
+		}
+		else {
+			StoryLogic.nextLine();
+		}
 	});
 
 	StoryElements.resetStoryButton.addEventListener("click", () => {
-		StoryLogic.resetStory();
+		if (StoryLogic.inStoryMode) {
+			StoryLogic.resetStory();
+			StoryLogic.showStory();
+		}
+		else {
+			StoryLogic.resetDialogue();
+			StoryLogic.showDialogue();
+		}
 	});
 
 	StoryElements.passStoryButton.addEventListener("click", () => {
-		StoryData.story[0].done = true;
+
+		if (storyToPass !== null) {
+			StoryData.story[storyToPass].done = true;
+			storyToPass = null;
+		}
+		if (dialogueToPass !== null) {
+			StoryData.dialogue[dialogueToPass].done = true;
+			dialogueToPass = null;
+		}
 		StoryLogic.checkTriggers();
 	});
 
-	return { start };
+	return { start, continueStory, continueDialogue };
 })();
 
 export { Story };

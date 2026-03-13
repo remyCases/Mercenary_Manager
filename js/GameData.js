@@ -1,6 +1,7 @@
 import { Signals } from "./EventEmitter.js";
 import { DialogGoal } from "./dialogs/DialogGoal.js"
 import { DialogWin } from "./dialogs/DialogWin.js"
+import { Story } from "./Story.js"
 
 export const GameData = {
 	// persistent data storage
@@ -216,6 +217,7 @@ const PHASE_DATA = {
 	0: {
 		"win": {
 			condition: () => GameData.contracts.get("A").done,
+			afterCond: () => Story.continueDialogue(0),
 			description: "Complete the mission to Ata",
 		},
 		"lose": {

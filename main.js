@@ -12,8 +12,6 @@ import { DialogMissionResolve } from "./js/dialogs/DialogMissionResolve.js"
 import "./js/dialogs/DialogConfirm.js"
 
 function start() {
-	document.querySelector(".main-container").style.display = "none";
-	document.querySelector(".story-container").style.display = "";
 	Story.start();
 }
 
@@ -206,6 +204,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		updateUI(GameData, true);
 
 		if (GameData.state.get("winCondition").condition()) {
+
+			if (GameData.state.get("winCondition").afterCond) {
+				GameData.state.get("winCondition").afterCond();
+			}
 			const currentStep = GameData.state.get("phase");
 			nextPhase(currentStep);
 		} else if (GameData.resources.get("food").value <= 0) {
