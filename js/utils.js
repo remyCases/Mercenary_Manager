@@ -34,48 +34,44 @@ export function getItem(items, val) {
 	return Array.from(items).find((item) => item.dataset.num === val)
 }
 
-export function dropLogic(GameUI, X, Y) {
-	if (!GameUI.draggedElement) return;
+export function dropLogic(gameData, gameUI, X, Y) {
+	if (!gameData.draggedElement) return;
 
-	GameUI.draggedElement.classList.remove("dragging");
+	gameData.draggedElement.classList.remove("dragging");
 
-	const closestSlot = findClosestSlot(X, Y, GameUI.dropableSlots);
+	const closestSlot = findClosestSlot(X, Y, gameUI.droppableSlots);
 	if (closestSlot && isWithinSnapDistance(X, Y, closestSlot)) {
 
 		const existingCards = closestSlot.querySelectorAll(".troop-card");
 
-		if (Array.from(existingCards).find(node => node.isEqualNode(GameUI.draggedElement))) {
+		if (Array.from(existingCards).find(node => node.isEqualNode(gameUI.draggedElement))) {
 			return;
 		}
 		if (existingCards.length >= 4) {
-			GameUI.troopPool.appendChild(existingCards[0]);
+			gameUI.troopPool.appendChild(existingCards[0]);
 		}
 
-		const oldParent = GameUI.draggedElement.parentElement;
-		closestSlot.appendChild(GameUI.draggedElement);
+		const oldParent = gameData.draggedElement.parentElement;
+		closestSlot.appendChild(gameData.draggedElement);
 		closestSlot.classList.add("occupied");
 
 		if (oldParent && oldParent.querySelectorAll(".troop-card").length === 0) {
 			oldParent.classList.remove("occupied");
 		}
 	} else {
-		if (GameUI.originalParent && GameUI.originalParent !== GameUI.draggedElement.parentElement) {
-			GameUI.originalParent.appendChild(GameUI.draggedElement);
+		if (gameData.originalParent && gameData.originalParent !== gameData.draggedElement.parentElement) {
+			gameData.originalParent.appendChild(gameData.draggedElement);
 		}
 	}
 
-	GameUI.dropableSlots.forEach(s => s.classList.remove("hover"));
-	GameUI.draggedElement = null;
+	gameUI.droppableSlots.forEach(s => s.classList.remove("hover"));
+	gameData.draggedElement = null;
 }
 
-export function allowMissionDrop(GameUI, slot) {
-	const troopId = GameUI.draggedElement.dataset.num;
-	const health = GameUI.troopData.get(troopId).health;
+export function allowMissionDrop(gameData, slot) {
+	const troopId = gameData.draggedElement.dataset.num;
+	const health = gameData.troops.get(troopId).health;
 
-	if (health == 0 && slot.classList.contains("mission-slot")) {
-		return false;
-	}
-
-	return true;
+	return health != 0 || !slot.classList.contains("mission-slot");
 }
 

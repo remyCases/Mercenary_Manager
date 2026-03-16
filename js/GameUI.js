@@ -1,239 +1,50 @@
 import { createTroopCard } from "./Troops.js"
 import { getItem } from "./utils.js"
+import { isFrozen, isOccupied } from "./UtilsUI.js"
+import { DialogMissionPreparation } from "./dialogs/DialogMissionPreparation.js"
+import { DialogMissionResolve } from "./dialogs/DialogMissionResolve.js"
 
-const GameUI = {
-	// persistent data storage
-	gameStateData: new Map(),
-	regionData: new Map(),
-	troopData: new Map(),
-	resourceData: new Map(),
-	strategyData: new Map(),
-
-	// globals
-
-	// dragging cards
-	draggedElement: null,
-	originalParent: null,
-
-	// mission selection
-	currentMission: null,
-	selectedLocation: null,
-
-	// strategy selection
-	selectedStrategy: null,
-
+export const GameUI = {
 	// general tooltip
 	tooltip: null,
-
 	// elements on main screen
+	getTroopCards: () => document.querySelectorAll(".troop-card"),
 	missionSlots: document.querySelectorAll(".mission-slot"),
 	restSlots: document.querySelectorAll(".rest-slot"),
 	troopPool: document.getElementById("troopPool"),
-	dropableSlots: document.querySelectorAll(".slot, .troop-pool"),
+	droppableSlots: document.querySelectorAll(".slot, .troop-pool"),
 
 	// buttons
 	resetButton: document.getElementById("resetSlots"),
 	newWeekButton: document.getElementById("newWeekButton"),
 	missionButtons: document.querySelectorAll(".mission-button"),
 	restButtons: document.querySelectorAll(".rest-button"),
-	stateDisplay: document.getElementById("state"),
-
-	// main buttons of missions
-	missionDialog: document.getElementById("missionDialog"),
-	sendMission: document.getElementById("sendMission"),
-	cancelMission: document.getElementById("cancelMission"),
-	regions: document.querySelectorAll(".region"),
-
-	// tooltip of missions
-	regionTooltip: document.getElementById("regionTooltip"),
-
-	// description of missions
-	missionDescription: document.getElementById("missionDescription"),
+	goalInfo: document.getElementById("goalInfo"),
+	warningInfo: document.getElementById("warningInfo"),
+	weekDisplay: document.getElementById("weekDisplay"),
 
 	// mission resolve
-	frozenTexts: document.querySelectorAll(".frozen-overlay-text"),
-	giveOrderButtons: document.querySelectorAll(".overlay-button"),
-	missionResolveDialog: document.getElementById("missionResolveDialog"),
-	missionTroopBox: document.getElementById("missionTroopBox"),
-	progressBar: document.getElementById("progressBar"),
-	progressBarPrev: document.getElementById("progressBarPrev"),
-	durationInfo: document.getElementById("durationInfo"),
-	confirmMissionResolve: document.getElementById("confirmMissionResolve"),
-	resetMissionResolve: document.getElementById("resetMissionResolve"),
-	cancelMissionResolve: document.getElementById("cancelMissionResolve"),
-	giveUpMissionResolve: document.getElementById("giveUpMissionResolve"),
-
-	// strategies
-	strategyMenu: document.getElementById("strategyMenu"),
-	strategyOptions: document.querySelectorAll(".strategy-option"),
-
-	// tooltip of strategies
-	strategyTooltip: document.getElementById("strategyTooltip"),
-
-	// gameover modal
-	gameOverDialog: document.getElementById("gameOverDialog"),
-	restartButton: gameOverDialog.querySelector("#restart"),
-
-	// end of mission modal
-	endMissionDialog: document.getElementById("endMissionDialog"),
-	endMissionButton: endMissionDialog.querySelector("#endMissionButton"),
-
-	// alert low on food
-	lowOnFoodDialog: document.getElementById("lowOnFoodDialog"),
-	lowOnFoodButton: lowOnFoodDialog.querySelector("#lowOnFoodButton"),
+	giveOrderButtons: document.querySelectorAll(".give-order-button"),
 
 	// buyer buttons
 	buyFoodButton: document.getElementById("buyFood"),
 	buySuppliesButton: document.getElementById("buySupplies"),
-
-	// danger zone
-	confirmDialog: document.getElementById("confirmDialog"),
-	confirmButton: confirmDialog.querySelector(".confirmButton"),
-	cancelButton: confirmDialog.querySelector(".cancelButton"),
-	confirmMessage: confirmDialog.querySelector("#confirmMessage"),
 };
 
-export function resetMission() {
-	return {
-		travelDuration: null,
-		location: null,
-		efficiency: 0,
-		cautiousness: 0,
-		costAp: 0,
-		costSupplies: 0,
-		prevEfficiency: 0,
-		party: [],
-		reward: 0,
-		missionDuration: 0,
-	};
-}
-
-export function start(GameUI) {
-	GameUI.draggedElement = null;
-	GameUI.originalParent = null;
-	GameUI.currentMission = null;
-	GameUI.selectedLocation = null;
-	GameUI.selectedStrategy = null;
+export function initUI(gameData) {
 
 	GameUI.tooltip = document.createElement("div");
 	GameUI.tooltip.className = "tooltip";
 	document.body.appendChild(GameUI.tooltip);
 
-	GameUI.gameStateData = new Map();
-	GameUI.regionData = new Map();
-	GameUI.troopData = new Map();
-	GameUI.resourceData = new Map();
-
-	GameUI.gameStateData.set("week", 1);
-	GameUI.gameStateData.set("mission", {
-		0: resetMission(),
-		1: resetMission(),
-	});
-
-	GameUI.regionData.set("A", { name: "City A", distance: "250km", travelDuration: 1, efficiency: 10, danger: 5, reward: 10, });
-	GameUI.regionData.set("B", { name: "City B", distance: "300km", travelDuration: 2, efficiency: 20, danger: 5, reward: 20, });
-	GameUI.regionData.set("C", { name: "City C", distance: "350km", travelDuration: 2, efficiency: 30, danger: 10, reward: 30, });
-
-	GameUI.troopData.set("A", {
-		name: "Anae",
-		png: "images/MageLady.png",
-		health: 0,
-		max_health: 2,
-		efficiency: 3,
-		cautiousness: 3
-	});
-	GameUI.troopData.set("B", {
-		name: "Ekor",
-		png: "images/MageMan.png",
-		health: 0,
-		max_health: 2,
-		efficiency: 3,
-		cautiousness: 3
-	});
-	GameUI.troopData.set("C", {
-		name: "Krisa",
-		png: "images/PalLady.png",
-		health: 0,
-		max_health: 3,
-		efficiency: 2,
-		cautiousness: 3
-	});
-	GameUI.troopData.set("D", {
-		name: "Istriac",
-		png: "images/PalMan.png",
-		health: 0,
-		max_health: 3,
-		efficiency: 2,
-		cautiousness: 3
-	});
-	GameUI.troopData.set("E", {
-		name: "Hjop",
-		png: "images/RangerLady.png",
-		health: 0,
-		max_health: 3,
-		efficiency: 2,
-		cautiousness: 3
-	});
-	GameUI.troopData.set("F", {
-		name: "Frivkyl",
-		png: "images/RangerMan.png",
-		health: 0,
-		max_health: 2,
-		efficiency: 3,
-		cautiousness: 3
-	});
-
-	GameUI.resourceData.set("ap", { class: "res-ap", value: 5 });
-	GameUI.resourceData.set("gold", { class: "res-gold", value: 100 });
-	GameUI.resourceData.set("food", { class: "res-food", value: 20 });
-	GameUI.resourceData.set("supplies", { class: "res-supplies", value: 10 });
-
-	GameUI.strategyData.set("A", {
-		name: "Default", cost: [], modifiers: []
-	});
-	GameUI.strategyData.set("B", {
-		name: "Passive",
-		cost: [
-			{ type: "ap", value: 1 },
-		],
-		modifiers: [
-			{ type: "efficiency", value: -1 },
-			{ type: "cautiousness", value: +2 }
-		]
-	});
-	GameUI.strategyData.set("C", {
-		name: "Aggressive",
-		cost: [
-			{ type: "ap", value: 1 },
-			{ type: "supplies", value: 1 },
-		],
-		modifiers: [
-			{ type: "efficiency", value: +2 },
-			{ type: "cautiousness", value: -1 }
-		]
-	});
-	GameUI.strategyData.set("D", {
-		name: "Defensive",
-		cost: [
-			{ type: "ap", value: 1 },
-			{ type: "supplies", value: 1 },
-		],
-		modifiers: [
-			{ type: "efficiency", value: +1 },
-			{ type: "cautiousness", value: +1 }
-		]
-	});
-
-	GameUI.sendMission.disabled = true;
-
 	document.querySelectorAll(".troop-card").forEach((card) => card.remove());
 
-	GameUI.troopData.forEach((_, troopId) => {
-		const card = createTroopCard(GameUI, troopId, true);
+	gameData.troops.forEach((_, troopId) => {
+		const card = createTroopCard(troopId, true, true);
 		troopPool.appendChild(card);
 	});
 
-	GameUI.dropableSlots.forEach(slot => {
+	GameUI.droppableSlots.forEach(slot => {
 		slot.className = "slot";
 	});
 
@@ -243,86 +54,123 @@ export function start(GameUI) {
 		slot.classList.add("mission-slot");
 	});
 
-	GameUI.regions.forEach(region => {
-		region.classList.add("region");
-	});
+	DialogMissionPreparation.init();
 }
 
-export function updateUI(GameUI, newTurn = false) {
-	GameUI.newWeekButton.disabled = false;
-	GameUI.stateDisplay.textContent = `Weeks: ${GameUI.gameStateData.get("week")}`;
-
-	GameUI.missionSlots.forEach((slot) => {
+const MissionSlotUI = (() => {
+	function update(slot, gameData, newTurn) {
 		const missionId = slot.dataset.num;
-		const textOverlay = getItem(GameUI.frozenTexts, missionId);
-		const giveOrder = getItem(GameUI.giveOrderButtons, missionId);
+		const frozen = isFrozen(slot);
+		const occupied = isOccupied(slot);
+		const travelDuration = gameData.state.get("mission")[missionId].travelDuration;
+		const ap = gameData.resources.get("ap").value;
 
-		if (slot.classList.contains("frozen")) {
-			const travelDuration = GameUI.gameStateData.get("mission")[missionId].travelDuration;
-			if (travelDuration >= 1) {
-				textOverlay.style.visibility = "visible";
-				textOverlay.textContent = `TRAVEL TO MISSION\r\n${travelDuration} weeks remaining`;
-				giveOrder.style.visibility = "hidden";
-				giveOrder.disabled = true;
-			} else {
-				textOverlay.style.visibility = "hidden";
-				textOverlay.textContent = "";
-				giveOrder.style.visibility = "visible";
-				if (newTurn) {
-					giveOrder.disabled = false;
-				}
+		const textOverlay = slot.querySelector(".frozen-overlay-text");
+		const giveOrderButton = getItem(GameUI.giveOrderButtons, missionId);
+		const missionButton = getItem(GameUI.missionButtons, missionId);
 
-				if (!giveOrder.disabled) {
-					GameUI.newWeekButton.disabled = true;
-				}
+		if (frozen && travelDuration >= 1) {
+			textOverlay.textContent = `TRAVEL TO MISSION\r\n${travelDuration} weeks remaining`;
+			textOverlay.style.visibility = "visible";
+
+			giveOrderButton.style.visibility = "hidden";
+			giveOrderButton.disabled = true;
+
+			missionButton.disabled = true;
+		}
+		else if (frozen && travelDuration < 1) {
+			textOverlay.textContent = "";
+			textOverlay.style.visibility = "hidden";
+
+			giveOrderButton.style.visibility = "visible";
+			if (newTurn) {
+				giveOrderButton.disabled = false;
 			}
-			getItem(GameUI.missionButtons, missionId).disabled = true;
+
+			if (!giveOrderButton.disabled) {
+				GameUI.newWeekButton.disabled = true;
+			}
 		} else {
+			textOverlay.textContent = "";
+			textOverlay.style.visibility = "hidden";
+
+			giveOrderButton.style.visibility = "hidden";
+
+			missionButton.disabled = (ap <= 0 || !occupied);
+		}
+	}
+	return { update };
+})();
+
+const RestSlotUI = (() => {
+	function update(slot, gameData) {
+		const restId = slot.dataset.num;
+		const frozen = isFrozen(slot);
+		const occupied = isOccupied(slot);
+		const ap = gameData.resources.get("ap").value;
+
+		const textOverlay = slot.querySelector(".frozen-overlay-text");
+		const restButton = getItem(GameUI.restButtons, restId);
+
+		if (frozen) {
+			textOverlay.textContent = "Rest until next week";
+			textOverlay.style.visibility = "visible";
+
+			restButton.disabled = true;
+		} else {
+			textOverlay.textContent = "";
 
 			textOverlay.style.visibility = "hidden";
-			textOverlay.textContent = "";
-			giveOrder.style.visibility = "hidden";
-
-			if (GameUI.resourceData.get("ap").value <= 0 || !slot.classList.contains("occupied")) {
-				getItem(GameUI.missionButtons, missionId).disabled = true;
-			} else {
-				getItem(GameUI.missionButtons, missionId).disabled = false;
-			}
+			restButton.disabled = (ap <= 0 || !occupied);
 		}
+	}
+	return { update };
+})();
+
+const resourceUI = (() => {
+	function update(res) {
+		const uis = document.querySelectorAll("." + res.class);
+		uis.forEach((ui) => {
+			ui.textContent = res.value;
+		});
+	}
+	return { update };
+})();
+
+const buyButtonsUI = (() => {
+	function update(gameData) {
+		const ap = gameData.resources.get("ap");
+		const gold = gameData.resources.get("gold");
+
+		GameUI.buyFoodButton.disabled = (ap.value <= 0 || gold.value <= 0);
+		GameUI.buySuppliesButton.disabled = (ap.value <= 0 || gold.value <= 0);
+	}
+	return { update };
+})();
+
+export function updateUI(gameData, newTurn = false) {
+	GameUI.newWeekButton.disabled = false;
+	GameUI.weekDisplay.textContent = `Weeks: ${gameData.state.get("week")}`;
+	GameUI.goalInfo.textContent = `Goal: ${gameData.state.get("winCondition").description}`;
+	GameUI.warningInfo.textContent = gameData.state.get("deathCounter") ? `Warning: ${gameData.state.get("deathCounter").name} will die in ${gameData.state.get("deathCounter").counter} weeks` : "";
+
+	GameUI.missionSlots.forEach((slot) => {
+		MissionSlotUI.update(slot, gameData, newTurn);
 	});
 
 	GameUI.restSlots.forEach((slot) => {
-		const restId = slot.dataset.num;
-		if (slot.classList.contains("frozen")) {
-			slot.setAttribute("data-frozen-text", "Rest until next week");
-			getItem(GameUI.restButtons, restId).disabled = true;
-		} else {
-			if (GameUI.resourceData.get("ap").value <= 0 || !slot.classList.contains("occupied")) {
-				getItem(GameUI.restButtons, restId).disabled = true;
-			} else {
-				getItem(GameUI.restButtons, restId).disabled = false;
-			}
-		}
+		RestSlotUI.update(slot, gameData);
 	});
 
-	GameUI.resourceData.forEach((v, _) => {
-		const uis = document.querySelectorAll("." + v.class);
-		uis.forEach((ui) => {
-			ui.textContent = v.value;
-		});
+	gameData.resources.forEach((v, _) => {
+		resourceUI.update(v);
 	});
 
-	if (GameUI.resourceData.get("ap").value <= 0 || GameUI.resourceData.get("gold").value <= 0) {
-		GameUI.buyFoodButton.disabled = true;
-		GameUI.buySuppliesButton.disabled = true;
-	} else {
-		GameUI.buyFoodButton.disabled = false;
-		GameUI.buySuppliesButton.disabled = false;
-	}
+	buyButtonsUI.update(gameData);
 
-	document.querySelectorAll(".troop-card").forEach((card) => {
+	GameUI.getTroopCards().forEach((card) => {
 		const id = card.dataset.num;
-		const troop = GameUI.troopData.get(id);
+		const troop = gameData.troops.get(id);
 		const healthIndicator = card.querySelector(".health-indicator")
 		while (healthIndicator.firstChild) {
 			healthIndicator.removeChild(healthIndicator.lastChild);
@@ -339,164 +187,69 @@ export function updateUI(GameUI, newTurn = false) {
 			img.draggable = false;
 			healthIndicator.appendChild(img);
 		}
+		card.style.visibility = troop.available ? "visible" : "hidden";
+
 	});
 
-	if (GameUI.currentMission && GameUI.selectedLocation) {
-		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
-		const location = GameUI.regionData.get(GameUI.selectedLocation);
+	DialogMissionPreparation.update();
+	DialogMissionResolve.update();
+}
 
-		const estimatedWeeksWork = Math.ceil(location.efficiency / mission.efficiency);
-		const enoughCautiousness = mission.cautiousness >= location.danger;
+export function cleanRestSlot(gameData, slot) {
 
-		GameUI.missionDescription.style.visibility = "visible"
-		GameUI.missionDescription.innerHTML = `${partyToStr(mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span> and should earn <span class="bold">${location.reward} golds</span> if done during the first week.`;
-
-		GameUI.sendMission.disabled = false;
-	} else {
-		GameUI.missionDescription.style.visibility = "hidden"
-		GameUI.sendMission.disabled = true;
-	}
-
-	GameUI.strategyOptions.forEach((option) => {
-		const optionId = option.dataset.num;
-		option.textContent = GameUI.strategyData.get(optionId).name;
-	});
-
-	if (GameUI.currentMission) {
-		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
-		const location = GameUI.regionData.get(mission.location);
-
-		if (location) {
-			GameUI.missionTroopBox.querySelectorAll(".stat-info").forEach((box) => {
-
-				const text = box.querySelector(".stat-info-text");
-				const ap = box.querySelector(".consumed-ap");
-				const supplies = box.querySelector(".consumed-supplies");
-				const lostHp = box.querySelector(".lost-hp-display");
-				const strategyBox = box.querySelector(".strategy-box");
-
-				const troopId = text.dataset.num;
-				const troop = GameUI.troopData.get(troopId);
-
-				const strategyId = mission.party.get(troopId);
-				const strategy = GameUI.strategyData.get(strategyId);
-
-				const modEfficiency = strategy.modifiers.find((e) => e.type === "efficiency");
-				const totalEfficiency = troop.efficiency + (modEfficiency ? modEfficiency.value : 0);
-
-				const modCautiousness = strategy.modifiers.find((e) => e.type === "cautiousness");
-				const totalCautiousness = troop.cautiousness + (modCautiousness ? modCautiousness.value : 0);
-
-				if (troop.health == 0) {
-					text.textContent = "Cant fight";
-					ap.style.visibility = "hidden";
-					supplies.style.visibility = "hidden";
-					lostHp.style.visibility = "hidden";
-					strategyBox.style.visibility = "hidden";
-					return;
-				} else {
-					text.textContent = `Efficiency: ${totalEfficiency}\nCautiousness: ${totalCautiousness}`;
-				}
-
-				const costAp = strategy.cost.find((e) => e.type === "ap");
-				if (costAp && costAp.value > 0) {
-					ap.style.visibility = "visible";
-				} else {
-					ap.style.visibility = "hidden";
-				}
-
-				const costSupplies = strategy.cost.find((e) => e.type === "supplies");
-				if (costSupplies && costSupplies.value > 0) {
-					supplies.style.visibility = "visible";
-				} else {
-					supplies.style.visibility = "hidden";
-				}
-
-				if (location.danger > mission.cautiousness) {
-					lostHp.style.visibility = "visible";
-				} else {
-					lostHp.style.visibility = "hidden";
-				}
-
-				strategyBox.textContent = strategy.name;
-			});
-
-			GameUI.progressBar.style.width = Math.ceil(100 * mission.efficiency / location.efficiency) + "%";
-			GameUI.progressBarPrev.style.width = Math.ceil(100 * mission.prevEfficiency / location.efficiency) + "%";
-			const latePenaltyFees = location.reward - mission.reward;
-			GameUI.durationInfo.innerHTML = `${partyToStr(mission.party)} working on this mission for <span class="bold">${mission.missionDuration} ${mission.missionDuration <= 1 ? "week" : "weeks"}</span> ${latePenaltyFees > 0 ? `<br>resulting in a loss of <span class="bold">${goldToStr(latePenaltyFees)}</span> as a late penalty fee.` : "."}`;
-
-			if (GameUI.resourceData.get("ap").value < mission.costAp ||
-				GameUI.resourceData.get("supplies").value < mission.costSupplies) {
-				GameUI.confirmMissionResolve.disabled = true;
-			} else {
-				GameUI.confirmMissionResolve.disabled = false;
-			}
+	slot.querySelectorAll(".troop-card").forEach((card) => {
+		const troopId = card.dataset.num;
+		const troop = gameData.troops.get(troopId);
+		if (troop.health < troop.max_health) {
+			troop.health += 1;
 		}
-	}
-}
 
-function partyToStr(party) {
-	const partyNames = Array.from(party).map(([id, _]) => GameUI.troopData.get(id).name);
-	if (partyNames.length == 1) {
-		return `${partyNames[0]} is`;
-	}
-	const last = partyNames.pop();
-	return `${partyNames.join(", ")} and ${last} are`;
-}
-
-function estimatedDifficulty(weeks, enoughCautiousness) {
-
-	let timeDifficulty = 0;
-	if (weeks < 3) {
-		timeDifficulty = 0;
-	}
-	else if (weeks < 5) {
-		timeDifficulty = 1;
-	}
-	else if (weeks < 10) {
-		timeDifficulty = 2;
-	}
-	else if (weeks < 20) {
-		timeDifficulty = 3;
-	}
-	else {
-		timeDifficulty = 4;
-	}
-
-	timeDifficulty += enoughCautiousness ? 0 : 1;
-
-	switch (timeDifficulty) {
-		case 0:
-			return "easy";
-		case 1:
-			return "average";
-		case 2:
-			return "hard";
-		case 3:
-			return "very hard";
-		default:
-			return "fiendish";
-	}
-}
-
-export function goldToStr(gold) {
-	return `${gold} ${gold <= 1 ? "gold" : "golds"}`;
-}
-
-export function cleanMissionSlot(GameUI, missionId) {
-
-	const mission = GameUI.gameStateData.get("mission")[missionId];
-	const slotToUnfreeze = getItem(GameUI.missionSlots, missionId);
-	const regionToUnfreeze = getItem(GameUI.regions, mission.location);
-
-	slotToUnfreeze.querySelectorAll(".troop-card").forEach((card) => {
 		card.classList.remove("frozen");
 		GameUI.troopPool.appendChild(card);
 	});
 
-	slotToUnfreeze.classList.remove("frozen");
-	slotToUnfreeze.classList.remove("occupied");
-	regionToUnfreeze.classList.remove("frozen");
+	slot.classList.remove("frozen");
+	slot.classList.remove("occupied");
 }
-export { GameUI };
+
+const PHASE_UI = {
+	0: {
+		selector: {
+			"#missionBox1": false,
+			"#missionBox0": true,
+			"#restBoxes": false,
+		},
+	},
+	1: {
+		selector: {
+			"#missionBoxes": false,
+			"#missionBox0": false,
+			"#restBoxes": true,
+		},
+	},
+	2: {
+		selector: {
+			"#missionBox0": true,
+			"#restBoxes": false,
+		},
+	},
+	3: {
+		selector: {
+			"#restBoxes": true,
+		},
+	}
+
+};
+
+export function nextPhaseUI(currentStep) {
+
+	const config = PHASE_UI[currentStep];
+
+	if (config) {
+		if (config.selector) {
+			Object.entries(config.selector).forEach(([selector, show]) => {
+				document.querySelector(selector).style.visibility = show ? "visible" : "hidden";
+			});
+		}
+	}
+}

@@ -1,25 +1,87 @@
 import { getDistance, getItem, SNAP_DISTANCE, dropLogic, allowMissionDrop } from "./js/utils.js";
-import { resolveAction, computePartyStat } from "./js/logic.js"
-import { GameUI, start, updateUI, resetMission, goldToStr, cleanMissionSlot } from "./js/GameUI.js"
-import { createTroopCard, createMissionTroopDisplay } from "./js/Troops.js"
+import { goldToStr } from "./js/UtilsUI.js";
+import { resolveAction, computePartyStat } from "./js/Logic.js"
+import { GameUI, initUI, updateUI, cleanRestSlot, nextPhaseUI } from "./js/GameUI.js"
+import { Story } from "./js/Story.js"
+import { GameData, initData, nextPhaseData, resetMission } from "./js/GameData.js"
+import { Signals } from "./js/EventEmitter.js";
+import { DialogLowOnFood } from "./js/dialogs/DialogLowOnFood.js"
+import { DialogGameOver } from "./js/dialogs/DialogGameOver.js"
+import { DialogMissionPreparation } from "./js/dialogs/DialogMissionPreparation.js"
+import { DialogMissionResolve } from "./js/dialogs/DialogMissionResolve.js"
+import { DialogEndMission } from "./js/dialogs/DialogEndMission.js"
+import { ModalQueue } from "./js/ModalQueue.js"
+import "./js/dialogs/DialogConfirm.js"
+
+function start() {
+	Story.start();
+}
+
+function gameStart() {
+	initData();
+	initUI(GameData);
+	updateUI(GameData);
+	const currentStep = GameData.state.get("phase");
+	nextPhase(currentStep);
+}
+
+function update() {
+	updateUI(GameData);
+}
+
+function freezeMissionSlot(id = GameData.currentMission) {
+	const slot = getItem(GameUI.missionSlots, id);
+	slot.classList.add("frozen");
+	slot.querySelectorAll(".troop-card").forEach((card) => {
+		card.classList.add("frozen");
+	});
+}
+
+function unfreezeMissionSlot(id = GameData.currentMission) {
+	const slot = getItem(GameUI.missionSlots, id);
+	slot.querySelectorAll(".troop-card").forEach((card) => {
+		card.classList.remove("frozen");
+		GameUI.troopPool.appendChild(card);
+	});
+
+	slot.classList.remove("frozen");
+	slot.classList.remove("occupied");
+}
+
+function disableGiveOrderButton(id = GameData.currentMission) {
+	getItem(GameUI.giveOrderButtons, id).disabled = true;
+}
+
+function nextPhase(currentStep) {
+	nextPhaseData(currentStep);
+	nextPhaseUI(currentStep);
+	GameData.state.set("phase", currentStep + 1);
+}
+
+window.nextPhase = nextPhase;
 
 document.addEventListener("DOMContentLoaded", () => {
-	start(GameUI);
-	updateUI(GameUI);
+	Signals.on("start", start);
+	Signals.on("game_start", gameStart);
+	Signals.on("update", update);
+	Signals.on("freezeMissionSlot", freezeMissionSlot);
+	Signals.on("unfreezeMissionSlot", unfreezeMissionSlot);
+	Signals.on("disableGiveOrderButton", disableGiveOrderButton);
+	start();
 
-	GameUI.dropableSlots.forEach(slot => {
+	GameUI.droppableSlots.forEach(slot => {
 		slot.addEventListener("drop", (e) => {
 			e.preventDefault();
-			dropLogic(GameUI, e.clientX, e.clientY);
-			updateUI(GameUI);
+			dropLogic(GameData, GameUI, e.clientX, e.clientY);
+			updateUI(GameData);
 		});
 
 		slot.addEventListener("dragover", (e) => {
-			if (!allowMissionDrop(GameUI, slot)) return;
+			if (!allowMissionDrop(GameData, slot)) return;
 			e.preventDefault();
 			e.dataTransfer.dropEffect = "move";
 
-			if (GameUI.draggedElement) {
+			if (GameData.draggedElement) {
 				const distance = getDistance(e.clientX, e.clientY, slot);
 				if (distance < SNAP_DISTANCE) {
 					slot.classList.add("hover");
@@ -34,18 +96,28 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	GameUI.newWeekButton.addEventListener("click", () => {
+	GameUI.newWeekButton.addEventListener("click", async () => {
 		// reset everything that can be reset
 		GameUI.resetButton.click();
 
 		// handles time
-		GameUI.gameStateData.set("week", GameUI.gameStateData.get("week") + 1);
+		GameData.state.set("week", GameData.state.get("week") + 1);
+
+		if (GameData.state.get("deathCounter")) {
+			GameData.state.get("deathCounter").counter -= 1;
+
+			if (GameData.state.get("deathCounter").counter <= 0) {
+				GameData.state.get("deathCounter").counter = 0;
+			}
+		}
 
 		// handles missions
+		const clones = [];
 		GameUI.missionSlots.forEach((slot) => {
 			const missionId = slot.dataset.num;
-			const mission = GameUI.gameStateData.get("mission")[missionId];
-			const location = GameUI.regionData.get(mission.location);
+			const mission = GameData.state.get("mission")[missionId];
+			const location = GameData.regions.get(mission.location);
+			const contract = GameData.contracts.get(mission.contract);
 			if (mission.travelDuration) {
 				mission.travelDuration -= 1;
 			} else if (mission.travelDuration == 0) {
@@ -56,50 +128,50 @@ document.addEventListener("DOMContentLoaded", () => {
 				let sumHealth = 0;
 				mission.party.forEach((_, troopId) => {
 					mission.party.set(troopId, "A");
-					const troop = GameUI.troopData.get(troopId);
-					if (mission.cautiousness < location.danger && troop.health > 0) {
+					const troop = GameData.troops.get(troopId);
+					if (mission.cautiousness < contract.danger && troop.health > 0) {
 						troop.health -= 1;
 					}
 					sumHealth += troop.health;
 				});
 
-				const win = mission.prevEfficiency >= location.efficiency;
+				const win = mission.prevEfficiency >= contract.efficiency;
 
 				if (win || sumHealth == 0) {
-					cleanMissionSlot(GameUI, missionId);
 
+					Signals.emit("unfreezeMissionSlot", missionId);
+					Signals.emit("unfreezeRegion", missionId);
 					if (win) {
-						GameUI.resourceData.get("gold").value += mission.reward;
+						GameData.resources.get("gold").value += mission.reward;
+						contract.done = true;
+						if (!contract.repeatable) {
+							location.contract = null;
+						} else {
+							let newContract = location.contract;
+							while (newContract == location.contract) {
+								newContract = location.contracts[Math.floor(Math.random() * location.contracts.length)];
+							}
+							location.contract = newContract;
+						}
 					}
-
-					const clone = GameUI.endMissionDialog.cloneNode(true);
-					clone.id = `eventModal-${missionId}`;
-					clone.classList.add("mission-resolve-dialog");
-					clone.classList.add("small-dialog");
 
 					let endMessage = "";
 					if (win) {
 						endMessage = "was successful.<br>";
-						if (mission.missionDuration == 0) {
+						if (mission.missionDuration == 0 && contract.reward > 0) {
 							endMessage += `You win <span class="bold">${mission.reward} golds</span>.`;
-						} else {
-							endMessage += `From the initial <span class="bold">${goldToStr(location.reward)}</span>, you win <span class="bold">${goldToStr(mission.reward)}</span> and lost <span class="bold">${goldToStr(location.reward - mission.reward)}</span> as a late penalty fee.`;
+						} else if (contract.reward > 0) {
+							endMessage += `From the initial <span class="bold">${goldToStr(contract.reward)}</span>, you win <span class="bold">${goldToStr(mission.reward)}</span> and lost <span class="bold">${goldToStr(contract.reward - mission.reward)}</span> as a late penalty fee.`;
 						}
 					} else {
 						endMessage = "failed."
 					}
-					clone.querySelector(".end-mission-message").innerHTML = `Mission to ${location.name} ${endMessage}`;
-
-					clone.querySelector(".end-mission-button").addEventListener("click", () => {
-						clone.remove();
-					});
-
-					document.body.appendChild(clone);
-					clone.showModal();
-					GameUI.gameStateData.get("mission")[missionId] = resetMission();
+					const clone = DialogEndMission.getModal(missionId, `Mission to ${location.name} ${endMessage}`);
+					clones.push(clone);
+					GameData.state.get("mission")[missionId] = resetMission();
 				} else {
 					mission.missionDuration += 1;
-					mission.reward = Math.floor(mission.reward - 0.1 * location.reward)
+					mission.reward = Math.floor(mission.reward - 0.1 * contract.reward)
 					if (mission.reward < 0) {
 						mission.reward = 0;
 					}
@@ -110,49 +182,50 @@ document.addEventListener("DOMContentLoaded", () => {
 		// handles rest
 		GameUI.restSlots.forEach((slot) => {
 			if (slot.classList.contains("frozen")) {
-				while (slot.firstChild) {
-					const child = slot.lastChild;
-					const childId = child.dataset.num;
-					if (GameUI.troopData.get(childId).health < GameUI.troopData.get(childId).max_health) {
-						GameUI.troopData.get(childId).health += 1;
-					}
-					child.classList.remove("frozen");
-					GameUI.troopPool.appendChild(child);
-				}
-
-				slot.classList.remove("frozen");
-				slot.classList.remove("occupied");
+				cleanRestSlot(GameData, slot);
 			}
 		});
 
 		// handles resources
-		GameUI.resourceData.get("ap").value = 5;
+		GameData.resources.get("ap").value = 5;
+		let partySize = 0;
+		for (const [_, entry] of GameData.troops) partySize += entry.available ? 1 : 0
 		const res = resolveAction(
-			6,
-			GameUI.resourceData.get("gold").value,
-			GameUI.resourceData.get("food").value,
+			partySize,
+			GameData.resources.get("gold").value,
+			GameData.resources.get("food").value,
 			0,
 		);
-		GameUI.resourceData.get("gold").value = res[0];
-		GameUI.resourceData.get("food").value = res[1];
+		GameData.resources.get("gold").value = res[0];
+		GameData.resources.get("food").value = res[1];
 
-		updateUI(GameUI, true);
+		updateUI(GameData, true);
 
-		// handles game over
-		if (GameUI.gameStateData.get("week") >= 100) {
+		// modals handler
 
+		if (GameData.state.get("winCondition").condition()) {
+			if (GameData.state.get("winCondition").afterCond) {
+				GameData.state.get("winCondition").afterCond();
+			}
+			clones.forEach((c) => ModalQueue.add(c));
+			const currentStep = GameData.state.get("phase");
+			nextPhase(currentStep);
+		} else {
+			clones.forEach((c) => ModalQueue.add(c));
 		}
-		if (GameUI.resourceData.get("food").value <= 0) {
-			GameUI.gameOverDialog.showModal();
-		} else if (GameUI.resourceData.get("food").value < 13) {
-			GameUI.lowOnFoodDialog.showModal();
-
+	
+		if (GameData.resources.get("food").value <= 0) {
+			await ModalQueue.add(DialogGameOver.getModal("You ran out of food"));
+		} else if (GameData.state.get("loseCondition").condition()) {
+			await ModalQueue.add(DialogGameOver.getModal(GameData.state.get("loseCondition").description));
+		} else if (GameData.resources.get("food").value < 13) {
+			await ModalQueue.add(DialogLowOnFood.getModal());
 		}
 	});
 
 	GameUI.resetButton.addEventListener("click", () => {
 		// Move all cards back to pool
-		GameUI.dropableSlots.forEach(slot => {
+		GameUI.droppableSlots.forEach(slot => {
 			if (slot == GameUI.troopPool) {
 				return;
 			}
@@ -167,229 +240,58 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		});
 
-		GameUI.regions.forEach(region => region.classList.remove("selected"));
-		GameUI.currentMission = null;
+		DialogMissionPreparation.unselectRegions();
+		GameData.currentMission = null;
 
-		updateUI(GameUI);
+		updateUI(GameData);
 	});
 
 	GameUI.buyFoodButton.addEventListener("click", () => {
-		GameUI.resourceData.get("ap").value -= 1;
-		GameUI.resourceData.get("gold").value -= 1;
-		GameUI.resourceData.get("food").value += 10;
-		updateUI(GameUI);
+		GameData.resources.get("ap").value -= 1;
+		GameData.resources.get("gold").value -= 1;
+		GameData.resources.get("food").value += 10;
+		updateUI(GameData);
 	});
 
 	GameUI.buySuppliesButton.addEventListener("click", () => {
-		GameUI.resourceData.get("ap").value -= 1;
-		GameUI.resourceData.get("gold").value -= 10;
-		GameUI.resourceData.get("supplies").value += 10;
-		updateUI(GameUI);
+		GameData.resources.get("ap").value -= 1;
+		GameData.resources.get("gold").value -= 10;
+		GameData.resources.get("supplies").value += 10;
+		updateUI(GameData);
 	});
 
 	GameUI.missionButtons.forEach(b => {
 		b.addEventListener("click", () => {
-			GameUI.currentMission = b.dataset.num;
-			const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
-			mission.party = getPartyFromSlot(GameUI.currentMission);
+			GameData.currentMission = b.dataset.num;
+			const mission = GameData.state.get("mission")[GameData.currentMission];
+			mission.party = getPartyFromSlot(GameData.currentMission);
 
-			computePartyStat(GameUI);
-
-			missionDialog.showModal();
+			computePartyStat(GameData);
+			DialogMissionPreparation.open();
 		});
 	});
 
 	GameUI.restButtons.forEach(b => {
 		b.addEventListener("click", () => {
-			GameUI.resourceData.get("ap").value -= 1;
+			GameData.resources.get("ap").value -= 1;
 			const restId = b.dataset.num;
 			const slot = getItem(GameUI.restSlots, restId);
 			slot.classList.add("frozen");
 			for (const child of slot.children) {
 				child.classList.add("frozen");
 			}
-			updateUI(GameUI);
+			updateUI(GameData);
 		});
-	});
-
-	GameUI.sendMission.addEventListener("click", () => {
-		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
-		const location = GameUI.regionData.get(GameUI.selectedLocation);
-
-		const travelDuration = location.travelDuration;
-		mission.travelDuration = travelDuration;
-
-		const region = getItem(GameUI.regions, GameUI.selectedLocation);
-		region.classList.add("frozen");
-		mission.location = GameUI.selectedLocation;
-		mission.reward = location.reward;
-
-		const slot = getItem(GameUI.missionSlots, GameUI.currentMission);
-		slot.classList.add("frozen");
-		slot.querySelectorAll(".troop-card").forEach((card) => {
-			card.classList.add("frozen");
-		});
-
-		GameUI.resourceData.get("ap").value -= 1;
-
-		GameUI.currentMission = null;
-		GameUI.selectedLocation = null;
-		missionDialog.close();
-
-		updateUI(GameUI);
-	});
-
-	GameUI.cancelMission.addEventListener("click", () => {
-		GameUI.regions.forEach(slot => slot.classList.remove("selected"));
-		GameUI.currentMission = null;
-		GameUI.selectedLocation = null;
-		missionDialog.close();
-
-		updateUI(GameUI);
-	});
-
-	GameUI.regions.forEach(region => {
-		region.addEventListener("click", () => {
-			GameUI.regions.forEach(r => r.classList.remove("selected"));
-			region.classList.add("selected");
-			GameUI.selectedLocation = region.dataset.num;
-
-			updateUI(GameUI);
-		});
-
-		region.addEventListener("mouseenter", () => {
-			const id = region.dataset.num;
-			const location = GameUI.regionData.get(id);
-
-			GameUI.regionTooltip.textContent = `${location.name}`;
-			GameUI.regionTooltip.style.display = "block";
-			GameUI.regionTooltip.style.left = region.getAttribute("cx") + "px";
-			GameUI.regionTooltip.style.top = region.getAttribute("cy") + "px";
-		});
-
-		region.addEventListener("mouseleave", () => {
-			GameUI.regionTooltip.style.display = "none";
-		});
-	});
-
-	GameUI.restartButton.addEventListener("click", () => {
-		gameOverDialog.close();
-		start(GameUI);
-		updateUI(GameUI);
-	});
-
-	GameUI.endMissionButton.addEventListener("click", () => {
-		endMissionDialog.close();
-		updateUI(GameUI);
-	});
-
-	GameUI.lowOnFoodButton.addEventListener("click", () => {
-		lowOnFoodDialog.close();
-		updateUI(GameUI);
 	});
 
 	GameUI.giveOrderButtons.forEach((b) => {
 		b.addEventListener("click", () => {
-			GameUI.currentMission = b.dataset.num;
-			while (GameUI.missionTroopBox.firstChild) {
-				GameUI.missionTroopBox.removeChild(GameUI.missionTroopBox.lastChild);
-			}
+			GameData.currentMission = b.dataset.num;
+			DialogMissionResolve.open();
 
-			const party = GameUI.gameStateData.get("mission")[GameUI.currentMission].party
-
-			party.forEach((stratId, troopId) => {
-				const card = createTroopCard(GameUI, troopId, false, false);
-				const container = createMissionTroopDisplay(GameUI, card, troopId, stratId);
-
-				GameUI.missionTroopBox.appendChild(container);
-			});
-
-			GameUI.missionResolveDialog.showModal();
-
-			computePartyStat(GameUI);
-			updateUI(GameUI);
+			computePartyStat(GameData);
+			updateUI(GameData);
 		});
-	});
-
-	GameUI.giveUpMissionResolve.addEventListener("confirmed", () => {
-		cleanMissionSlot(GameUI, GameUI.currentMission);
-		GameUI.gameStateData.get("mission")[GameUI.currentMission] = resetMission();
-		GameUI.currentMission = null;
-		GameUI.missionResolveDialog.close();
-
-		updateUI(GameUI);
-	});
-
-
-	GameUI.cancelMissionResolve.addEventListener("click", () => {
-		GameUI.currentMission = null;
-		GameUI.missionResolveDialog.close();
-
-		updateUI(GameUI);
-	});
-
-	GameUI.resetMissionResolve.addEventListener("click", () => {
-		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
-		mission.party.forEach((_, troopId) => {
-			mission.party.set(troopId, "A");
-		});
-
-		computePartyStat(GameUI);
-		updateUI(GameUI);
-	});
-
-	GameUI.confirmMissionResolve.addEventListener("click", () => {
-		getItem(GameUI.giveOrderButtons, GameUI.currentMission).disabled = true;
-
-		const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission]
-		GameUI.resourceData.get("ap").value -= mission.costAp;
-		GameUI.resourceData.get("supplies").value -= mission.costSupplies;
-		GameUI.currentMission = null;
-		GameUI.missionResolveDialog.close();
-
-		updateUI(GameUI);
-	});
-
-	GameUI.strategyOptions.forEach((option) => {
-		option.addEventListener("click", () => {
-			const troopId = GameUI.selectedStrategy.dataset.num;
-			const optionId = option.dataset.num;
-			GameUI.strategyMenu.style.display = "none";
-
-			const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
-			mission.party.set(troopId, optionId);
-
-			computePartyStat(GameUI);
-			updateUI(GameUI);
-		});
-
-		option.addEventListener("mouseenter", (e) => {
-			const optionId = option.dataset.num;
-			const strategy = GameUI.strategyData.get(optionId);
-
-			let stringBuilder = "";
-			strategy.cost.forEach((c) => {
-				stringBuilder += `${c.type}: ${c.value}\n`;
-			});
-
-			// Position tooltip on the element
-			const modalRect = GameUI.missionResolveDialog.getBoundingClientRect();
-			const rect = e.target.getBoundingClientRect();
-			GameUI.strategyTooltip.textContent = stringBuilder;
-			GameUI.strategyTooltip.style.display = "block";
-			GameUI.strategyTooltip.style.left = rect.left - modalRect.left - 10 + "px";
-			GameUI.strategyTooltip.style.top = rect.top - modalRect.top - 10 + "px";
-		});
-
-		option.addEventListener("mouseleave", () => {
-			GameUI.strategyTooltip.style.display = "none";
-		});
-
-	});
-
-	// close strategy menu if clicked outside
-	document.addEventListener("click", () => {
-		GameUI.strategyMenu.style.display = "none";
 	});
 
 	// handles general tooltips
@@ -422,36 +324,4 @@ document.addEventListener("DOMContentLoaded", () => {
 			.map((card) => [card.dataset.num, "A"]));
 	}
 
-	document.addEventListener("click", (e) => {
-		const button = e.target.closest("button.danger");
-		if (!button) return;
-
-		e.preventDefault();
-		e.stopPropagation();
-
-		GameUI.pendingAction = button;
-
-		const message = button.dataset.confirmMessage ||
-			`Are you sure you want to ${button.textContent.toLowerCase()} ?`;
-		GameUI.confirmMessage.textContent = message;
-		GameUI.confirmDialog.showModal();
-	});
-
-	GameUI.confirmButton.addEventListener("click", () => {
-		if (GameUI.pendingAction) {
-			GameUI.pendingAction.dispatchEvent(new Event("confirmed"));
-			GameUI.pendingAction.click();
-		}
-		GameUI.confirmDialog.close();
-		GameUI.pendingAction = null;
-	});
-
-	GameUI.cancelButton.addEventListener("click", () => {
-		GameUI.confirmDialog.close();
-		GameUI.pendingAction = null;
-	});
-
-	GameUI.confirmDialog.addEventListener("close", () => {
-		GameUI.pendingAction = null;
-	});
 });

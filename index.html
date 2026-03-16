@@ -7,11 +7,13 @@
 	<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Mercenary Manager Prototype</h1>
+    <div class="main-container">
         <div class="info">
-            <p class="text-info"><strong>Instructions: </strong>Survive as a mercenary company for 100 weeks. Missions give you money, use money to buy food and feed your troops. Beware, running out of food will end your game.</p>
-			<p id="state" data-description="Reach week 100 to win" class="text-info">Weeks: 1</p>
+			<div class="vbox">
+				<p id="goalInfo" class="text-info">Goal: </p>
+				<p id="warningInfo" class="text-info">Warning: </p>
+			</div>
+			<p id="weekDisplay" data-description="Reach week 100 to win" class="text-info">Weeks: 1</p>
 			<div>
 				<button id="newWeekButton" data-description="End the current week">Next Week</button>
             	<button id="resetSlots" data-description="Return unused troops to the Barracks">Reset</button>
@@ -54,32 +56,34 @@
 			</div>
 			
 			<div class="hbox">
-				<div class="hbox">
+				<div class="hbox" id="missionBoxes">
 					<h2 data-description="Assign up to 4 troops to a mission to gain gold">Missions</h2>
 					<div class="vbox">
-						<div class="hbox">
+						<div class="hbox" id="missionBox0">
 							<button class="mission-button" data-num="0" data-description="Troops in a mission are unavailable until the mission ends">Prepare Mission</button>
 							<div class="mission-slot slot" data-num="0">
-								<div class="frozen-overlay-text" data-num="0"></div>
-								<button class="overlay-button" data-num="0">Give orders</button>
+								<div class="frozen-overlay-text"></div>
+								<button class="give-order-button" data-num="0">Give orders</button>
 							</div>
 						</div>
-						<div class="hbox">
+						<div class="hbox" id="missionBox1">
 							<button class="mission-button" data-num="1" data-description="Troops in a mission are unavailable until the mission ends">Prepare Mission</button>
 							<div class="mission-slot slot" data-num="1">
-								<div class="frozen-overlay-text" data-num="1"></div>
-								<button class="overlay-button" data-num="1">Give orders</button>
+								<div class="frozen-overlay-text"></div>
+								<button class="give-order-button" data-num="1">Give orders</button>
 							</div>
 						</div>
 					</div>
 				</div>
 
-				<div class="hbox">
+				<div class="hbox" id="restBoxes">
 					<h2 data-description="Assign up to 4 troops to rest to regain 1 health">Rest</h2>
 					<div class="vbox">
-						<div class="hbox">
+						<div class="hbox" id="restBox0">
 							<button class="rest-button" data-num="0" data-description="Resting troops will be unavailable until next week">Rest</button>
-							<div class="rest-slot slot" data-num="0"></div>
+							<div class="rest-slot slot" data-num="0">
+								<div class="frozen-overlay-text"></div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -87,13 +91,39 @@
 		</div>
     </div>
 
+	<div class="story-container">
+        <div class="story-dialog" id="storyDialog">
+            <div class="story-content" id="contentArea">
+                <div class="story-text">Click "Start Story" to begin...</div>
+            </div>
+            <div class="dialogue-container" id="dialogueContainer" style="display: none;"></div>
+        </div>
+        <div class="vbox">
+            <button id="nextStoryButton">Next</button>
+            <button id="resetStoryButton">Reset</button>
+            <button id="passStoryButton">Pass</button>
+            <div class="info-story" id="infoStory"></div>
+        </div>
+    </div>
+
+	<dialog id="goalDialog" class="small-dialog">
+		<div class="hbox">
+			<p id = "goalMessage" class="goal-message"></p>
+			<button id="confirmGoalButton" class="confirm-goal-button">Ok</button>
+		</div>
+	</dialog>
+
 	<dialog id="missionDialog">
 		<div class="hbox">
 			<div style="position: relative; display: inline-block;">
-				<svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+				<svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" class="svg-container">
 					<circle cx="200" cy="189" r="15" class="region" data-num="A"/>
 					<circle cx="530" cy="85" r="15" class="region" data-num="B"/>
 					<circle cx="625" cy="300" r="15" class="region" data-num="C"/>
+					<circle cx="390" cy="180" r="15" class="region" data-num="D"/>
+					<circle cx="415" cy="109" r="15" class="region" data-num="E"/>
+					<circle cx="335" cy="312" r="15" class="region" data-num="F"/>
+					<circle cx="590" cy="190" r="15" class="region" data-num="G"/>
 				</svg>
 
 				<img src="images/map.png" draggable="false" style="width: 818px;"/>
@@ -113,8 +143,8 @@
 
 	<dialog id="gameOverDialog" class="small-dialog">
 		<div class="hbox">
-			<p>GAME OVER</p>
-			<button id="restart">Restart</button>
+			<p id="gameOverMessage">GAME OVER</p>
+			<button id="gameOverButton">Restart</button>
 		</div>
 	</dialog>
 
@@ -125,6 +155,16 @@
 		</div>
 	</dialog>
 	
+	<dialog id="winDialog" class="small-dialog">
+		<div class="hbox">
+			<p>You reached the end of the current content, thanks for playing</p>
+			<div class="vbox">
+				<button id="restartButton" class="restart-button">Play Again</button>
+				<button id="continueButton" class="continue-button">Continue playing</button>
+			</div>
+		</div>
+	</dialog>
+
 	<dialog id="lowOnFoodDialog" class="small-dialog">
 		<div class="hbox">
 			<p>You are low on food, you should buy some.</p>

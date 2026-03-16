@@ -15,18 +15,18 @@ export function resolveAction(troops, gold, food, goods) {
 	return [new_gold, new_food, new_goods];
 }
 
-export function computePartyStat(GameUI) {
-	const mission = GameUI.gameStateData.get("mission")[GameUI.currentMission];
+export function computePartyStat(gameData) {
+	const mission = gameData.state.get("mission")[gameData.currentMission];
 	let partyEfficiency = mission.prevEfficiency;
 	let partyCautiousness = 0;
 	let partyCostAp = 0;
 	let partyCostSupplies = 0;
 
-	mission.party.forEach((stratId, troopId) => {
-		const troop = GameUI.troopData.get(troopId);
+	mission.party.forEach((strategyId, troopId) => {
+		const troop = gameData.troops.get(troopId);
 
 		if (troop.health == 0) return;
-		const strategy = GameUI.strategyData.get(stratId);
+		const strategy = gameData.strategies.get(strategyId);
 
 		const modEfficiency = strategy.modifiers.find((e) => e.type === "efficiency");
 		const totalEfficiency = troop.efficiency + (modEfficiency ? modEfficiency.value : 0);
