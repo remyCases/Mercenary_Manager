@@ -2,6 +2,7 @@ import { Signals } from "./EventEmitter.js";
 import { DialogGoal } from "./dialogs/DialogGoal.js"
 import { DialogWin } from "./dialogs/DialogWin.js"
 import { Story } from "./Story.js"
+import { ModalQueue } from "./ModalQueue.js"
 
 export const GameData = {
 	// persistent data storage
@@ -309,9 +310,9 @@ export function nextPhaseData(currentStep) {
 	Signals.emit("update");
 
 	if (!GameData.state.get("win")) {
-		DialogGoal.open();
+		ModalQueue.add(DialogGoal.getModal());
 	}
 	else {
-		DialogWin.open();
+		ModalQueue.add(DialogWin.getModal());
 	}
 }

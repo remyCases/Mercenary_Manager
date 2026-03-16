@@ -3,7 +3,6 @@ import { getItem } from "./utils.js"
 import { isFrozen, isOccupied } from "./UtilsUI.js"
 import { DialogMissionPreparation } from "./dialogs/DialogMissionPreparation.js"
 import { DialogMissionResolve } from "./dialogs/DialogMissionResolve.js"
-import { GameData } from "./GameData.js"
 
 export const GameUI = {
 	// general tooltip
@@ -26,10 +25,6 @@ export const GameUI = {
 
 	// mission resolve
 	giveOrderButtons: document.querySelectorAll(".give-order-button"),
-
-	// end of mission modal
-	endMissionDialog: document.getElementById("endMissionDialog"),
-	endMissionButton: endMissionDialog.querySelector("#endMissionButton"),
 
 	// buyer buttons
 	buyFoodButton: document.getElementById("buyFood"),

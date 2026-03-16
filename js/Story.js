@@ -1,4 +1,5 @@
 import { Signals } from "./EventEmitter.js";
+import { ModalQueue } from "./ModalQueue.js";
 
 const StoryElements = {
 	mainContainer: document.querySelector(".main-container"),
@@ -48,8 +49,10 @@ const StoryData = {
 			action: () => {
 				StoryElements.storyContainer.style.display = "none";
 				StoryElements.mainContainer.style.display = "block";
+				ModalQueue.forceProcessModals();
 				Signals.emit("game_start");
-			}
+			},
+			done: false,
 		},
 		{
 			id: "making_money",
@@ -57,7 +60,9 @@ const StoryData = {
 			action: () => {
 				StoryElements.storyContainer.style.display = "none";
 				StoryElements.mainContainer.style.display = "block";
-			}
+				ModalQueue.forceProcessModals();
+			},
+			done: false,
 		},
 	],
 
@@ -166,8 +171,9 @@ const StoryLogic = {
 
 	checkTriggers() {
 		StoryData.triggers.forEach(trigger => {
-			if (trigger.condition()) {
+			if (trigger.condition() && !trigger.done) {
 				trigger.action();
+				trigger.done = true;
 			}
 		});
 	},
@@ -194,6 +200,7 @@ const Story = (() => {
 	let dialogueToPass = null;
 
 	function start() {
+		ModalQueue.maskModals();
 		StoryElements.storyContainer.style.display = "block";
 		StoryElements.mainContainer.style.display = "none";
 		storyToPass = 0;
@@ -203,6 +210,7 @@ const Story = (() => {
 	}
 
 	function continueStory(story) {
+		ModalQueue.maskModals();
 		StoryElements.storyContainer.style.display = "block";
 		StoryElements.mainContainer.style.display = "none";
 		storyToPass = story;
@@ -210,6 +218,7 @@ const Story = (() => {
 	}
 
 	function continueDialogue(dialogue) {
+		ModalQueue.maskModals();
 		StoryElements.storyContainer.style.display = "block";
 		StoryElements.mainContainer.style.display = "none";
 		dialogueToPass = dialogue;

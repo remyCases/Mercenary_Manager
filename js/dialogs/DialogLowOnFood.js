@@ -12,7 +12,11 @@ export const DialogLowOnFood = (() => {
 		});
 	}
 
-	return { init, open };
+	function getModal() {
+		return modal;
+	}
+
+	return { init, open, getModal };
 })();
 
 DialogLowOnFood.init();

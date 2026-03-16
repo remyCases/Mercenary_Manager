@@ -5,6 +5,10 @@ export const DialogWin = (() => {
 	const restartButton = modal.querySelector("#restartButton");
 	const continueButton = modal.querySelector("#continueButton");
 
+	function getModal() {
+		return modal;
+	}
+
 	function open() {
 		modal.showModal();
 	}
@@ -20,7 +24,7 @@ export const DialogWin = (() => {
 		});
 	}
 
-	return { init, open };
+	return { init, open, getModal };
 })();
 
 DialogWin.init();

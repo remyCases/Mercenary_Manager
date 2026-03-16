@@ -5,8 +5,12 @@ export const DialogGameOver = (() => {
 	const gameOverMessage = modal.querySelector("#gameOverMessage");
 	const button = modal.querySelector("#gameOverButton");
 
-	function open(message = null) {
+	function getModal(message = null) {
 		gameOverMessage.innerHTML = `GAME OVER<br>${message}`;
+		return modal;
+	}
+
+	function open() {
 		modal.showModal();
 	}
 
@@ -17,7 +21,7 @@ export const DialogGameOver = (() => {
 		});
 	}
 
-	return { init, open };
+	return { init, open, getModal };
 })();
 
 DialogGameOver.init();

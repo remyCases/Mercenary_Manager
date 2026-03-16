@@ -9,6 +9,8 @@ import { DialogLowOnFood } from "./js/dialogs/DialogLowOnFood.js"
 import { DialogGameOver } from "./js/dialogs/DialogGameOver.js"
 import { DialogMissionPreparation } from "./js/dialogs/DialogMissionPreparation.js"
 import { DialogMissionResolve } from "./js/dialogs/DialogMissionResolve.js"
+import { DialogEndMission } from "./js/dialogs/DialogEndMission.js"
+import { ModalQueue } from "./js/ModalQueue.js"
 import "./js/dialogs/DialogConfirm.js"
 
 function start() {
@@ -94,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	GameUI.newWeekButton.addEventListener("click", () => {
+	GameUI.newWeekButton.addEventListener("click", async () => {
 		// reset everything that can be reset
 		GameUI.resetButton.click();
 
@@ -110,6 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		// handles missions
+		const clones = [];
 		GameUI.missionSlots.forEach((slot) => {
 			const missionId = slot.dataset.num;
 			const mission = GameData.state.get("mission")[missionId];
@@ -146,11 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
 						}
 					}
 
-					const clone = GameUI.endMissionDialog.cloneNode(true);
-					clone.id = `eventModal-${missionId}`;
-					clone.classList.add("mission-resolve-dialog");
-					clone.classList.add("small-dialog");
-
 					let endMessage = "";
 					if (win) {
 						endMessage = "was successful.<br>";
@@ -162,14 +160,8 @@ document.addEventListener("DOMContentLoaded", () => {
 					} else {
 						endMessage = "failed."
 					}
-					clone.querySelector(".end-mission-message").innerHTML = `Mission to ${location.name} ${endMessage}`;
-
-					clone.querySelector(".end-mission-button").addEventListener("click", () => {
-						clone.remove();
-					});
-
-					document.body.appendChild(clone);
-					clone.showModal();
+					const clone = DialogEndMission.getModal(missionId, `Mission to ${location.name} ${endMessage}`);
+					clones.push(clone);
 					GameData.state.get("mission")[missionId] = resetMission();
 				} else {
 					mission.missionDuration += 1;
@@ -203,19 +195,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		updateUI(GameData, true);
 
-		if (GameData.state.get("winCondition").condition()) {
+		// modals handler
 
+		if (GameData.state.get("winCondition").condition()) {
 			if (GameData.state.get("winCondition").afterCond) {
 				GameData.state.get("winCondition").afterCond();
 			}
+			clones.forEach((c) => ModalQueue.add(c));
 			const currentStep = GameData.state.get("phase");
 			nextPhase(currentStep);
-		} else if (GameData.resources.get("food").value <= 0) {
-			DialogGameOver.open("You ran out of food");
+		} else {
+			clones.forEach((c) => ModalQueue.add(c));
+		}
+	
+		if (GameData.resources.get("food").value <= 0) {
+			await ModalQueue.add(DialogGameOver.getModal("You ran out of food"));
 		} else if (GameData.state.get("loseCondition").condition()) {
-			DialogGameOver.open(GameData.state.get("loseCondition").description);
+			await ModalQueue.add(DialogGameOver.getModal(GameData.state.get("loseCondition").description));
 		} else if (GameData.resources.get("food").value < 13) {
-			DialogLowOnFood.open();
+			await ModalQueue.add(DialogLowOnFood.getModal());
 		}
 	});
 
@@ -278,11 +276,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 			updateUI(GameData);
 		});
-	});
-
-	GameUI.endMissionButton.addEventListener("click", () => {
-		endMissionDialog.close();
-		updateUI(GameData);
 	});
 
 	GameUI.giveOrderButtons.forEach((b) => {

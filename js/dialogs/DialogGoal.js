@@ -5,8 +5,12 @@ export const DialogGoal = (() => {
 	const message = modal.querySelector("#goalMessage");
 	const button = modal.querySelector("#confirmGoalButton");
 
-	function open() {
+	function getModal() {
 		message.innerHTML = `New objective:<br>${GameData.state.get("winCondition").description}`;
+		return modal;
+	}
+
+	function open() {
 		modal.showModal();
 	}
 
@@ -16,7 +20,7 @@ export const DialogGoal = (() => {
 		});
 	}
 
-	return { init, open };
+	return { init, open, getModal };
 })();
 
 DialogGoal.init();
