@@ -33,11 +33,11 @@ const StoryData = {
 		{
 			name: "saving_krisa",
 			lines: [
-				{ from: "a", img: "./../images/RangerMan.png", text: "I've seen her, in <strong>Ata</strong>." },
+				{ from: "a", img: "./images/RangerMan.png", text: "I've seen her, in <strong>Ata</strong>." },
 				{ from: "b", img: null, imgTxt: "You", text: "Who are you talking about ?" },
-				{ from: "a", img: "./../images/RangerMan.png", text: "<strong>Krisa</strong>, she's alive. But won't be long. I've heard she was sentenced to death." },
+				{ from: "a", img: "./images/RangerMan.png", text: "<strong>Krisa</strong>, she's alive. But won't be long. I've heard she was sentenced to death." },
 				{ from: "b", img: null, imgTxt: "You", text: "I guess we can plan a little evasion. Do you feel ready to go back ?" },
-				{ from: "a", img: "./../images/RangerMan.png", text: "It won't be easy, I need some rest first." },
+				{ from: "a", img: "./images/RangerMan.png", text: "It won't be easy, I need some rest first." },
 			],
 			done: false,
 		},
