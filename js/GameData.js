@@ -344,7 +344,7 @@ export function nextPhaseData(currentStep) {
 	if (config) {
 		GameData.state.set("winCondition", config.win);
 		GameData.state.set("loseCondition", config.lose);
-		GameData.state.set("deathCounter", config.deathCounter);
+		GameData.state.set("deathCounter", structuredClone(config.deathCounter));
 
 		if (config.regions) {
 			Object.entries(config.regions).forEach(([region, contracts]) => {

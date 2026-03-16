@@ -48,10 +48,8 @@ export const DialogMissionPreparation = (() => {
 		});
 
 		regions.forEach(region => {
-			const regionData = GameData.regions.get(region.dataset.num);
-			region.style.visibility = regionData.available ? "visible" : "hidden";
 			region.addEventListener("click", () => {
-				if (!regionData.contract) return;
+				if (!GameData.regions.get(region.dataset.num).contract) return;
 
 				regions.forEach(r => r.classList.remove("selected"));
 				region.classList.add("selected");
@@ -64,7 +62,6 @@ export const DialogMissionPreparation = (() => {
 				const id = region.dataset.num;
 				const location = GameData.regions.get(id);
 
-				// AIE
 				regionTooltip.textContent = `${location.name}`;
 				regionTooltip.style.display = "block";
 				regionTooltip.style.left = region.getAttribute("cx") + "px";
@@ -167,3 +164,5 @@ function estimatedDifficulty(weeks, enoughCautiousness) {
 			return "fiendish";
 	}
 }
+
+DialogMissionPreparation.init();

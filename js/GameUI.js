@@ -53,8 +53,6 @@ export function initUI(gameData) {
 	GameUI.missionSlots.forEach(slot => {
 		slot.classList.add("mission-slot");
 	});
-
-	DialogMissionPreparation.init();
 }
 
 const MissionSlotUI = (() => {

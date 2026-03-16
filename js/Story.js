@@ -70,6 +70,12 @@ const StoryData = {
 		this.story.forEach((s) => {
 			s.done = false;
 		});
+		this.dialogue.forEach((d) => {
+			d.done = false;
+		});
+		this.triggers.forEach((t) => {
+			t.done = false;
+		});
 	}
 };
 
@@ -184,11 +190,11 @@ const StoryLogic = {
 
 	resetDialogue() {
 		this.currentLine = 0;
-		this.showDialogue();
 	},
 
 	reset() {
 		this.currentStory = 0;
+		this.currentDialogue = 0;
 		this.resetStory();
 		this.resetDialogue();
 	},
