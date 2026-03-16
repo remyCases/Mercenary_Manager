@@ -1,7 +1,7 @@
 import { Signals } from "../EventEmitter.js";
 import { GameData } from "../GameData.js"
 import { getItem } from "../utils.js";
-import { partyToStr } from "../UtilsUI.js";
+import { partyToStr, rewardsToStr } from "../UtilsUI.js";
 
 export const DialogMissionPreparation = (() => {
 	const dialog = document.getElementById("missionDialog");
@@ -26,7 +26,7 @@ export const DialogMissionPreparation = (() => {
 			region.classList.add("frozen");
 			mission.location = GameData.selectedLocation;
 			mission.contract = location.contract;
-			mission.reward = contract.reward;
+			mission.reward = structuredClone(contract.reward);
 
 			Signals.emit("freezeMissionSlot");
 
@@ -94,8 +94,9 @@ export const DialogMissionPreparation = (() => {
 				const enoughCautiousness = mission.cautiousness >= contract.danger;
 
 				missionDescription.style.visibility = "visible";
-				const contractDescription = `The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span>${contract.reward ? ` and should earn <span class="bold">${contract.reward} golds</span> if done during the first week.` : "."}`
-				missionDescription.innerHTML = `${partyToStr(GameData, mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>${contractDescription}`;
+				const contractDescription = `The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span>`;
+				const rewardsDescription = rewardsToStr(contract.reward);
+				missionDescription.innerHTML = `${partyToStr(GameData, mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>${contractDescription}.<br>${rewardsDescription}`;
 
 				sendMission.disabled = false;
 			}

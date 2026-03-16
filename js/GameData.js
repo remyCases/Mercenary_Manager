@@ -36,9 +36,20 @@ export function resetMission() {
 		costSupplies: 0,
 		prevEfficiency: 0,
 		party: [],
-		reward: 0,
+		reward: { "gold": 0 },
 		missionDuration: 0,
 	};
+}
+
+function newRegion(regionName, travelDuration) {
+	return {
+		name: regionName,
+		travelDuration: travelDuration,
+		available: true,
+		contracts: null,
+		contract: null,
+		reputation: 0,
+	}
 }
 
 export function initData() {
@@ -59,102 +70,60 @@ export function initData() {
 	GameData.state.set("winCondition", { condition: null, description: "" });
 	GameData.state.set("loseCondition", { condition: null, description: "" });
 
-	GameData.regions.set("A", {
-		name: "Ata",
-		travelDuration: 1,
-		available: true,
-		contracts: null,
-		contract: null,
-	});
-	GameData.regions.set("B", {
-		name: "Makaret",
-		travelDuration: 1,
-		available: false,
-		contracts: null,
-		contract: null,
-	});
-	GameData.regions.set("C", {
-		name: "Csasi",
-		travelDuration: 1,
-		available: false,
-		contracts: null,
-		contract: null,
-	});
-	GameData.regions.set("D", {
-		name: "Linkerburg",
-		travelDuration: 0,
-		available: true,
-		contracts: null,
-		contract: null,
-	});
-	GameData.regions.set("E", {
-		name: "Oudoor of Linkerburg",
-		travelDuration: 1,
-		available: false,
-		contracts: null,
-		contract: null,
-	});
-	GameData.regions.set("F", {
-		name: "Unknown Grotto",
-		travelDuration: 2,
-		available: false,
-		contracts: null,
-		contract: null,
-	});
-	GameData.regions.set("G", {
-		name: "East Market",
-		travelDuration: 1,
-		available: false,
-		contracts: null,
-		contract: null,
-	});
+	GameData.regions.set("A", newRegion("Ata", 1));
+	GameData.regions.set("B", newRegion("Makaret", 1));
+	GameData.regions.set("C", newRegion("Csasi", 1));
+	GameData.regions.set("D", newRegion("Linkerburg", 1));
+	GameData.regions.set("E", newRegion("Oudoor of Linkerburg", 1));
+	GameData.regions.set("F", newRegion("Unknown Grotto", 2));
+	GameData.regions.set("G", newRegion("East Market", 1));
 
 	GameData.contracts.set("A", {
 		efficiency: 3,
 		danger: 0,
-		reward: 5,
+		reward: { "gold": 5, "reputation": 0 },
 		done: false,
 		repeatable: false,
 	});
 	GameData.contracts.set("B", {
 		efficiency: 8,
 		danger: 50,
-		reward: 0,
+		reward: { "gold": 0, "reputation": -100 },
 		done: false,
 		repeatable: false,
 	});
 	GameData.contracts.set("C1", {
 		efficiency: 8,
 		danger: 5,
-		reward: 15,
+		reward: { "gold": 15, "reputation": 5 },
 		done: false,
 		repeatable: true,
 	});
 	GameData.contracts.set("C2", {
 		efficiency: 10,
 		danger: 7,
-		reward: 20,
+		reward: { "gold": 20, "reputation": 0 },
 		done: false,
 		repeatable: true,
 	});
 	GameData.contracts.set("C3", {
 		efficiency: 4,
 		danger: 10,
-		reward: 10,
+		reward: { "gold": 10, "reputation": 10 },
 		done: false,
 		repeatable: true,
 	});
 	GameData.contracts.set("C4", {
-		efficiency: 8,
-		danger: 5,
-		reward: 15,
+		efficiency: 20,
+		danger: 0,
+		reward: { "gold": 25, "reputation": 5 },
 		done: false,
 		repeatable: true,
 	});
 	GameData.contracts.set("D", {
 		efficiency: 30,
 		danger: 10,
-		reward: 30,
+		reward: { "gold": 100, "reputation": 0 },
 		done: false,
 		repeatable: false,
 	});

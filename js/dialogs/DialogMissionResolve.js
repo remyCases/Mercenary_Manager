@@ -190,7 +190,7 @@ export const DialogMissionResolve = (() => {
 
 				progressBar.style.width = Math.ceil(100 * mission.efficiency / contract.efficiency) + "%";
 				progressBarPrev.style.width = Math.ceil(100 * mission.prevEfficiency / contract.efficiency) + "%";
-				const latePenaltyFees = contract.reward - mission.reward;
+				const latePenaltyFees = contract.reward.gold - mission.reward.gold;
 				durationInfo.innerHTML = `${partyToStr(GameData, mission.party)} working on this mission for <span class="bold">${mission.missionDuration} ${mission.missionDuration <= 1 ? "week" : "weeks"}</span> ${latePenaltyFees > 0 ? `<br>resulting in a loss of <span class="bold">${goldToStr(latePenaltyFees)}</span> as a late penalty fee.` : "."}`;
 
 				if (GameData.resources.get("ap").value < mission.costAp ||
