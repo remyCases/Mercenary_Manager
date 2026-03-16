@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				mission.party.forEach((_, troopId) => {
 					mission.party.set(troopId, "A");
 					const troop = GameData.troops.get(troopId);
-					if (mission.cautiousness < contract.danger && troop.health > 0) {
+					if (mission.cautiousness < (contract.danger - location.reputation / 10) && troop.health > 0) {
 						troop.health -= 1;
 					}
 					sumHealth += troop.health;
@@ -144,6 +144,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					if (win) {
 						GameData.resources.get("gold").value += mission.reward.gold;
 						location.reputation += mission.reward.reputation;
+						if (location.reputation > 100) {
+							location.reputation = 100;
+						} else if (location.reputation < -100) {
+							location.reputation = -100;
+						}
 						contract.done = true;
 						if (!contract.repeatable) {
 							location.contract = null;

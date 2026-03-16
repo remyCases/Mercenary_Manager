@@ -132,6 +132,7 @@ export const DialogMissionResolve = (() => {
 		if (dialog.open) {
 			const mission = GameData.state.get("mission")[GameData.currentMission];
 			const contract = GameData.contracts.get(mission.contract);
+			const location = GameData.regions.get(mission.location);
 
 			if (contract) {
 				missionTroopBox.querySelectorAll(".stat-info").forEach((box) => {
@@ -179,7 +180,7 @@ export const DialogMissionResolve = (() => {
 						supplies.style.visibility = "hidden";
 					}
 
-					if (contract.danger > mission.cautiousness) {
+					if ((contract.danger - location.reputation / 10) > mission.cautiousness) {
 						lostHp.style.visibility = "visible";
 					} else {
 						lostHp.style.visibility = "hidden";

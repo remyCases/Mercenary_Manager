@@ -91,7 +91,7 @@ export const DialogMissionPreparation = (() => {
 				const contract = GameData.contracts.get(location.contract);
 
 				const estimatedWeeksWork = Math.ceil(contract.efficiency / mission.efficiency);
-				const enoughCautiousness = mission.cautiousness >= contract.danger;
+				const enoughCautiousness = mission.cautiousness >= (contract.danger - location.reputation / 10);
 
 				missionDescription.style.visibility = "visible";
 				const contractDescription = `The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span>`;
