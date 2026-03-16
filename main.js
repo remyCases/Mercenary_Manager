@@ -146,6 +146,12 @@ document.addEventListener("DOMContentLoaded", () => {
 						contract.done = true;
 						if (!contract.repeatable) {
 							location.contract = null;
+						} else {
+							let newContract = location.contract;
+							while (newContract == location.contract) {
+								newContract = location.contracts[Math.floor(Math.random() * location.contracts.length)];
+							}
+							location.contract = newContract;
 						}
 					}
 

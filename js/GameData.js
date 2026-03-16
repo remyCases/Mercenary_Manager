@@ -63,24 +63,49 @@ export function initData() {
 		name: "Ata",
 		travelDuration: 1,
 		available: true,
-		contract: "A",
+		contracts: null,
+		contract: null,
 	});
 	GameData.regions.set("B", {
-		name: "City B",
-		travelDuration: 2,
+		name: "Makaret",
+		travelDuration: 1,
 		available: false,
+		contracts: null,
 		contract: null,
 	});
 	GameData.regions.set("C", {
-		name: "City C",
-		travelDuration: 2,
+		name: "Csasi",
+		travelDuration: 1,
 		available: false,
+		contracts: null,
 		contract: null,
 	});
 	GameData.regions.set("D", {
 		name: "Linkerburg",
 		travelDuration: 0,
 		available: true,
+		contracts: null,
+		contract: null,
+	});
+	GameData.regions.set("E", {
+		name: "Oudoor of Linkerburg",
+		travelDuration: 1,
+		available: false,
+		contracts: null,
+		contract: null,
+	});
+	GameData.regions.set("F", {
+		name: "Unknown Grotto",
+		travelDuration: 2,
+		available: false,
+		contracts: null,
+		contract: null,
+	});
+	GameData.regions.set("G", {
+		name: "East Market",
+		travelDuration: 1,
+		available: false,
+		contracts: null,
 		contract: null,
 	});
 
@@ -98,7 +123,28 @@ export function initData() {
 		done: false,
 		repeatable: false,
 	});
-	GameData.contracts.set("C", {
+	GameData.contracts.set("C1", {
+		efficiency: 8,
+		danger: 5,
+		reward: 15,
+		done: false,
+		repeatable: true,
+	});
+	GameData.contracts.set("C2", {
+		efficiency: 10,
+		danger: 7,
+		reward: 20,
+		done: false,
+		repeatable: true,
+	});
+	GameData.contracts.set("C3", {
+		efficiency: 4,
+		danger: 10,
+		reward: 10,
+		done: false,
+		repeatable: true,
+	});
+	GameData.contracts.set("C4", {
 		efficiency: 8,
 		danger: 5,
 		reward: 15,
@@ -173,7 +219,7 @@ export function initData() {
 	});
 
 	GameData.resources.set("ap", { class: "res-ap", value: 5 });
-	GameData.resources.set("gold", { class: "res-gold", value: 100 });
+	GameData.resources.set("gold", { class: "res-gold", value: 20 });
 	GameData.resources.set("food", { class: "res-food", value: 20 });
 	GameData.resources.set("supplies", { class: "res-supplies", value: 10 });
 
@@ -226,7 +272,7 @@ const PHASE_DATA = {
 			description: "",
 		},
 		"regions": {
-			"A": "A",
+			"A": ["A"],
 		}
 	},
 	1: {
@@ -253,23 +299,41 @@ const PHASE_DATA = {
 			counter: 3,
 		},
 		"regions": {
-			"A": "B",
+			"A": ["B"],
 		}
 	},
 	3: {
 		"win": {
-			condition: () => GameData.resources.get("gold").value > 140,
-			description: "Earn at least 140 golds",
+			condition: () => GameData.resources.get("gold").value >= 50,
+			description: "Earn at least 50 golds",
 		},
 		"lose": {
 			condition: () => false,
 			description: "",
 		},
 		"regions": {
-			"A": "C",
+			"A": null,
+			"B": ["C1", "C2", "C3", "C4"],
+			"C": ["C1", "C2", "C3", "C4"],
+			"E": ["C1", "C2", "C3", "C4"],
+			"F": ["D"],
+			"G": ["C1", "C2", "C3", "C4"],
 		},
 		"troops": {
 			"B": true,
+		},
+	},
+	4: {
+		"win": {
+			condition: () => true,
+			description: "PLACEHOLDER",
+		},
+		"lose": {
+			condition: () => false,
+			description: "",
+		},
+		"troops": {
+			"C": true,
 		},
 	}
 };
@@ -283,8 +347,16 @@ export function nextPhaseData(currentStep) {
 		GameData.state.set("deathCounter", config.deathCounter);
 
 		if (config.regions) {
-			Object.entries(config.regions).forEach(([region, contract]) => {
-				GameData.regions.get(region).contract = contract;
+			Object.entries(config.regions).forEach(([region, contracts]) => {
+				const regionData = GameData.regions.get(region)
+				regionData.contracts = contracts;
+
+				if (contracts && contracts.length > 0) {
+					regionData.contract = contracts[Math.floor(Math.random() * contracts.length)];
+				} else {
+					regionData.contract = null;
+				}
+				regionData.available = contracts !== null;
 			});
 		}
 

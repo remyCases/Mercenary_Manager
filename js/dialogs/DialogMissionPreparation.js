@@ -88,8 +88,6 @@ export const DialogMissionPreparation = (() => {
 
 	function update() {
 		if (dialog.open) {
-
-
 			if (GameData.currentMission && GameData.selectedLocation) {
 				const mission = GameData.state.get("mission")[GameData.currentMission];
 				const location = GameData.regions.get(GameData.selectedLocation);
@@ -119,6 +117,10 @@ export const DialogMissionPreparation = (() => {
 	}
 
 	function open() {
+		regions.forEach(region => {
+			const regionData = GameData.regions.get(region.dataset.num);
+			region.style.visibility = regionData.available ? "visible" : "hidden";
+		});
 		dialog.showModal();
 	}
 
