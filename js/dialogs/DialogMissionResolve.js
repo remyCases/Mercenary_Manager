@@ -132,6 +132,7 @@ export const DialogMissionResolve = (() => {
 		if (dialog.open) {
 			const mission = GameData.state.get("mission")[GameData.currentMission];
 			const contract = GameData.contracts.get(mission.contract);
+			const location = GameData.regions.get(mission.location);
 
 			if (contract) {
 				missionTroopBox.querySelectorAll(".stat-info").forEach((box) => {
@@ -179,7 +180,7 @@ export const DialogMissionResolve = (() => {
 						supplies.style.visibility = "hidden";
 					}
 
-					if (contract.danger > mission.cautiousness) {
+					if ((contract.danger - location.reputation / 10) > mission.cautiousness) {
 						lostHp.style.visibility = "visible";
 					} else {
 						lostHp.style.visibility = "hidden";
@@ -190,7 +191,7 @@ export const DialogMissionResolve = (() => {
 
 				progressBar.style.width = Math.ceil(100 * mission.efficiency / contract.efficiency) + "%";
 				progressBarPrev.style.width = Math.ceil(100 * mission.prevEfficiency / contract.efficiency) + "%";
-				const latePenaltyFees = contract.reward - mission.reward;
+				const latePenaltyFees = contract.reward.gold - mission.reward.gold;
 				durationInfo.innerHTML = `${partyToStr(GameData, mission.party)} working on this mission for <span class="bold">${mission.missionDuration} ${mission.missionDuration <= 1 ? "week" : "weeks"}</span> ${latePenaltyFees > 0 ? `<br>resulting in a loss of <span class="bold">${goldToStr(latePenaltyFees)}</span> as a late penalty fee.` : "."}`;
 
 				if (GameData.resources.get("ap").value < mission.costAp ||

@@ -41,32 +41,73 @@ const StoryData = {
 			],
 			done: false,
 		},
+		{
+			name: "krisa_rescued",
+			lines: [
+				{ from: "a", img: "./images/PalLady.png", text: "From all the people on this kingdom, I wasn't expecting to be saved by the both of you." },
+				{ from: "b", img: null, imgTxt: "You", text: "Do you prefer to go back ?" },
+				{ from: "a", img: "./images/PalLady.png", text: "Thanks for the offer but <strong>Frivkyl</strong> seems pretty beat up." },
+				{ from: "a", img: "./images/RangerMan.png", text: "Pretty is an understatement." },
+				{ from: "b", img: null, imgTxt: "You", text: "Now that we are all grateful with <strong>Frivkyl</strong>'s skills,  let's focus on making some money." },
+				{ from: "a", img: "./images/RangerMan.png", text: "We can forget going to <strong>Ata</strong> for awhile." },
+				{ from: "a", img: "./images/PalLady.png", text: "I'd rather not." },
+			],
+			done: false,
+		},
+		{
+			name: "ekor_coming",
+			lines: [
+				{ from: "a", img: "./images/MageMan.png", text: "Name <strong>Ekor</strong> from <strong>Csasi</strong>. I've heard, you were recruiting." },
+				{ from: "b", img: null, imgTxt: "You", text: "We are. What can you offer ?" },
+				{ from: "a", img: "./images/MageMan.png", text: "I was part of the Vellum Weaver. I still have a diplomacy network." },
+				{ from: "a", img: "./images/RangerMan.png", text: "Was ?" },
+				{ from: "a", img: "./images/MageMan.png", text: "Past tense, yup." },
+				{ from: "b", img: null, imgTxt: "You", text: "That's a good opportunity, we need some alliance, unless <strong>Krisa</strong> wants to reunite with the hangman." },
+				{ from: "a", img: "./images/PalLady.png", text: "No thanks." },
+			],
+			done: false,
+		},
 	],
 	triggers: [
 		{
-			id: "game_start",
-			condition: () => StoryData.story[0].done,
+			condition: () => StoryData.state == "intro" && StoryData.story[0].done,
 			action: () => {
 				StoryElements.storyContainer.style.display = "none";
 				StoryElements.mainContainer.style.display = "block";
 				ModalQueue.forceProcessModals();
 				Signals.emit("game_start");
 			},
-			done: false,
 		},
 		{
-			id: "making_money",
-			condition: () => StoryData.dialogue[0].done,
+			condition: () => StoryData.state == "saving_krisa" && StoryData.dialogue[0].done,
 			action: () => {
 				StoryElements.storyContainer.style.display = "none";
 				StoryElements.mainContainer.style.display = "block";
 				ModalQueue.forceProcessModals();
 			},
-			done: false,
+		},
+		{
+			condition: () => StoryData.state == "krisa_rescued" && StoryData.dialogue[1].done,
+			action: () => {
+				StoryElements.storyContainer.style.display = "none";
+				StoryElements.mainContainer.style.display = "block";
+				ModalQueue.forceProcessModals();
+			},
+		},
+		{
+			condition: () => StoryData.state == "ekor_coming" && StoryData.dialogue[2].done,
+			action: () => {
+				StoryElements.storyContainer.style.display = "none";
+				StoryElements.mainContainer.style.display = "block";
+				ModalQueue.forceProcessModals();
+			},
 		},
 	],
 
+	state: "",
+
 	reset() {
+		this.state = "";
 		this.story.forEach((s) => {
 			s.done = false;
 		});
@@ -80,18 +121,16 @@ const StoryData = {
 };
 
 const StoryLogic = {
-	currentStory: 0,
 	currentParagraph: 0,
-	currentDialogue: 0,
 	currentLine: 0,
 	inStoryMode: true,
 
 	getParagraphs() {
-		return StoryData.story[this.currentStory].paragraphs;
+		return StoryData.story.find((s) => s.name === StoryData.state).paragraphs;
 	},
 
 	getLines() {
-		return StoryData.dialogue[this.currentDialogue].lines;
+		return StoryData.dialogue.find((d) => d.name === StoryData.state).lines;
 	},
 
 	nextParagraph() {
@@ -100,9 +139,8 @@ const StoryLogic = {
 			this.renderStory();
 		}
 		else {
-			StoryData.story[this.currentStory].done = true;
+			StoryData.story.find((s) => s.name === StoryData.state).done = true;
 			this.currentParagraph = 0;
-			this.currentStory++;
 		}
 		this.checkTriggers();
 	},
@@ -116,8 +154,12 @@ const StoryLogic = {
 		StoryElements.infoStory.textContent = progress;
 	},
 
-	showStory() {
+	showStory(state = null) {
 		this.inStoryMode = true;
+
+		if (state !== null) {
+			StoryData.state = state;
+		}
 		StoryElements.contentArea.style.display = "flex";
 		StoryElements.dialogueContainer.style.display = "none";
 		this.renderStory();
@@ -129,9 +171,8 @@ const StoryLogic = {
 			this.renderDialogue();
 		}
 		else {
-			StoryData.dialogue[this.currentDialogue].done = true;
+			StoryData.dialogue.find((d) => d.name === StoryData.state).done = true;
 			this.currentLine = 0;
-			this.currentDialogue++;
 		}
 		this.checkTriggers();
 	},
@@ -166,10 +207,13 @@ const StoryLogic = {
 
 		// Auto-scroll to bottom
 		StoryElements.dialogueContainer.scrollTop = StoryElements.dialogueContainer.scrollHeight;
+		const progress = `${this.currentLine + 1}/${lines.length}`;
+		StoryElements.infoStory.textContent = progress;
 	},
 
-	showDialogue() {
+	showDialogue(state) {
 		this.inStoryMode = false;
+		StoryData.state = state;
 		StoryElements.contentArea.style.display = "none";
 		StoryElements.dialogueContainer.style.display = "flex";
 		this.renderDialogue();
@@ -177,9 +221,8 @@ const StoryLogic = {
 
 	checkTriggers() {
 		StoryData.triggers.forEach(trigger => {
-			if (trigger.condition() && !trigger.done) {
+			if (trigger.condition()) {
 				trigger.action();
-				trigger.done = true;
 			}
 		});
 	},
@@ -193,8 +236,6 @@ const StoryLogic = {
 	},
 
 	reset() {
-		this.currentStory = 0;
-		this.currentDialogue = 0;
 		this.resetStory();
 		this.resetDialogue();
 	},
@@ -202,33 +243,27 @@ const StoryLogic = {
 
 const Story = (() => {
 
-	let storyToPass = null;
-	let dialogueToPass = null;
-
 	function start() {
 		ModalQueue.maskModals();
 		StoryElements.storyContainer.style.display = "block";
 		StoryElements.mainContainer.style.display = "none";
-		storyToPass = 0;
 		StoryData.reset();
 		StoryLogic.reset();
-		StoryLogic.showStory();
+		StoryLogic.showStory("intro");
 	}
 
 	function continueStory(story) {
 		ModalQueue.maskModals();
 		StoryElements.storyContainer.style.display = "block";
 		StoryElements.mainContainer.style.display = "none";
-		storyToPass = story;
-		StoryLogic.showStory();
+		StoryLogic.showStory(story);
 	}
 
 	function continueDialogue(dialogue) {
 		ModalQueue.maskModals();
 		StoryElements.storyContainer.style.display = "block";
 		StoryElements.mainContainer.style.display = "none";
-		dialogueToPass = dialogue;
-		StoryLogic.showDialogue();
+		StoryLogic.showDialogue(dialogue);
 	}
 
 	StoryElements.nextStoryButton.addEventListener("click", () => {
@@ -253,13 +288,14 @@ const Story = (() => {
 
 	StoryElements.passStoryButton.addEventListener("click", () => {
 
-		if (storyToPass !== null) {
-			StoryData.story[storyToPass].done = true;
-			storyToPass = null;
+		const findStory = StoryData.story.find((s) => s.name === StoryData.state);
+		const findDialog = StoryData.dialogue.find((d) => d.name === StoryData.state);
+
+		if (findStory) {
+			findStory.done = true;
 		}
-		if (dialogueToPass !== null) {
-			StoryData.dialogue[dialogueToPass].done = true;
-			dialogueToPass = null;
+		if (findDialog) {
+			findDialog.done = true;
 		}
 		StoryLogic.checkTriggers();
 	});

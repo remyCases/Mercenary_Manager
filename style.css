@@ -151,27 +151,22 @@ button.danger {
 }
 
 .region {
-    fill: transparent;
-    fill: rgba(52, 152, 219, 0.3);
     stroke: #ffffff;
     stroke-width: 2;
     transition: all 0.2s ease;
 }
 
 .region:hover {
-    fill: rgba(52, 152, 219, 0.3);
     stroke: #3498db;
     stroke-width: 2;
 }
 
 .region.selected {
-    fill: rgba(46, 204, 113, 0.4);
     stroke: #2ecc71;
     stroke-width: 2;
 }
 
 .region.frozen {
-    fill: rgba(102, 102, 102, 0.3);
     stroke: #666666;
     stroke-width: 2;
 }

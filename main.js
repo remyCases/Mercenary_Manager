@@ -1,5 +1,5 @@
 import { getDistance, getItem, SNAP_DISTANCE, dropLogic, allowMissionDrop } from "./js/utils.js";
-import { goldToStr } from "./js/UtilsUI.js";
+import { endMissionToStr, goldToStr } from "./js/UtilsUI.js";
 import { resolveAction, computePartyStat } from "./js/Logic.js"
 import { GameUI, initUI, updateUI, cleanRestSlot, nextPhaseUI } from "./js/GameUI.js"
 import { Story } from "./js/Story.js"
@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				mission.party.forEach((_, troopId) => {
 					mission.party.set(troopId, "A");
 					const troop = GameData.troops.get(troopId);
-					if (mission.cautiousness < contract.danger && troop.health > 0) {
+					if (mission.cautiousness < (contract.danger - location.reputation / 10) && troop.health > 0) {
 						troop.health -= 1;
 					}
 					sumHealth += troop.health;
@@ -142,7 +142,13 @@ document.addEventListener("DOMContentLoaded", () => {
 					Signals.emit("unfreezeMissionSlot", missionId);
 					Signals.emit("unfreezeRegion", missionId);
 					if (win) {
-						GameData.resources.get("gold").value += mission.reward;
+						GameData.resources.get("gold").value += mission.reward.gold;
+						location.reputation += mission.reward.reputation;
+						if (location.reputation > 100) {
+							location.reputation = 100;
+						} else if (location.reputation < -100) {
+							location.reputation = -100;
+						}
 						contract.done = true;
 						if (!contract.repeatable) {
 							location.contract = null;
@@ -155,25 +161,15 @@ document.addEventListener("DOMContentLoaded", () => {
 						}
 					}
 
-					let endMessage = "";
-					if (win) {
-						endMessage = "was successful.<br>";
-						if (mission.missionDuration == 0 && contract.reward > 0) {
-							endMessage += `You win <span class="bold">${mission.reward} golds</span>.`;
-						} else if (contract.reward > 0) {
-							endMessage += `From the initial <span class="bold">${goldToStr(contract.reward)}</span>, you win <span class="bold">${goldToStr(mission.reward)}</span> and lost <span class="bold">${goldToStr(contract.reward - mission.reward)}</span> as a late penalty fee.`;
-						}
-					} else {
-						endMessage = "failed."
-					}
-					const clone = DialogEndMission.getModal(missionId, `Mission to ${location.name} ${endMessage}`);
+					const message = endMissionToStr(location.name, mission.missionDuration, contract.reward, mission.reward, win);
+					const clone = DialogEndMission.getModal(missionId, message);
 					clones.push(clone);
 					GameData.state.get("mission")[missionId] = resetMission();
 				} else {
 					mission.missionDuration += 1;
-					mission.reward = Math.floor(mission.reward - 0.1 * contract.reward)
-					if (mission.reward < 0) {
-						mission.reward = 0;
+					mission.reward.gold = Math.floor(mission.reward.gold - 0.1 * contract.reward.gold);
+					if (mission.reward.gold < 0) {
+						mission.reward.gold = 0;
 					}
 				}
 			}

@@ -1,7 +1,7 @@
 import { Signals } from "../EventEmitter.js";
 import { GameData } from "../GameData.js"
 import { getItem } from "../utils.js";
-import { partyToStr } from "../UtilsUI.js";
+import { partyToStr, rewardsToStr, RepToStr } from "../UtilsUI.js";
 
 export const DialogMissionPreparation = (() => {
 	const dialog = document.getElementById("missionDialog");
@@ -26,7 +26,7 @@ export const DialogMissionPreparation = (() => {
 			region.classList.add("frozen");
 			mission.location = GameData.selectedLocation;
 			mission.contract = location.contract;
-			mission.reward = contract.reward;
+			mission.reward = structuredClone(contract.reward);
 
 			Signals.emit("freezeMissionSlot");
 
@@ -62,7 +62,7 @@ export const DialogMissionPreparation = (() => {
 				const id = region.dataset.num;
 				const location = GameData.regions.get(id);
 
-				regionTooltip.textContent = `${location.name}`;
+				regionTooltip.innerHTML = `${location.name}<br>Reputation: ${RepToStr(location.reputation)}`;
 				regionTooltip.style.display = "block";
 				regionTooltip.style.left = region.getAttribute("cx") + "px";
 				regionTooltip.style.top = region.getAttribute("cy") + "px";
@@ -91,11 +91,12 @@ export const DialogMissionPreparation = (() => {
 				const contract = GameData.contracts.get(location.contract);
 
 				const estimatedWeeksWork = Math.ceil(contract.efficiency / mission.efficiency);
-				const enoughCautiousness = mission.cautiousness >= contract.danger;
+				const enoughCautiousness = mission.cautiousness >= (contract.danger - location.reputation / 10);
 
 				missionDescription.style.visibility = "visible";
-				const contractDescription = `The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span>${contract.reward ? ` and should earn <span class="bold">${contract.reward} golds</span> if done during the first week.` : "."}`
-				missionDescription.innerHTML = `${partyToStr(GameData, mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>${contractDescription}`;
+				const contractDescription = `The contract should be <span class="bold">${estimatedDifficulty(estimatedWeeksWork, enoughCautiousness)}</span>`;
+				const rewardsDescription = rewardsToStr(contract.reward);
+				missionDescription.innerHTML = `${partyToStr(GameData, mission.party)} going to <span class="bold">${location.name}</span> a <span class="bold">${location.travelDuration}-${location.travelDuration <= 1 ? "week" : "weeks"}</span> travel.<br>${contractDescription}.<br>${rewardsDescription}`;
 
 				sendMission.disabled = false;
 			}
@@ -117,6 +118,7 @@ export const DialogMissionPreparation = (() => {
 		regions.forEach(region => {
 			const regionData = GameData.regions.get(region.dataset.num);
 			region.style.visibility = regionData.available ? "visible" : "hidden";
+			region.style.fill = getReputationColor(regionData.reputation);
 		});
 		dialog.showModal();
 	}
@@ -163,6 +165,20 @@ function estimatedDifficulty(weeks, enoughCautiousness) {
 		default:
 			return "fiendish";
 	}
+}
+
+const COLOR_NEGATIVE = "#B12B1DB3"
+const COLOR_NEUTRAL = "#B19719B3"
+const COLOR_POSITIVE = "#16B13DB3"
+
+function getReputationColor(reputation) {
+	let color;
+	if (reputation < 0) {
+		color = `color-mix(in oklab, ${COLOR_NEUTRAL} ${reputation + 100}%, ${COLOR_NEGATIVE})`;
+	} else {
+		color = `color-mix(in oklab, ${COLOR_NEUTRAL} ${100 - reputation}%, ${COLOR_POSITIVE})`;
+	}
+	return color;
 }
 
 DialogMissionPreparation.init();
