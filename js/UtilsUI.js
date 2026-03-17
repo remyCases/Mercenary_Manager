@@ -11,19 +11,19 @@ export function rewardsToStr(rewards) {
 	if (!rewards.gold && !rewards.reputation) {
 		return "";
 	} else if (!rewards.gold) {
-		return `You will <span class="bold">${DiffRepToStr(rewards.reputation)}</span>.`;
+		return `You will <span class="bold">${diffRepToStr(rewards.reputation)}</span>.`;
 	} else if (!rewards.reputation) {
 		return `You should earn <span class="bold">${goldToStr(rewards.gold)}</span> if done during the first week.`;
 	}
 
-	return `You should earn <span class="bold">${goldToStr(rewards.gold)}</span> if done during the first week and will <span class="bold">${DiffRepToStr(rewards.reputation)}</span>.`;
+	return `You should earn <span class="bold">${goldToStr(rewards.gold)}</span> if done during the first week and will <span class="bold">${diffRepToStr(rewards.reputation)}</span>.`;
 }
 
 export function goldToStr(gold) {
 	return `${gold} ${gold <= 1 ? "gold" : "golds"}`;
 }
 
-export function DiffRepToStr(rep) {
+export function diffRepToStr(rep) {
 
 	if (rep < -50) {
 		return "lose a huge amout of reputation";
@@ -44,7 +44,7 @@ export function DiffRepToStr(rep) {
 	}
 }
 
-export function RepToStr(rep) {
+export function repToStr(rep) {
 
 	if (rep < -90) {
 		return "Hunting you down";
@@ -84,4 +84,12 @@ export function endMissionToStr(name, duration, initialRewards, currentRewards, 
 		endMessage = "failed."
 	}
 	return `Mission to ${name} ${endMessage}`;
+}
+
+export function weekToStr(weeks) {
+	if (weeks == 1) {
+		return "next week";
+	} else if (weeks > 1) {
+		return `${weeks} weeks`;
+	}
 }

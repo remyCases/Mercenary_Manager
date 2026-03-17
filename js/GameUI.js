@@ -1,6 +1,6 @@
 import { createTroopCard } from "./Troops.js"
 import { getItem } from "./utils.js"
-import { isFrozen, isOccupied } from "./UtilsUI.js"
+import { isFrozen, isOccupied, weekToStr } from "./UtilsUI.js"
 import { DialogMissionPreparation } from "./dialogs/DialogMissionPreparation.js"
 import { DialogMissionResolve } from "./dialogs/DialogMissionResolve.js"
 
@@ -150,7 +150,7 @@ export function updateUI(gameData, newTurn = false) {
 	GameUI.newWeekButton.disabled = false;
 	GameUI.weekDisplay.textContent = `Weeks: ${gameData.state.get("week")}`;
 	GameUI.goalInfo.textContent = `Goal: ${gameData.state.get("winCondition").description}`;
-	GameUI.warningInfo.textContent = gameData.state.get("deathCounter") ? `Warning: ${gameData.state.get("deathCounter").name} will die in ${gameData.state.get("deathCounter").counter} weeks` : "";
+	GameUI.warningInfo.textContent = gameData.state.get("deathCounter") && gameData.state.get("deathCounter").counter > 0 ? `Warning: ${gameData.state.get("deathCounter").name} will die in ${weekToStr(gameData.state.get("deathCounter").counter)}` : "";
 
 	GameUI.missionSlots.forEach((slot) => {
 		MissionSlotUI.update(slot, gameData, newTurn);

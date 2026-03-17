@@ -49,7 +49,18 @@ function newRegion(regionName, travelDuration) {
 		contracts: null,
 		contract: null,
 		reputation: 0,
+		expiration: -1,
 	}
+}
+
+export function newRandomContract(regionData) {
+	let newContract = regionData.contract;
+	while (newContract == regionData.contract) {
+		newContract = regionData.contracts[Math.floor(Math.random() * regionData.contracts.length)];
+	}
+	regionData.contract = newContract;
+	const contractData = GameData.contracts.get(regionData.contract);
+	regionData.expiration = contractData.maxExpiration;
 }
 
 export function initData() {
@@ -84,6 +95,8 @@ export function initData() {
 		reward: { "gold": 5, "reputation": 0 },
 		done: false,
 		repeatable: false,
+		description: "A local merchant needs a caravan hand for Ata",
+		maxExpiration: -1,
 	});
 	GameData.contracts.set("B", {
 		efficiency: 8,
@@ -91,6 +104,8 @@ export function initData() {
 		reward: { "gold": 0, "reputation": -100 },
 		done: false,
 		repeatable: false,
+		description: "A special mission to rescue Krisna",
+		maxExpiration: -1,
 	});
 	GameData.contracts.set("C1", {
 		efficiency: 8,
@@ -98,6 +113,8 @@ export function initData() {
 		reward: { "gold": 15, "reputation": 5 },
 		done: false,
 		repeatable: true,
+		description: "The local sergeant needs help to train the militia",
+		maxExpiration: 2,
 	});
 	GameData.contracts.set("C2", {
 		efficiency: 10,
@@ -105,6 +122,8 @@ export function initData() {
 		reward: { "gold": 20, "reputation": 0 },
 		done: false,
 		repeatable: true,
+		description: "A local guild wants to renegociate the current toll with a mysterious mobster",
+		maxExpiration: 3,
 	});
 	GameData.contracts.set("C3", {
 		efficiency: 4,
@@ -112,13 +131,17 @@ export function initData() {
 		reward: { "gold": 10, "reputation": 10 },
 		done: false,
 		repeatable: true,
+		description: "A rival faction of your employer is wrecking havoc and needs to be taken down",
+		maxExpiration: 5,
 	});
 	GameData.contracts.set("C4", {
 		efficiency: 20,
 		danger: 0,
-		reward: { "gold": 25, "reputation": 5 },
+		reward: { "gold": 25, "reputation": 10 },
 		done: false,
 		repeatable: true,
+		description: "The local concil is looking for some administrative help",
+		maxExpiration: 3,
 	});
 	GameData.contracts.set("D", {
 		efficiency: 30,
@@ -126,6 +149,8 @@ export function initData() {
 		reward: { "gold": 100, "reputation": 0 },
 		done: false,
 		repeatable: false,
+		description: "A veil of mystery is covering the whole grotto. It is said some evil force is living there",
+		maxExpiration: -1,
 	});
 
 	GameData.troops.set("A", {
@@ -323,7 +348,7 @@ export function nextPhaseData(currentStep) {
 				regionData.contracts = contracts;
 
 				if (contracts && contracts.length > 0) {
-					regionData.contract = contracts[Math.floor(Math.random() * contracts.length)];
+					newRandomContract(regionData);
 				} else {
 					regionData.contract = null;
 				}
