@@ -233,7 +233,7 @@ const PHASE_DATA = {
 	0: {
 		"win": {
 			condition: () => GameData.contracts.get("A").done,
-			afterCond: () => Story.continueDialogue(0),
+			afterCond: () => Story.continueDialogue("saving_krisa"),
 			description: "Complete the mission to Ata",
 		},
 		"lose": {
@@ -257,6 +257,7 @@ const PHASE_DATA = {
 	2: {
 		"win": {
 			condition: () => GameData.contracts.get("B").done,
+			afterCond: () => Story.continueDialogue("krisa_rescued"),
 			description: "Save Krisa in Ata in less than 3 weeks",
 		},
 		"lose": {
@@ -274,6 +275,7 @@ const PHASE_DATA = {
 	3: {
 		"win": {
 			condition: () => GameData.resources.get("gold").value >= 50,
+			afterCond: () => Story.continueDialogue("ekor_coming"),
 			description: "Earn at least 50 golds",
 		},
 		"lose": {
