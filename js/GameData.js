@@ -294,8 +294,8 @@ const PHASE_DATA = {
 	},
 	4: {
 		"win": {
-			condition: () => true,
-			description: "PLACEHOLDER",
+			condition: () => Array.from(GameData.regions.values()).some((r) => r.reputation > 50),
+			description: "Reach a good reputation with at least one of cities.",
 		},
 		"lose": {
 			condition: () => false,

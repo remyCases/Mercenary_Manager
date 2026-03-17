@@ -11,19 +11,19 @@ export function rewardsToStr(rewards) {
 	if (!rewards.gold && !rewards.reputation) {
 		return "";
 	} else if (!rewards.gold) {
-		return `You will <span class="bold">${RepToStr(rewards.reputation)}</span>.`;
+		return `You will <span class="bold">${DiffRepToStr(rewards.reputation)}</span>.`;
 	} else if (!rewards.reputation) {
 		return `You should earn <span class="bold">${goldToStr(rewards.gold)}</span> if done during the first week.`;
 	}
 
-	return `You should earn <span class="bold">${goldToStr(rewards.gold)}</span> if done during the first week and will <span class="bold">${RepToStr(rewards.reputation)}</span>.`;
+	return `You should earn <span class="bold">${goldToStr(rewards.gold)}</span> if done during the first week and will <span class="bold">${DiffRepToStr(rewards.reputation)}</span>.`;
 }
 
 export function goldToStr(gold) {
 	return `${gold} ${gold <= 1 ? "gold" : "golds"}`;
 }
 
-export function RepToStr(rep) {
+export function DiffRepToStr(rep) {
 
 	if (rep < -50) {
 		return "lose a huge amout of reputation";
@@ -41,6 +41,25 @@ export function RepToStr(rep) {
 		return "gain a lot of reputation";
 	} else {
 		return "gain a huge amout of reputation";
+	}
+}
+
+export function RepToStr(rep) {
+
+	if (rep < -90) {
+		return "Hunting you down";
+	} else if (rep < -50) {
+		return "Hatred";
+	} else if (rep < -20) {
+		return "Resentment";
+	} else if (rep < 20) {
+		return "Indifference";
+	} else if (rep < 50) {
+		return "Sympathy";
+	} else if (rep < 90) {
+		return "Amity";
+	} else {
+		return "Brotherhood";
 	}
 }
 

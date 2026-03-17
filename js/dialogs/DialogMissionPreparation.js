@@ -1,7 +1,7 @@
 import { Signals } from "../EventEmitter.js";
 import { GameData } from "../GameData.js"
 import { getItem } from "../utils.js";
-import { partyToStr, rewardsToStr } from "../UtilsUI.js";
+import { partyToStr, rewardsToStr, RepToStr } from "../UtilsUI.js";
 
 export const DialogMissionPreparation = (() => {
 	const dialog = document.getElementById("missionDialog");
@@ -62,7 +62,7 @@ export const DialogMissionPreparation = (() => {
 				const id = region.dataset.num;
 				const location = GameData.regions.get(id);
 
-				regionTooltip.textContent = `${location.name}`;
+				regionTooltip.innerHTML = `${location.name}<br>Reputation: ${RepToStr(location.reputation)}`;
 				regionTooltip.style.display = "block";
 				regionTooltip.style.left = region.getAttribute("cx") + "px";
 				regionTooltip.style.top = region.getAttribute("cy") + "px";
