@@ -325,7 +325,7 @@ export function nextPhaseData(currentStep) {
 				} else {
 					regionData.contract = null;
 				}
-				regionData.available = contracts !== null;
+				regionData.available = regionData.available === null ? contracts !== null : regionData.available;
 			});
 		}
 

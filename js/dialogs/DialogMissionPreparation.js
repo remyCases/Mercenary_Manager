@@ -118,6 +118,7 @@ export const DialogMissionPreparation = (() => {
 		regions.forEach(region => {
 			const regionData = GameData.regions.get(region.dataset.num);
 			region.style.visibility = regionData.available ? "visible" : "hidden";
+			region.style.fill = getReputationColor(regionData.reputation);
 		});
 		dialog.showModal();
 	}
@@ -164,6 +165,20 @@ function estimatedDifficulty(weeks, enoughCautiousness) {
 		default:
 			return "fiendish";
 	}
+}
+
+const COLOR_NEGATIVE = "#B12B1DB3"
+const COLOR_NEUTRAL = "#B19719B3"
+const COLOR_POSITIVE = "#16B13DB3"
+
+function getReputationColor(reputation) {
+	let color;
+	if (reputation < 0) {
+		color = `color-mix(in oklab, ${COLOR_NEUTRAL} ${reputation + 100}%, ${COLOR_NEGATIVE})`;
+	} else {
+		color = `color-mix(in oklab, ${COLOR_NEUTRAL} ${100 - reputation}%, ${COLOR_POSITIVE})`;
+	}
+	return color;
 }
 
 DialogMissionPreparation.init();
