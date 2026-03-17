@@ -3,7 +3,7 @@ import { endMissionToStr, goldToStr } from "./js/UtilsUI.js";
 import { resolveAction, computePartyStat } from "./js/Logic.js"
 import { GameUI, initUI, updateUI, cleanRestSlot, nextPhaseUI } from "./js/GameUI.js"
 import { Story } from "./js/Story.js"
-import { GameData, initData, nextPhaseData, resetMission } from "./js/GameData.js"
+import { GameData, initData, nextPhaseData, resetMission, newRandomContract } from "./js/GameData.js"
 import { Signals } from "./js/EventEmitter.js";
 import { DialogLowOnFood } from "./js/dialogs/DialogLowOnFood.js"
 import { DialogGameOver } from "./js/dialogs/DialogGameOver.js"
@@ -153,11 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						if (!contract.repeatable) {
 							location.contract = null;
 						} else {
-							let newContract = location.contract;
-							while (newContract == location.contract) {
-								newContract = location.contracts[Math.floor(Math.random() * location.contracts.length)];
-							}
-							location.contract = newContract;
+							newRandomContract(location);
 						}
 					}
 
@@ -182,6 +178,19 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		});
 
+		// handles mission expiration
+		GameData.regions.forEach((regionData) => {
+			if (regionData.contract == null) {
+				return;
+			}
+			if (regionData.expiration == 0) {
+				newRandomContract(regionData);
+			}
+			if (regionData.expiration > 0) {
+				regionData.expiration -= 1;
+			}
+		});
+
 		// handles resources
 		GameData.resources.get("ap").value = 5;
 		let partySize = 0;
@@ -192,6 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			GameData.resources.get("food").value,
 			0,
 		);
+
 		GameData.resources.get("gold").value = res[0];
 		GameData.resources.get("food").value = res[1];
 
@@ -209,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		} else {
 			clones.forEach((c) => ModalQueue.add(c));
 		}
-	
+
 		if (GameData.resources.get("food").value <= 0) {
 			await ModalQueue.add(DialogGameOver.getModal("You ran out of food"));
 		} else if (GameData.state.get("loseCondition").condition()) {
